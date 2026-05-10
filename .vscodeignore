@@ -1,0 +1,12 @@
+.git/
+.gitignore
+.github/
+.vscode/
+.npm/
+node_modules/
+out/**/*.map
+*.ts
+tsconfig.json
+package-lock.json
+example-todo.md
+*.vsix

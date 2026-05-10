@@ -1,0 +1,323 @@
+{
+  "name": "md-todo",
+  "displayName": "MD Todo",
+  "description": "Markdown-based todo list manager with date tracking, notes, and archiving",
+  "version": "1.2.0",
+  "publisher": "theryansmith",
+  "license": "MIT",
+  "icon": "media/extension-icon.png",
+  "author": "Ryan Smith",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theryansmith/md-todo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/theryansmith/md-todo/issues"
+  },
+  "homepage": "https://github.com/theryansmith/md-todo#readme",
+  "engines": {
+    "vscode": "^1.74.0",
+    "node": ">=20.0.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "mdTodo.addItem",
+        "title": "Add Todo Item",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.markDone",
+        "title": "Mark Done",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.addNote",
+        "title": "Add Note",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.archive",
+        "title": "Archive Completed Items",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.showHistory",
+        "title": "Show Git History",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.showStats",
+        "title": "Show Stats",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.showRecentlyCompleted",
+        "title": "Show Recently Completed",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.showRecentlyAdded",
+        "title": "Show Recently Added",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.showStaleItems",
+        "title": "Show Stale Items",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.clearActivityFocus",
+        "title": "Clear Activity Focus",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.quickAdd",
+        "title": "Quick Add at Cursor",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.addTags",
+        "title": "Add/Edit Tags",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.manageTags",
+        "title": "Manage Tag Definitions",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.addUser",
+        "title": "Add User",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.initialize",
+        "title": "Initialize Todo File",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.setFocusUser",
+        "title": "Set Focus User",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.setFocusTag",
+        "title": "Set Tag Focus",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.assignFocusedUser",
+        "title": "Assign Focused User to Current Todo",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.users.focusOnUser",
+        "title": "Focus on User in Editor",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.users.clearFocus",
+        "title": "Clear User Focus",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.users.reassignUser",
+        "title": "Reassign User",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.users.markDoneFromTree",
+        "title": "Mark Done",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.tags.focusOnTag",
+        "title": "Focus on Tag in Editor",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.tags.clearFocus",
+        "title": "Clear Tag Focus",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.tags.markDoneFromTree",
+        "title": "Mark Done",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.tags.editTagsFromTree",
+        "title": "Edit Tags",
+        "category": "MD Todo"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mdTodo",
+          "title": "MD TODO",
+          "icon": "media/icon-check-square.svg"
+        }
+      ]
+    },
+    "views": {
+      "mdTodo": [
+        {
+          "id": "mdTodoUsers",
+          "name": "MD TODO USERS"
+        },
+        {
+          "id": "mdTodoTags",
+          "name": "MD TODO TAGS"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "mdTodoUsers",
+        "contents": "Open a todo file (markdown with `md-todo: true` frontmatter) to see users."
+      },
+      {
+        "view": "mdTodoTags",
+        "contents": "Open a todo file (markdown with `md-todo: true` frontmatter) to see tags."
+      }
+    ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "mdTodo.users.focusOnUser",
+          "when": "view == mdTodoUsers && viewItem == user",
+          "group": "navigation"
+        },
+        {
+          "command": "mdTodo.users.clearFocus",
+          "when": "view == mdTodoUsers && viewItem == user",
+          "group": "navigation"
+        },
+        {
+          "command": "mdTodo.users.reassignUser",
+          "when": "view == mdTodoUsers && viewItem == todo",
+          "group": "1_modification"
+        },
+        {
+          "command": "mdTodo.users.markDoneFromTree",
+          "when": "view == mdTodoUsers && viewItem == todo",
+          "group": "1_modification"
+        },
+        {
+          "command": "mdTodo.tags.focusOnTag",
+          "when": "view == mdTodoTags && viewItem == tag-root",
+          "group": "navigation"
+        },
+        {
+          "command": "mdTodo.tags.clearFocus",
+          "when": "view == mdTodoTags && viewItem == tag-root",
+          "group": "navigation"
+        },
+        {
+          "command": "mdTodo.tags.markDoneFromTree",
+          "when": "view == mdTodoTags && viewItem == tag-todo",
+          "group": "1_modification"
+        },
+        {
+          "command": "mdTodo.tags.editTagsFromTree",
+          "when": "view == mdTodoTags && viewItem == tag-todo",
+          "group": "1_modification"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "MD Todo",
+      "properties": {
+        "mdTodo.archiveAfterDays": {
+          "type": "number",
+          "default": 7,
+          "description": "Number of days after completion before items can be archived"
+        },
+        "mdTodo.dateOpacity": {
+          "type": "number",
+          "default": 0.5,
+          "minimum": 0.1,
+          "maximum": 1.0,
+          "description": "Opacity for date decorations like +2026-01-28 and ✓2026-01-28 (0.1-1.0)"
+        },
+        "mdTodo.staleAfterDays": {
+          "type": "number",
+          "default": 30,
+          "minimum": 1,
+          "description": "Default 'older than' threshold (in days) for the Show Stale Items command."
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "mdTodo.markDone",
+        "key": "ctrl+shift+t d",
+        "mac": "cmd+shift+t d",
+        "when": "editorTextFocus && editorLangId == markdown"
+      },
+      {
+        "command": "mdTodo.addItem",
+        "key": "ctrl+shift+t t",
+        "mac": "cmd+shift+t t",
+        "when": "editorTextFocus && editorLangId == markdown"
+      },
+      {
+        "command": "mdTodo.setFocusTag",
+        "key": "ctrl+shift+t f",
+        "mac": "cmd+shift+t f",
+        "when": "editorTextFocus && editorLangId == markdown"
+      },
+      {
+        "command": "mdTodo.setFocusUser",
+        "key": "ctrl+shift+t shift+f",
+        "mac": "cmd+shift+t shift+f",
+        "when": "editorTextFocus && editorLangId == markdown"
+      },
+      {
+        "command": "mdTodo.archive",
+        "key": "ctrl+shift+t a",
+        "mac": "cmd+shift+t a",
+        "when": "editorTextFocus && editorLangId == markdown"
+      },
+      {
+        "command": "mdTodo.addNote",
+        "key": "ctrl+shift+t n",
+        "mac": "cmd+shift+t n",
+        "when": "editorTextFocus && editorLangId == markdown"
+      },
+      {
+        "command": "mdTodo.addTags",
+        "key": "ctrl+shift+t shift+t",
+        "mac": "cmd+shift+t shift+t",
+        "when": "editorTextFocus && editorLangId == markdown"
+      },
+      {
+        "command": "mdTodo.assignFocusedUser",
+        "key": "ctrl+shift+t shift+u",
+        "mac": "cmd+shift+t shift+u",
+        "when": "editorTextFocus && editorLangId == markdown"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.74.0",
+    "typescript": "^5.0.0",
+    "@vscode/vsce": "^3.0.0"
+  }
+}

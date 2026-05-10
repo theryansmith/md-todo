@@ -1,0 +1,45 @@
+# Changelog
+
+All notable user-facing changes to MD Todo are documented here. Newest first. When an item from the README's `## ToDO` ships, it's deleted from that list and described here in user-facing language.
+
+## [1.2.0] — 2026-05-10
+
+- Three new commands let you slice your todos by date and see a focused report: `MD Todo: Show Recently Completed`, `MD Todo: Show Recently Added`, and `MD Todo: Show Stale Items`. Each first shows a preset picker (Today / Yesterday / Last 7 days / Last 30 days / This week / This month / Last month / Custom…). The Custom option accepts free-form input like `last 2 weeks`, `2026-04-01 to 2026-05-01`, `today`, or `yesterday`. After picking, a side-panel markdown report opens listing the matching items — grouped by date for the date-range commands, sorted oldest-first for stale.
+- Activity focus is also a third focus dimension on the editor. Items not in the chosen range dim to 25% opacity, AND-composed with the existing user-focus and tag-focus filters — so you can answer "which items did `@alice` complete with `#work` last week?" by setting all three.
+- New `📅` status bar item appears to the right of the user/tag focus items, showing the active activity focus (or `All time`). Click to open a quick menu with the three set commands plus `Clear Activity Focus`.
+- New `MD Todo: Clear Activity Focus` command removes the date filter.
+- New config setting `mdTodo.staleAfterDays` (default `30`) — the value highlighted as "(default from settings)" in the Show Stale Items picker.
+
+## [1.1.5] — 2026-05-10
+
+- New `MD Todo: Add User` command in the command palette. Prompts for shortname, optional full name, and description, then inserts a new entry under `## Users` — auto-creating the section at the end of the document if it doesn't exist. Mirrors the existing `Manage Tag Definitions` flow. Validates that the shortname is unique and uses only letters, digits, `_`, or `-`.
+- The MD TODO USERS and MD TODO TAGS tree views now sort entries alphabetically by their visible label (`@shortname` for users, tag name for tags), regardless of the order they appear in the source file. The `Unassigned` and `Untagged` buckets stay pinned at the bottom of their trees.
+
+## [1.1.4] — 2026-05-10
+
+- The MD TODO USERS and MD TODO TAGS tree views now show the full todo text on each leaf, including `@user` mentions and `#tag` tokens. Previously these were stripped out, hiding cross-references at a glance — a todo under `@alice` that also mentioned `@bob #urgent` looked like a plain task. Dates still surface on the right side as before (`added YYYY-MM-DD` / `done YYYY-MM-DD`). The same change also makes the `MD Todo: Mark Done` and other todo selection prompts searchable by mention or tag.
+
+## [1.1.3] — 2026-05-10
+
+- The `MD Todo: Add Item` and `MD Todo: Add Note` command-palette prompts now offer the same `@user` / `#tag` autocomplete as the editor. Type `@xxx` or `#xxx` mid-input and matching users / tags from the document's `## Users` and `## Tags` sections appear. Press Enter on a highlighted suggestion to insert it (the picker stays open so you can keep typing); press Enter without a highlighted suggestion to submit the task / note.
+
+## [1.1.2] — 2026-05-10
+
+- The MD TODO Users and Tags trees now live in their own dedicated container on the Activity Bar (left rail) instead of inside the Explorer. Drag the container anywhere — the panel header reads "MD TODO" in any dock location.
+- Branded extension icon (purple square with bold white check) appears in the Extensions list and on the VS Code Marketplace.
+
+## [1.1.1] — 2026-05-08
+
+- The `Set Focus User` and `Set Tag Focus` pickers now fuzzy-match against full names and descriptions, not just the short name — same behavior as the inline `@` / `#` autocomplete. The `Assign Focused User` and tree-view "Reassign User" pickers got the same fix.
+
+## [1.1.0] — 2026-05-06
+
+- New first-class `## Users` section: define users as `**shortname** (Full Name): description`, reference them in todos with `@shortname`. Hover for full name + description; type `@` for fuzzy completion across all three fields.
+- New `## Tags` section parallel to Users: define tags as `**tagname**: description`, reference with `#tag`, autocomplete, hover.
+- Focus modes: pick a user or tag from the status bar; non-matching todos dim to 25% opacity. Both can be active simultaneously (AND semantics). Per-span dim also applies inside still-visible items.
+- Tree views in the Explorer sidebar — one for users, one for tags — with per-user/per-tag groupings of Active / Completed / Archive todos. Right-click for focus, mark done, edit tags, reassign user. (These trees moved into a dedicated MD TODO container in v1.1.2.)
+- Keyboard chord `Ctrl+Shift+T Shift+U` toggles the current focus user's `@mention` on the todo at the cursor.
+
+## [1.0.x] — earlier
+
+Earlier patch releases established the core feature set: filter view, archiving with the `archiveAfterDays` configuration, automatic Completed-section movement (with newest-first sort), nested todos, configurable date opacity, automatic date insertion when typing a new todo or note manually, multi-select tag editor, the `Ctrl+Shift+T <key>` keybinding chord, the `## Tags` section relocated below Archive, and various filter-view bug fixes. The release pipeline also began producing version-stamped VSIX files (v1.0.4).
