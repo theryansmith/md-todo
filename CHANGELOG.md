@@ -2,6 +2,14 @@
 
 All notable user-facing changes to MD Todo are documented here. Newest first. When an item from the README's `## ToDO` ships, it's deleted from that list and described here in user-facing language.
 
+## [1.2.2] — 2026-05-10
+
+- Internal housekeeping release. No user-facing functional changes. CI workflows now run on Node 24-native action versions; TypeScript and markdown lint configuration tightened; minor cosmetic fixes to the README (blank lines around code fences, table-separator padding) and a typo in the bundled `example-todo.md`. The view-icon property on the MD TODO USERS and MD TODO TAGS tree views is now declared explicitly to satisfy the extension manifest schema, but the rendered icon is unchanged — the activity-bar container icon was already being used as a fallback.
+
+## [1.2.1] — 2026-05-10
+
+- Internal release — no user-facing changes. The project moved to a new public home on GitHub and the marketplace listing is now published from the new pipeline.
+
 ## [1.2.0] — 2026-05-10
 
 - Three new commands let you slice your todos by date and see a focused report: `MD Todo: Show Recently Completed`, `MD Todo: Show Recently Added`, and `MD Todo: Show Stale Items`. Each first shows a preset picker (Today / Yesterday / Last 7 days / Last 30 days / This week / This month / Last month / Custom…). The Custom option accepts free-form input like `last 2 weeks`, `2026-04-01 to 2026-05-01`, `today`, or `yesterday`. After picking, a side-panel markdown report opens listing the matching items — grouped by date for the date-range commands, sorted oldest-first for stale.
