@@ -352,5 +352,6 @@ See [CHANGELOG.md](CHANGELOG.md) for the full list of user-facing changes per re
 
 ## ToDO
 
+- [ ] consider making the tags and users inline autocompletion work in any type of doc, not just md.  The last selected mdtodo doc should be the source.
 - [ ] alphabetical sorting of tags and users works in the mdtodo panels, but not in the command pallet
 - [ ] consider ways in markdown renderers to give the tags and dates a separate text color/font/highlight/etc so they stand out more in the rendered md view (i.e. with vscode preview, or on github, etc)
