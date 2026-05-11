@@ -8,11 +8,11 @@ md-todo: true
 
 - [ ] Ship new feature `+2026-01-28`  #work #urgent @asmith
   - Planning meeting went well `+2026-01-28`
-  - [ ] Write unit tests `+2026-01-28` 
+  - [ ] Write unit tests `+2026-01-28`
     - Cover edge cases `+2026-01-28`
     - asdf `+2026-01-29`
-    - [ ] this is a todo `+2026-01-29` 
-    - [ ] so is this `+2026-01-29` 
+    - [ ] this is a todo `+2026-01-29`
+    - [ ] so is this `+2026-01-29`
       - this is not a todo, it's a note `+2026-01-29`
   - [x] Update documentation `+2026-01-28` `✓2026-01-29`
   - [x] Code review `+2026-01-28` `✓2026-01-29`
@@ -38,7 +38,7 @@ md-todo: true
     - [x] Handle timeout errors `+2026-01-26` `✓2026-01-27`
   - [x] Write tests `+2026-01-27` `✓2026-01-28`
 - [x] Review UE5 networking architecture docs `+2025-01-27` `✓2026-01-29` #reading
-  - neaw 4  `+2026-01-28`
+  - new 4  `+2026-01-28`
 - [x] Finish tech audit report `+2025-01-20` `✓2026-01-29` #infra
 - [x] my task 7 `+2026-01-29` `✓2026-01-29`
 - [x] make someone happy `+2026-01-29` `✓2026-01-29`
@@ -52,7 +52,6 @@ md-todo: true
 - [x] Set up FASTBuild on dev machine `+2025-01-10` `✓2025-01-12` #work #infra
 - [x] Draft intro message for team `+2025-01-08` `✓2025-01-09` #work
 - [x] Review Iris vs traditional replication `+2025-01-05` `✓2025-01-14` #urgent #fobar @jdoe
-
 
 <!-- Completed items older than 7 days get moved here by Todo: Archive -->
 

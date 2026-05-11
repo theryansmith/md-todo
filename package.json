@@ -172,11 +172,13 @@
       "mdTodo": [
         {
           "id": "mdTodoUsers",
-          "name": "MD TODO USERS"
+          "name": "MD TODO USERS",
+          "icon": "media/icon-check-square.svg"
         },
         {
           "id": "mdTodoTags",
-          "name": "MD TODO TAGS"
+          "name": "MD TODO TAGS",
+          "icon": "media/icon-check-square.svg"
         }
       ]
     },

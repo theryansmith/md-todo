@@ -57,6 +57,7 @@ For active development, symlink the extension folder so changes are picked up af
 **Windows (requires Administrator):**
 
 Open an elevated PowerShell and run:
+
 ```powershell
 # Remove existing installation if present
 Remove-Item "$env:USERPROFILE\.vscode\extensions\md-todo" -Recurse -Force
@@ -66,15 +67,18 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.vscode\extensions\md-to
 ```
 
 **macOS/Linux:**
+
 ```bash
 rm -rf ~/.vscode/extensions/md-todo
 ln -s /path/to/md-todo ~/.vscode/extensions/md-todo
 ```
 
 After making changes, compile and reload VS Code:
+
 ```bash
 npm run compile
 ```
+
 Then press `Ctrl+Shift+P` → "Developer: Reload Window" (or `Ctrl+R` if DevTools is focused).
 
 **Switching back to released version:**
@@ -98,12 +102,14 @@ Then reinstall via Extensions → `...` → **Install from VSIX**, and reload VS
 Releases are built and published by GitHub Actions on tag push. The tag is the source of truth for the version — CI rewrites `package.json` from the tag name, so you don't need to bump it manually beforehand.
 
 1. **Create and push a tag** matching `v<semver>`:
+
    ```bash
    git tag v1.2.1
    git push origin v1.2.1
    ```
 
 The `release` workflow will automatically:
+
 - Set `package.json` version from the tag (`v1.2.1` → `1.2.1`)
 - Build the VSIX
 - Publish to the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=theryansmith.md-todo) (requires the `VSCE_PAT` repo secret)
@@ -116,7 +122,7 @@ Users can install from the marketplace or download the VSIX asset from <https://
 All commands work on todo files (markdown with `md-todo: true` frontmatter). Access via Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`):
 
 | Command | Shortcut | Description |
-|---------|----------|-------------|
+| ------- | -------- | ----------- |
 | `MD Todo: Add Item` | `Ctrl+Shift+T T` | Add new item with today's date |
 | `MD Todo: Mark Done` | `Ctrl+Shift+T D` | Mark item at cursor (or select from list) as complete |
 | `MD Todo: Add Note` | `Ctrl+Shift+T N` | Add dated note to item at cursor (or select) |
@@ -146,17 +152,6 @@ md-todo: true
 
 # TODO
 
-## Tags
-
-**work**: Work-related tasks and projects
-**reading**: Documentation and learning materials
-**urgent**: High priority, needs immediate attention
-
-## Users
-
-**jdoe** (John Doe): team member, new hire
-**asmith** (Alice Smith): frontend lead
-
 ## Active
 
 - [ ] Finish tech audit report `+2025-01-20` #work #urgent
@@ -173,6 +168,19 @@ md-todo: true
 ## Archive
 
 <!-- Old completed items get moved here automatically -->
+
+
+## Tags
+
+**work**: Work-related tasks and projects
+**reading**: Documentation and learning materials
+**urgent**: High priority, needs immediate attention
+
+## Users
+
+**jdoe** (John Doe): team member, new hire
+**asmith** (Alice Smith): frontend lead
+
 ```
 
 ### Frontmatter
@@ -324,6 +332,7 @@ Use `Todo: Show Git History` to see exactly when items were added, completed, or
 ## Why This Approach?
 
 **vs. Daily copy-paste method:**
+
 - ✅ No file bloat from repetition
 - ✅ Clean git diffs showing actual changes
 - ✅ Easy to see item age at a glance
@@ -331,6 +340,7 @@ Use `Todo: Show Git History` to see exactly when items were added, completed, or
 - ✅ Automated timestamps reduce friction
 
 **vs. Full todo apps:**
+
 - ✅ Plain markdown, works anywhere
 - ✅ Git-native history
 - ✅ No sync/vendor lock-in
