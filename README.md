@@ -294,6 +294,10 @@ Click the status bar item, run `MD Todo: Set Focus User`, or press `Ctrl+Shift+T
 - If the line already contains `@<shortname>`, the mention is removed (and any double-spaces are collapsed).
 - Otherwise, the mention is inserted at the cursor with surrounding whitespace as needed.
 
+### Markdown preview rendering
+
+In VS Code's built-in markdown preview, `#tags`, `@users`, and date codes (`+YYYY-MM-DD` / `✓YYYY-MM-DD`) get distinct theme-aware styling so they stand out from body text — contributed via a CSS file (`media/preview.css`) and a small markdown-it plugin that wraps each span in a class. GitHub's rendering is unchanged; preview CSS doesn't carry over to remote markdown renderers.
+
 ## Configuration
 
 In VS Code settings:
@@ -354,4 +358,4 @@ See [CHANGELOG.md](CHANGELOG.md) for the full list of user-facing changes per re
 
 - [ ] consider making the tags and users inline autocompletion work in any type of doc, not just md.  The last selected mdtodo doc should be the source.
 - [ ] alphabetical sorting of tags and users works in the mdtodo panels, but not in the command pallet
-- [ ] consider ways in markdown renderers to give the tags and dates a separate text color/font/highlight/etc so they stand out more in the rendered md view (i.e. with vscode preview, or on github, etc)
+- [x] ~~consider ways in markdown renderers to give the tags and dates a separate text color/font/highlight/etc so they stand out more in the rendered md view (i.e. with vscode preview, or on github, etc)~~ ✅ done
