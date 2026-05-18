@@ -2931,6 +2931,7 @@ function promptForTodoText(
             if (trigger === '@') {
                 items = parsed.userDefinitions
                     .filter(u => `${u.shortname} ${u.fullname} ${u.description}`.toLowerCase().includes(partial))
+                    .sort((a, b) => a.shortname.localeCompare(b.shortname, undefined, { sensitivity: 'base' }))
                     .map(u => ({
                         label: `@${u.shortname}`,
                         description: u.fullname,
@@ -2941,6 +2942,7 @@ function promptForTodoText(
             } else {
                 items = parsed.tagDefinitions
                     .filter(t => `${t.name} ${t.description}`.toLowerCase().includes(partial))
+                    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
                     .map(t => ({
                         label: `#${t.name}`,
                         description: t.description,
