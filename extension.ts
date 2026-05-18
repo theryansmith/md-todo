@@ -1436,6 +1436,7 @@ function updateMentionDecorations(editor: vscode.TextEditor) {
 const FOCUS_USER_STATE_KEY = 'mdTodo.focusUser';
 const FOCUS_TAG_STATE_KEY = 'mdTodo.focusTag';
 const ACTIVITY_FOCUS_STATE_KEY = 'mdTodo.activityFocus';
+const LAST_TODO_URI_STATE_KEY = 'mdTodo.completion.lastTodoFileUri';
 
 let focusStatusBarItem: vscode.StatusBarItem | undefined;
 let tagFocusStatusBarItem: vscode.StatusBarItem | undefined;
@@ -1461,6 +1462,32 @@ function getFocusTag(): string | undefined {
 async function setFocusTagState(tagname: string | undefined): Promise<void> {
     if (!extensionContext) { return; }
     await extensionContext.workspaceState.update(FOCUS_TAG_STATE_KEY, tagname);
+}
+
+// Records the URI of the most recently active mdtodo document so that
+// completion providers can source tags/users from it even when the
+// active editor is a non-mdtodo file.
+let lastTodoUri: vscode.Uri | undefined;
+
+function rememberLastTodoUri(uri: vscode.Uri): void {
+    lastTodoUri = uri;
+    extensionContext?.workspaceState.update(LAST_TODO_URI_STATE_KEY, uri.toString());
+}
+
+async function getLastTodoSourceDoc(): Promise<vscode.TextDocument | undefined> {
+    let uri = lastTodoUri;
+    if (!uri) {
+        const stored = extensionContext?.workspaceState.get<string>(LAST_TODO_URI_STATE_KEY);
+        if (!stored) { return undefined; }
+        try { uri = vscode.Uri.parse(stored); } catch { return undefined; }
+        lastTodoUri = uri;
+    }
+    try {
+        const doc = await vscode.workspace.openTextDocument(uri);
+        return isTodoFile(doc) ? doc : undefined;
+    } catch {
+        return undefined;
+    }
 }
 
 function createDimmedDecorationType(): vscode.TextEditorDecorationType {
@@ -2963,9 +2990,10 @@ const userHoverProvider: vscode.HoverProvider = {
 };
 
 const userCompletionProvider: vscode.CompletionItemProvider = {
-    provideCompletionItems(document, position) {
-        if (!isTodoFile(document)) { return undefined; }
-        const parsed = parseDocument(document);
+    async provideCompletionItems(document, position) {
+        const sourceDoc = isTodoFile(document) ? document : await getLastTodoSourceDoc();
+        if (!sourceDoc) { return undefined; }
+        const parsed = parseDocument(sourceDoc);
         if (parsed.userDefinitions.length === 0) { return undefined; }
 
         // Decide whether to append a trailing space based on the next character.
@@ -2989,9 +3017,10 @@ const userCompletionProvider: vscode.CompletionItemProvider = {
 };
 
 const tagCompletionProvider: vscode.CompletionItemProvider = {
-    provideCompletionItems(document, position) {
-        if (!isTodoFile(document)) { return undefined; }
-        const parsed = parseDocument(document);
+    async provideCompletionItems(document, position) {
+        const sourceDoc = isTodoFile(document) ? document : await getLastTodoSourceDoc();
+        if (!sourceDoc) { return undefined; }
+        const parsed = parseDocument(sourceDoc);
         if (parsed.tagDefinitions.length === 0) { return undefined; }
         const lineText = document.lineAt(position.line).text;
         const nextChar = position.character < lineText.length ? lineText.charAt(position.character) : '';
@@ -3058,14 +3087,19 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerTextEditorCommand('mdTodo.showStaleItems', showStaleItems),
         vscode.commands.registerCommand('mdTodo.clearActivityFocus', clearActivityFocus),
         vscode.commands.registerCommand('mdTodo.activityFocusMenu', activityFocusMenu),
-        vscode.languages.registerCompletionItemProvider({ language: 'markdown' }, tagCompletionProvider, '#')
+        // Completion providers register against all docs so tags/users can be
+        // autocompleted in any file (e.g. code, notes) sourced from the last
+        // active mdtodo doc. The providers themselves no-op when no source is
+        // available.
+        vscode.languages.registerCompletionItemProvider('*', tagCompletionProvider, '#')
     );
 
-    // Hover + completion providers for @mentions.
+    // Hover for @mentions stays scoped to markdown (it reads from the current
+    // document, not a remembered source).
     context.subscriptions.push(
         vscode.languages.registerHoverProvider({ language: 'markdown' }, userHoverProvider),
         vscode.languages.registerCompletionItemProvider(
-            { language: 'markdown' },
+            '*',
             userCompletionProvider,
             '@'
         )
@@ -3083,6 +3117,7 @@ export function activate(context: vscode.ExtensionContext) {
     if (initialEditor && isTodoFile(initialEditor.document)) {
         treeProvider.setCurrentTodoFile(initialEditor.document.uri);
         tagsTreeProvider.setCurrentTodoFile(initialEditor.document.uri);
+        rememberLastTodoUri(initialEditor.document.uri);
     }
 
     // Track active editor → update tree's current file when a todo file becomes active.
@@ -3092,6 +3127,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (editor && isTodoFile(editor.document)) {
                 treeProvider.setCurrentTodoFile(editor.document.uri);
                 tagsTreeProvider.setCurrentTodoFile(editor.document.uri);
+                rememberLastTodoUri(editor.document.uri);
             }
         }),
         vscode.workspace.onDidChangeTextDocument(event => {
