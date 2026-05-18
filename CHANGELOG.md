@@ -2,6 +2,11 @@
 
 All notable user-facing changes to MD Todo are documented here. Newest first. When an item from the README's `## ToDO` ships, it's deleted from that list and described here in user-facing language.
 
+## [1.3.0] — 2026-05-18
+
+- Inline `@user` and `#tag` autocomplete now works in any document type, not just markdown. Open a `.txt`, `.py`, source file, or any other doc and the same completions appear — sourced from the most recently focused mdtodo document, so your team's users and tags are available everywhere you take notes.
+- Command-palette tag and user pickers now sort their entries case-insensitively, matching the MD TODO USERS and MD TODO TAGS tree views. This affects the `Add Tags`, `Manage Tag Definitions`, `Set Focus User`, `Set Focus Tag`, and `Assign Focused User` flows — previously these iterated definitions in source-file order, which could feel arbitrary on long lists. Header items like `Clear focus` and `Add new tag` stay pinned at the top.
+
 ## [1.2.2] — 2026-05-10
 
 - Internal housekeeping release. No user-facing functional changes. CI workflows now run on Node 24-native action versions; TypeScript and markdown lint configuration tightened; minor cosmetic fixes to the README (blank lines around code fences, table-separator padding) and a typo in the bundled `example-todo.md`. The view-icon property on the MD TODO USERS and MD TODO TAGS tree views is now declared explicitly to satisfy the extension manifest schema, but the rendered icon is unchanged — the activity-bar container icon was already being used as a fallback.
