@@ -141,7 +141,7 @@ All commands work on todo files (markdown with `md-todo: true` frontmatter). Acc
 | `MD Todo: Set Focus User` | `Ctrl+Shift+T Shift+F` | Pick a user from `## Users` to focus on; non-mentioning todos dim |
 | `MD Todo: Assign Focused User` | `Ctrl+Shift+T Shift+U` | Toggle `@<focusUser>` on the todo at the cursor |
 
-The tag and user picker lists shown by these commands — `Add/Edit Tags`, `Manage Tags`, `Set Tag Focus`, `Set Focus User`, and `Assign Focused User` — are sorted alphabetically (case-insensitive), matching the order used in the **MD TODO TAGS** and **MD TODO USERS** panels.
+The tag and user picker lists shown by these commands — `Add/Edit Tags`, `Manage Tags`, `Set Tag Focus`, `Set Focus User`, and `Assign Focused User` — are sorted alphabetically (case-insensitive), matching the order used in the **MD TODO TAGS** and **MD TODO USERS** panels. The inline `@` / `#` autocomplete dropdown that appears while typing in the `Add Todo Item` input is sorted the same way.
 
 ## File Format
 
