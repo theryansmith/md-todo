@@ -356,6 +356,15 @@ function parseDocument(document: vscode.TextDocument): ParsedDocument {
         }
     }
 
+    // Sort definitions once at the source so every consumer (QuickPick
+    // suggestion lists in promptForTodoText, completion providers, tree views,
+    // status-bar pickers, etc.) sees the same canonical alphabetical order.
+    // Case-insensitive via sensitivity: 'base'.
+    tagDefinitions.sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+    userDefinitions.sort((a, b) =>
+        a.shortname.localeCompare(b.shortname, undefined, { sensitivity: 'base' }));
+
     return { items, sections, tagDefinitions, userDefinitions };
 }
 
@@ -2890,6 +2899,29 @@ async function editTagsFromTree(node?: TagsTreeNode) {
 type SuggestionItem = vscode.QuickPickItem & { insertText: string };
 
 /**
+ * Filter `defs` by case-insensitive substring of `partial` over the text
+ * returned by `searchable`, sort the matches alphabetically by `sortKey`
+ * (case-insensitive via localeCompare with sensitivity: 'base'), then map to
+ * SuggestionItems via `toItem`. The sort here is belt-and-braces: parseDocument
+ * already pre-sorts userDefinitions and tagDefinitions at the source, but
+ * keeping the comparator visible at the consumer site documents the contract
+ * and survives future refactors of parseDocument.
+ */
+function sortedSuggestions<T>(
+    defs: readonly T[],
+    partial: string,
+    searchable: (d: T) => string,
+    sortKey: (d: T) => string,
+    toItem: (d: T) => SuggestionItem,
+): SuggestionItem[] {
+    return defs
+        .filter(d => searchable(d).toLowerCase().includes(partial))
+        .slice()
+        .sort((a, b) => sortKey(a).localeCompare(sortKey(b), undefined, { sensitivity: 'base' }))
+        .map(toItem);
+}
+
+/**
  * Prompt the user for free-form todo / note text with inline @user / #tag
  * suggestions. As the user types an `@xxx` or `#xxx` token at the end of the
  * value, matching users / tags from the document populate the picker. Selecting
@@ -2906,8 +2938,17 @@ function promptForTodoText(
         const qp = vscode.window.createQuickPick<SuggestionItem>();
         qp.title = options.prompt;
         qp.placeholder = options.placeHolder;
-        qp.matchOnDescription = true;
-        qp.matchOnDetail = true;
+        // Intentionally NOT enabling matchOnDescription / matchOnDetail: we
+        // run our own substring filter on shortname+fullname+description below.
+        // Letting VS Code additionally fuzzy-match the typed value against
+        // those fields makes items whose description/detail happens to contain
+        // '@' or '#' score higher than items without — re-ordering the list
+        // we hand to qp.items and producing the "random-looking" order users
+        // see when '@' or '#' is the very first character of input. With both
+        // flags off, scoring is uniform across items for a single trigger char
+        // and VS Code preserves the alphabetical insertion order we set.
+        qp.matchOnDescription = false;
+        qp.matchOnDetail = false;
         qp.ignoreFocusOut = true;
 
         let resolved = false;
@@ -2929,10 +2970,10 @@ function promptForTodoText(
             const partial = tokenMatch[2].toLowerCase();
             let items: SuggestionItem[] = [];
             if (trigger === '@') {
-                items = parsed.userDefinitions
-                    .filter(u => `${u.shortname} ${u.fullname} ${u.description}`.toLowerCase().includes(partial))
-                    .sort((a, b) => a.shortname.localeCompare(b.shortname, undefined, { sensitivity: 'base' }))
-                    .map(u => ({
+                items = sortedSuggestions(parsed.userDefinitions, partial,
+                    u => `${u.shortname} ${u.fullname} ${u.description}`,
+                    u => u.shortname,
+                    u => ({
                         label: `@${u.shortname}`,
                         description: u.fullname,
                         detail: u.description,
@@ -2940,10 +2981,10 @@ function promptForTodoText(
                         alwaysShow: true,
                     }));
             } else {
-                items = parsed.tagDefinitions
-                    .filter(t => `${t.name} ${t.description}`.toLowerCase().includes(partial))
-                    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
-                    .map(t => ({
+                items = sortedSuggestions(parsed.tagDefinitions, partial,
+                    t => `${t.name} ${t.description}`,
+                    t => t.name,
+                    t => ({
                         label: `#${t.name}`,
                         description: t.description,
                         detail: '',
