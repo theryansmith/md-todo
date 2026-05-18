@@ -2,6 +2,10 @@
 
 All notable user-facing changes to MD Todo are documented here. Newest first. When an item from the README's `## ToDO` ships, it's deleted from that list and described here in user-facing language.
 
+## [1.4.1] — 2026-05-18
+
+- Bug-fix follow-up to v1.4.0: the inline `@` / `#` autocomplete dropdown in `Add Todo Item` now sorts entries alphabetically even when `@` or `#` is the very first character typed. v1.4.0's sort was being silently re-ordered by the QuickPick's own fuzzy-match scoring against item descriptions and details; that secondary matching is now disabled (the dropdown still filters by shortname / fullname / description, just via our own substring filter).
+
 ## [1.4.0] — 2026-05-18
 
 - The inline `@` / `#` autocomplete dropdown that appears while typing in the `Add Todo Item` input now sorts entries case-insensitively alphabetically, matching the other command-palette pickers and the MD TODO USERS / MD TODO TAGS tree views. Previously this dropdown iterated definitions in source-file order.
