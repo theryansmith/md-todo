@@ -141,6 +141,8 @@ All commands work on todo files (markdown with `md-todo: true` frontmatter). Acc
 | `MD Todo: Set Focus User` | `Ctrl+Shift+T Shift+F` | Pick a user from `## Users` to focus on; non-mentioning todos dim |
 | `MD Todo: Assign Focused User` | `Ctrl+Shift+T Shift+U` | Toggle `@<focusUser>` on the todo at the cursor |
 
+The tag and user picker lists shown by these commands — `Add/Edit Tags`, `Manage Tags`, `Set Tag Focus`, `Set Focus User`, and `Assign Focused User` — are sorted alphabetically (case-insensitive), matching the order used in the **MD TODO TAGS** and **MD TODO USERS** panels.
+
 ## File Format
 
 Todo files require YAML frontmatter with `md-todo: true`:
@@ -357,5 +359,5 @@ See [CHANGELOG.md](CHANGELOG.md) for the full list of user-facing changes per re
 ## ToDO
 
 - [x] ~~consider making the tags and users inline autocompletion work in any type of doc, not just md.  The last selected mdtodo doc should be the source.~~ ✅ done
-- [ ] alphabetical sorting of tags and users works in the mdtodo panels, but not in the command pallet
+- [x] ~~alphabetical sorting of tags and users works in the mdtodo panels, but not in the command pallet~~ ✅ done
 - [ ] consider ways in markdown renderers to give the tags and dates a separate text color/font/highlight/etc so they stand out more in the rendered md view (i.e. with vscode preview, or on github, etc)

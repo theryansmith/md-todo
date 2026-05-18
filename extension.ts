@@ -1075,11 +1075,13 @@ async function addTags(editor: vscode.TextEditor) {
 
     // Use native multi-select for tag selection (same style as filter by tags)
     const existingTags = result.item.tags;
-    const picks = parsed.tagDefinitions.map(tag => ({
-        label: tag.name,
-        description: tag.description,
-        picked: existingTags.includes(tag.name)
-    }));
+    const picks = [...parsed.tagDefinitions]
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+        .map(tag => ({
+            label: tag.name,
+            description: tag.description,
+            picked: existingTags.includes(tag.name)
+        }));
 
     const selected = await vscode.window.showQuickPick(picks, {
         canPickMany: true,
@@ -1138,12 +1140,14 @@ async function manageTags(editor: vscode.TextEditor) {
     const picks: ActionItem[] = [
         { label: '$(add) Add new tag', action: 'add' },
         { label: '', kind: vscode.QuickPickItemKind.Separator, action: '' },
-        ...parsed.tagDefinitions.map(t => ({
-            label: t.name,
-            description: t.description,
-            action: 'edit',
-            tagDef: t
-        }))
+        ...[...parsed.tagDefinitions]
+            .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+            .map(t => ({
+                label: t.name,
+                description: t.description,
+                action: 'edit',
+                tagDef: t
+            }))
     ];
 
     const selected = await vscode.window.showQuickPick(picks, {
@@ -2014,12 +2018,14 @@ async function setFocusUser(): Promise<void> {
     type FocusPick = vscode.QuickPickItem & { shortname: string | undefined };
     const picks: FocusPick[] = [
         { label: '$(circle-slash) Clear focus', description: 'Show all users', shortname: undefined },
-        ...parsed.userDefinitions.map<FocusPick>(u => ({
-            label: `$(person) @${u.shortname}`,
-            description: u.fullname,
-            detail: u.description,
-            shortname: u.shortname
-        }))
+        ...[...parsed.userDefinitions]
+            .sort((a, b) => a.shortname.localeCompare(b.shortname, undefined, { sensitivity: 'base' }))
+            .map<FocusPick>(u => ({
+                label: `$(person) @${u.shortname}`,
+                description: u.fullname,
+                detail: u.description,
+                shortname: u.shortname
+            }))
     ];
 
     if (parsed.userDefinitions.length === 0) {
@@ -2065,11 +2071,13 @@ async function setFocusTag(): Promise<void> {
     type TagPick = vscode.QuickPickItem & { tagname: string | undefined };
     const picks: TagPick[] = [
         { label: '$(circle-slash) Clear focus', description: 'Show all tags', tagname: undefined },
-        ...parsed.tagDefinitions.map<TagPick>(t => ({
-            label: `$(tag) #${t.name}`,
-            detail: t.description,
-            tagname: t.name
-        }))
+        ...[...parsed.tagDefinitions]
+            .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+            .map<TagPick>(t => ({
+                label: `$(tag) #${t.name}`,
+                detail: t.description,
+                tagname: t.name
+            }))
     ];
 
     if (parsed.tagDefinitions.length === 0) {
@@ -2128,12 +2136,14 @@ async function assignFocusedUser(editor: vscode.TextEditor): Promise<void> {
             return;
         }
         type UserPick = vscode.QuickPickItem & { shortname: string };
-        const picks: UserPick[] = parsed.userDefinitions.map(u => ({
-            label: `$(person) @${u.shortname}`,
-            description: u.fullname,
-            detail: u.description,
-            shortname: u.shortname
-        }));
+        const picks: UserPick[] = [...parsed.userDefinitions]
+            .sort((a, b) => a.shortname.localeCompare(b.shortname, undefined, { sensitivity: 'base' }))
+            .map(u => ({
+                label: `$(person) @${u.shortname}`,
+                description: u.fullname,
+                detail: u.description,
+                shortname: u.shortname
+            }));
         const picked = await vscode.window.showQuickPick(picks, {
             placeHolder: 'Select user to assign',
             matchOnDescription: true,
