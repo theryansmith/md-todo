@@ -2,6 +2,10 @@
 
 All notable user-facing changes to MD Todo are documented here. Newest first. When an item from the README's `## ToDO` ships, it's deleted from that list and described here in user-facing language.
 
+## [1.4.0] — 2026-05-18
+
+- The inline `@` / `#` autocomplete dropdown that appears while typing in the `Add Todo Item` input now sorts entries case-insensitively alphabetically, matching the other command-palette pickers and the MD TODO USERS / MD TODO TAGS tree views. Previously this dropdown iterated definitions in source-file order.
+
 ## [1.3.0] — 2026-05-18
 
 - Inline `@user` and `#tag` autocomplete now works in any document type, not just markdown. Open a `.txt`, `.py`, source file, or any other doc and the same completions appear — sourced from the most recently focused mdtodo document, so your team's users and tags are available everywhere you take notes.
