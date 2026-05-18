@@ -1,0 +1,39 @@
+/*
+ * Styles injected into VS Code's built-in markdown preview via
+ * contributes.markdown.previewStyles. The companion markdown-it plugin
+ * (see extendMarkdownIt in extension.js) adds the classes targeted here.
+ *
+ * Colors use VS Code theme variables so the styling adapts to the user's
+ * current color theme (light/dark/high-contrast) without us hardcoding hex.
+ */
+
+.md-todo-tag {
+    color: var(--vscode-symbolIcon-classForeground, var(--vscode-textLink-foreground, #569cd6));
+    background-color: var(--vscode-editor-inlineValuesBackground, rgba(100, 150, 220, 0.12));
+    border-radius: 3px;
+    padding: 0 4px;
+    font-weight: 600;
+}
+
+.md-todo-user {
+    color: var(--vscode-symbolIcon-variableForeground, var(--vscode-gitDecoration-modifiedResourceForeground, #4ec9b0));
+    background-color: var(--vscode-editor-inlineValuesBackground, rgba(78, 201, 176, 0.12));
+    border-radius: 3px;
+    padding: 0 4px;
+    font-weight: 600;
+}
+
+/* `+YYYY-MM-DD` — date the item was added. Keep readable but de-emphasized. */
+code.md-todo-date-added {
+    color: var(--vscode-descriptionForeground, #888);
+    background-color: transparent;
+    opacity: 0.75;
+    font-size: 0.9em;
+}
+
+/* `✓YYYY-MM-DD` — date the item was completed. Slightly louder than added. */
+code.md-todo-date-completed {
+    color: var(--vscode-gitDecoration-addedResourceForeground, var(--vscode-charts-green, #4caf50));
+    background-color: transparent;
+    font-size: 0.9em;
+}

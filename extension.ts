@@ -3254,3 +3254,10 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {}
+
+// Re-exported so VS Code's built-in markdown preview can pick up md-todo's
+// styling hooks for #tags, @users, and date code spans. Wired via
+// contributes.markdown.markdownItPlugins in package.json; see
+// markdown-preview-plugin.ts for the plugin itself and media/markdown-todo.css
+// for the styling it enables.
+export { extendMarkdownIt } from './markdown-preview-plugin';

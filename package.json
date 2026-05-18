@@ -27,6 +27,10 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "markdown.previewStyles": [
+      "./media/markdown-todo.css"
+    ],
+    "markdown.markdownItPlugins": true,
     "commands": [
       {
         "command": "mdTodo.addItem",
