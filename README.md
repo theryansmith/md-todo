@@ -205,6 +205,10 @@ Notes are indented with `- YYYY-MM-DD: text` format.
 
 Type `#` mid-sentence in a todo file and a completion list appears with every tag defined in `## Tags`. Each row shows the tag name plus its description, and the fuzzy matcher searches across both the name and the description — typing part of a description narrows the list just like typing the tag name. The selection is inserted inline at the cursor (with a trailing space if the next character isn't whitespace).
 
+#### Inline completion in any document
+
+Both `#tag` and `@user` autocompletion now fire in **any** open document — `.txt`, `.py`, code comments, plain markdown without `md-todo: true`, anywhere. Type `#` or `@` and the same completion list appears. Completions are sourced from the most recently focused mdtodo doc, so the tags and users you use in todos stay one keystroke away wherever you're typing.
+
 #### Tag Focus (status bar)
 
 A second status bar item on the bottom-right shows the current tag focus, parallel to the user-focus item:
@@ -352,6 +356,6 @@ See [CHANGELOG.md](CHANGELOG.md) for the full list of user-facing changes per re
 
 ## ToDO
 
-- [ ] consider making the tags and users inline autocompletion work in any type of doc, not just md.  The last selected mdtodo doc should be the source.
+- [x] ~~consider making the tags and users inline autocompletion work in any type of doc, not just md.  The last selected mdtodo doc should be the source.~~ ✅ done
 - [ ] alphabetical sorting of tags and users works in the mdtodo panels, but not in the command pallet
 - [ ] consider ways in markdown renderers to give the tags and dates a separate text color/font/highlight/etc so they stand out more in the rendered md view (i.e. with vscode preview, or on github, etc)
