@@ -3,6 +3,14 @@ import { isTodoFile, parseDocument, getEffectiveEditor } from './parser';
 import { getFocusTag, setFocusTagState } from './state';
 import { updateDimDecorations } from './decoration-dim';
 
+export async function clearFocusTag(): Promise<void> {
+    await setFocusTagState(undefined);
+    for (const visible of vscode.window.visibleTextEditors) {
+        if (isTodoFile(visible.document)) { updateDimDecorations(visible); }
+    }
+    refreshFocusTagStatusBar(vscode.window.activeTextEditor);
+}
+
 let tagFocusStatusBarItem: vscode.StatusBarItem | undefined;
 
 export function initFocusTagStatusBar(context: vscode.ExtensionContext): void {

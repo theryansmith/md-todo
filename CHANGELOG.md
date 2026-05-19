@@ -2,6 +2,14 @@
 
 All notable user-facing changes to MD Todo are documented here. Newest first. When an item from the README's `## ToDO` ships, it's deleted from that list and described here in user-facing language.
 
+## [1.4.5] — 2026-05-19
+
+- Focus commands: a small cleanup that adds two new commands, renames one display title, and reorders the activity-focus picker for consistency.
+  - New command `MD Todo: Clear All Focus` clears user, tag, and activity focus in one step.
+  - New command `MD Todo: Set Focus Activity` opens the same picker as clicking the activity item in the status bar.
+  - Renamed display title `Set Tag Focus` → `Set Focus Tag`. The underlying command ID was already `mdTodo.setFocusTag` (renamed in the v1.4.3 refactor), so custom keybindings are unaffected.
+  - The Activity Focus picker now shows `Clear Activity Focus` at the top of the list, matching the User and Tag focus pickers.
+
 ## [1.4.4] — 2026-05-19
 
 - Performance: significantly reduces the work done on every keystroke in mdtodo documents. Highlights:

@@ -137,11 +137,13 @@ All commands work on todo files (markdown with `md-todo: true` frontmatter). Acc
 | `MD Todo: Show Stale Items` | - | Pick a threshold; opens a report of incomplete items older than N days |
 | `MD Todo: Clear Activity Focus` | - | Remove the active date filter |
 | `MD Todo: Quick Add` | - | Insert todo template at cursor |
-| `MD Todo: Set Tag Focus` | `Ctrl+Shift+T F` | Pick a tag from `## Tags` to focus on; non-matching todos dim in place |
+| `MD Todo: Set Focus Tag` | `Ctrl+Shift+T F` | Pick a tag from `## Tags` to focus on; non-matching todos dim in place |
 | `MD Todo: Set Focus User` | `Ctrl+Shift+T Shift+F` | Pick a user from `## Users` to focus on; non-mentioning todos dim |
+| `MD Todo: Set Focus Activity` | - | Open the activity-focus picker (same as clicking the status-bar `$(calendar)` item) |
+| `MD Todo: Clear All Focus` | - | Clear tag focus, user focus, and activity focus in one shot |
 | `MD Todo: Assign Focused User` | `Ctrl+Shift+T Shift+U` | Toggle `@<focusUser>` on the todo at the cursor |
 
-The tag and user picker lists shown by these commands — `Add/Edit Tags`, `Manage Tags`, `Set Tag Focus`, `Set Focus User`, and `Assign Focused User` — are sorted alphabetically (case-insensitive), matching the order used in the **MD TODO TAGS** and **MD TODO USERS** panels. The inline `@` / `#` autocomplete dropdown that appears while typing in the `Add Todo Item` input is sorted the same way, regardless of where the `@` / `#` appears in the input — including when it is the very first character typed.
+The tag and user picker lists shown by these commands — `Add/Edit Tags`, `Manage Tags`, `Set Focus Tag`, `Set Focus User`, and `Assign Focused User` — are sorted alphabetically (case-insensitive), matching the order used in the **MD TODO TAGS** and **MD TODO USERS** panels. The inline `@` / `#` autocomplete dropdown that appears while typing in the `Add Todo Item` input is sorted the same way, regardless of where the `@` / `#` appears in the input — including when it is the very first character typed.
 
 ## File Format
 
@@ -218,7 +220,7 @@ A second status bar item on the bottom-right shows the current tag focus, parall
 - Default: `$(tag) All tags` — nothing dimmed by tag.
 - After picking a tag: `$(tag) #work` — every top-level todo whose subtree does NOT contain `#work` is rendered at 25% opacity. Matched items (and any of their ancestors that share the subtree) stay fully visible.
 
-Click the status bar item, run `MD Todo: Set Tag Focus`, or press `Ctrl+Shift+T F` to set or clear focus. Focus is persisted per-workspace.
+Click the status bar item, run `MD Todo: Set Focus Tag`, or press `Ctrl+Shift+T F` to set or clear focus. Focus is persisted per-workspace.
 
 When **both** Tag Focus and User Focus are set, the dim filter applies AND semantics — a top-level item stays visible only if some node in its subtree mentions the focused user AND carries the focused tag. Either filter alone behaves as before.
 
@@ -361,7 +363,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the full list of user-facing changes per re
 - [x] ~~consider making the tags and users inline autocompletion work in any type of doc, not just md.  The last selected mdtodo doc should be the source.~~ ✅ done
 - [x] ~~alphabetical sorting of tags and users works in the mdtodo panels, but not in the command pallet~~ ✅ done
 - [ ] consider ways in markdown renderers to give the tags and dates a separate text color/font/highlight/etc so they stand out more in the rendered md view (i.e. with vscode preview, or on github, etc)
-- [ ] create command 'MD Todo: Clear All Focus' which clears any focus
-- [ ] create command 'MD Todo: Set Activity Focus' which does the same as clicking the status bar button
-- [ ] unify naming of the commands 'MD Todo: Set Focus *', right now it's 'Set Tag Focus' and 'Set Focus User'
-- [ ] the command 'Activity Focus' currently puts the 'clear activity focus' at the bottom of the list, while the other Focus commands put it at the top
+- [x] ~~create command 'MD Todo: Clear All Focus' which clears any focus~~ ✅ done
+- [x] ~~create command 'MD Todo: Set Activity Focus' which does the same as clicking the status bar button~~ ✅ done (shipped as `Set Focus Activity` for naming consistency)
+- [x] ~~unify naming of the commands 'MD Todo: Set Focus *', right now it's 'Set Tag Focus' and 'Set Focus User'~~ ✅ done (display title `Set Tag Focus` → `Set Focus Tag`; pattern is `Set Focus <Kind>`)
+- [x] ~~the command 'Activity Focus' currently puts the 'clear activity focus' at the bottom of the list, while the other Focus commands put it at the top~~ ✅ done
