@@ -46,6 +46,17 @@ import {
     classifyItemSection,
     itemMatchesActivity,
 } from './parser';
+import {
+    setExtensionContext,
+    getFocusUser,
+    setFocusUserState,
+    getFocusTag,
+    setFocusTagState,
+    getActivityFocus,
+    setActivityFocusState,
+    rememberLastTodoUri,
+    getLastTodoSourceDoc,
+} from './state';
 
 const execAsync = promisify(exec);
 
@@ -1112,62 +1123,10 @@ function updateMentionDecorations(editor: vscode.TextEditor) {
 // Focus User: state, status bar, dimming decorations (Variant C)
 // ============================================================================
 
-const FOCUS_USER_STATE_KEY = 'mdTodo.focusUser';
-const FOCUS_TAG_STATE_KEY = 'mdTodo.focusTag';
-const ACTIVITY_FOCUS_STATE_KEY = 'mdTodo.activityFocus';
-const LAST_TODO_URI_STATE_KEY = 'mdTodo.completion.lastTodoFileUri';
-
 let focusStatusBarItem: vscode.StatusBarItem | undefined;
 let tagFocusStatusBarItem: vscode.StatusBarItem | undefined;
 let activityFocusStatusBarItem: vscode.StatusBarItem | undefined;
 let dimmedDecorationType: vscode.TextEditorDecorationType | undefined;
-// Module-level reference so commands and event handlers can read/write the
-// per-workspace focus user without threading context everywhere.
-let extensionContext: vscode.ExtensionContext | undefined;
-
-function getFocusUser(): string | undefined {
-    return extensionContext?.workspaceState.get<string>(FOCUS_USER_STATE_KEY);
-}
-
-async function setFocusUserState(shortname: string | undefined): Promise<void> {
-    if (!extensionContext) { return; }
-    await extensionContext.workspaceState.update(FOCUS_USER_STATE_KEY, shortname);
-}
-
-function getFocusTag(): string | undefined {
-    return extensionContext?.workspaceState.get<string>(FOCUS_TAG_STATE_KEY);
-}
-
-async function setFocusTagState(tagname: string | undefined): Promise<void> {
-    if (!extensionContext) { return; }
-    await extensionContext.workspaceState.update(FOCUS_TAG_STATE_KEY, tagname);
-}
-
-// Records the URI of the most recently active mdtodo document so that
-// completion providers can source tags/users from it even when the
-// active editor is a non-mdtodo file.
-let lastTodoUri: vscode.Uri | undefined;
-
-function rememberLastTodoUri(uri: vscode.Uri): void {
-    lastTodoUri = uri;
-    extensionContext?.workspaceState.update(LAST_TODO_URI_STATE_KEY, uri.toString());
-}
-
-async function getLastTodoSourceDoc(): Promise<vscode.TextDocument | undefined> {
-    let uri = lastTodoUri;
-    if (!uri) {
-        const stored = extensionContext?.workspaceState.get<string>(LAST_TODO_URI_STATE_KEY);
-        if (!stored) { return undefined; }
-        try { uri = vscode.Uri.parse(stored); } catch { return undefined; }
-        lastTodoUri = uri;
-    }
-    try {
-        const doc = await vscode.workspace.openTextDocument(uri);
-        return isTodoFile(doc) ? doc : undefined;
-    } catch {
-        return undefined;
-    }
-}
 
 function createDimmedDecorationType(): vscode.TextEditorDecorationType {
     if (dimmedDecorationType) {
@@ -1294,15 +1253,6 @@ function updateDimDecorations(editor: vscode.TextEditor) {
 // ============================================================================
 // Activity Focus: state, picker, decoration predicate, status bar
 // ============================================================================
-
-function getActivityFocus(): ActivityFocus | undefined {
-    return extensionContext?.workspaceState.get<ActivityFocus>(ACTIVITY_FOCUS_STATE_KEY);
-}
-
-async function setActivityFocusState(focus: ActivityFocus | undefined): Promise<void> {
-    if (!extensionContext) { return; }
-    await extensionContext.workspaceState.update(ACTIVITY_FOCUS_STATE_KEY, focus);
-}
 
 function refreshActivityFocusStatusBar(editor: vscode.TextEditor | undefined) {
     if (!activityFocusStatusBarItem) { return; }
@@ -2616,7 +2566,7 @@ const tagCompletionProvider: vscode.CompletionItemProvider = {
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('MD Todo is now active');
-    extensionContext = context;
+    setExtensionContext(context);
 
     const commands = [
         vscode.commands.registerTextEditorCommand('mdTodo.addItem', addItem),
