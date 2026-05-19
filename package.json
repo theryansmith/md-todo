@@ -119,6 +119,11 @@
         "category": "MD Todo"
       },
       {
+        "command": "mdTodo.setFocusActivity",
+        "title": "Set Focus Activity",
+        "category": "MD Todo"
+      },
+      {
         "command": "mdTodo.assignFocusedUser",
         "title": "Assign Focused User to Current Todo",
         "category": "MD Todo"

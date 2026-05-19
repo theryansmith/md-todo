@@ -56,6 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerTextEditorCommand('mdTodo.showStaleItems', showStaleItems),
         vscode.commands.registerCommand('mdTodo.clearActivityFocus', clearActivityFocus),
         vscode.commands.registerCommand('mdTodo.activityFocusMenu', activityFocusMenu),
+        vscode.commands.registerCommand('mdTodo.setFocusActivity', activityFocusMenu),
         vscode.commands.registerCommand('mdTodo.clearAllFocus', async () => {
             await clearFocusUser();
             await clearFocusTag();
