@@ -79,6 +79,11 @@
         "category": "MD Todo"
       },
       {
+        "command": "mdTodo.clearAllFocus",
+        "title": "Clear All Focus",
+        "category": "MD Todo"
+      },
+      {
         "command": "mdTodo.quickAdd",
         "title": "Quick Add at Cursor",
         "category": "MD Todo"

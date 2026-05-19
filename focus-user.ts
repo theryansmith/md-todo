@@ -3,6 +3,14 @@ import { isTodoFile, parseDocument, getEffectiveEditor } from './parser';
 import { getFocusUser, setFocusUserState } from './state';
 import { updateDimDecorations } from './decoration-dim';
 
+export async function clearFocusUser(): Promise<void> {
+    await setFocusUserState(undefined);
+    for (const visible of vscode.window.visibleTextEditors) {
+        if (isTodoFile(visible.document)) { updateDimDecorations(visible); }
+    }
+    refreshFocusStatusBar(vscode.window.activeTextEditor);
+}
+
 let focusStatusBarItem: vscode.StatusBarItem | undefined;
 
 export function initFocusUserStatusBar(context: vscode.ExtensionContext): void {

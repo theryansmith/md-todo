@@ -13,8 +13,8 @@ import { addTags } from './commands-add-tags';
 import { manageTags } from './commands-manage-tags';
 import { addUser } from './commands-add-user';
 import { assignFocusedUser } from './commands-assign-focused-user';
-import { initFocusUserStatusBar, setFocusUser } from './focus-user';
-import { initFocusTagStatusBar, setFocusTag } from './focus-tag';
+import { initFocusUserStatusBar, setFocusUser, clearFocusUser } from './focus-user';
+import { initFocusTagStatusBar, setFocusTag, clearFocusTag } from './focus-tag';
 import {
     initActivityFocusStatusBar,
     showRecentlyCompleted,
@@ -56,6 +56,11 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerTextEditorCommand('mdTodo.showStaleItems', showStaleItems),
         vscode.commands.registerCommand('mdTodo.clearActivityFocus', clearActivityFocus),
         vscode.commands.registerCommand('mdTodo.activityFocusMenu', activityFocusMenu),
+        vscode.commands.registerCommand('mdTodo.clearAllFocus', async () => {
+            await clearFocusUser();
+            await clearFocusTag();
+            await clearActivityFocus();
+        }),
     );
 
     initFocusUserStatusBar(context);
