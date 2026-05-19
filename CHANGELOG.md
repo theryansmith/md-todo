@@ -2,6 +2,14 @@
 
 All notable user-facing changes to MD Todo are documented here. Newest first. When an item from the README's `## ToDO` ships, it's deleted from that list and described here in user-facing language.
 
+## [1.4.4] — 2026-05-19
+
+- Performance: significantly reduces the work done on every keystroke in mdtodo documents. Highlights:
+  - Parse cache: `parseDocument` is now memoized by `(uri, version)`, eliminating the 3–6 redundant re-parses per keystroke that previously occurred across decoration updaters, tree views, completion providers, and the status bar.
+  - Whitespace-only edit skip: decoration and tree refreshes short-circuit when a change adds only whitespace.
+  - Incremental decorations: tag, date, and mention decoration sets are now updated incrementally on edits — only the touched line range is re-scanned; decorations below the edit shift by the line delta. Dim decorations short-circuit when no focus is set; with focus active they still full-scan to preserve subtree correctness.
+  - The dropdown completions, tree views, and status-bar focus indicator all benefit transparently from the parse cache.
+
 ## [1.4.3] — 2026-05-19
 
 - Internal: refactored `extension.ts` from a single 3,376-line file into ~30 focused modules (types, parser, dates, state, per-decoration files, per-tree-view files, per-command files, completions, prompts, focus subsystems). No user-visible change; same behavior, dramatically smaller cognitive surface for future work.
