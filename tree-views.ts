@@ -16,6 +16,7 @@ import {
     markDoneFromTagsTree,
     editTagsFromTree,
 } from './tree-tags';
+import { isWhitespaceOnlyChange } from './editor-events';
 
 /**
  * Create both tree providers + views, seed them with the active todo file,
@@ -48,6 +49,7 @@ export function registerTreeViews(context: vscode.ExtensionContext): void {
             }
         }),
         vscode.workspace.onDidChangeTextDocument(event => {
+            if (isWhitespaceOnlyChange(event)) { return; }
             const userUri = treeProvider.getCurrentUri();
             if (userUri && event.document.uri.toString() === userUri.toString()) {
                 treeProvider.refreshDebounced();
