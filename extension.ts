@@ -57,6 +57,10 @@ import {
     rememberLastTodoUri,
     getLastTodoSourceDoc,
 } from './state';
+import { updateTagDecorations } from './decoration-tag';
+import { createDateDecorationType, updateDateDecorations } from './decoration-date';
+import { updateMentionDecorations } from './decoration-mention';
+import { updateDimDecorations } from './decoration-dim';
 
 const execAsync = promisify(exec);
 
@@ -979,164 +983,12 @@ async function addUserDefinition(editor: vscode.TextEditor, shortname: string, n
 }
 
 // ============================================================================
-// Tag Decorations
-// ============================================================================
-
-let tagDecorationType: vscode.TextEditorDecorationType | undefined;
-
-function createTagDecorationType(): vscode.TextEditorDecorationType {
-    // Dispose old decoration type if it exists
-    if (tagDecorationType) {
-        tagDecorationType.dispose();
-    }
-
-    // Distinct, visible color for tags (purple). Less prominent than @mentions
-    // (which are bold + charts.blue), but clearly stands out from body text.
-    tagDecorationType = vscode.window.createTextEditorDecorationType({
-        color: new vscode.ThemeColor('charts.purple')
-    });
-
-    return tagDecorationType;
-}
-
-function updateTagDecorations(editor: vscode.TextEditor) {
-    // Ensure decoration type exists
-    const decorationType = tagDecorationType ?? createTagDecorationType();
-
-    if (!isTodoFile(editor.document)) {
-        editor.setDecorations(decorationType, []);
-        return;
-    }
-
-    const decorations: vscode.DecorationOptions[] = [];
-
-    for (let i = 0; i < editor.document.lineCount; i++) {
-        const line = editor.document.lineAt(i);
-        const matches = [...line.text.matchAll(/#[\w-]+/g)];
-
-        for (const match of matches) {
-            if (match.index !== undefined) {
-                decorations.push({
-                    range: new vscode.Range(i, match.index, i, match.index + match[0].length)
-                });
-            }
-        }
-    }
-
-    editor.setDecorations(decorationType, decorations);
-}
-
-// ============================================================================
-// Date Decorations
-// ============================================================================
-
-let dateDecorationType: vscode.TextEditorDecorationType | undefined;
-
-function createDateDecorationType(): vscode.TextEditorDecorationType {
-    const config = vscode.workspace.getConfiguration('mdTodo');
-    const opacity = config.get<number>('dateOpacity', 0.5);
-
-    // Dispose old decoration type if it exists
-    if (dateDecorationType) {
-        dateDecorationType.dispose();
-    }
-
-    dateDecorationType = vscode.window.createTextEditorDecorationType({
-        opacity: String(opacity)
-    });
-
-    return dateDecorationType;
-}
-
-function updateDateDecorations(editor: vscode.TextEditor) {
-    // Ensure decoration type exists
-    const decorationType = dateDecorationType ?? createDateDecorationType();
-
-    if (!isTodoFile(editor.document)) {
-        editor.setDecorations(decorationType, []);
-        return;
-    }
-
-    const decorations: vscode.DecorationOptions[] = [];
-
-    // Match date patterns: `+YYYY-MM-DD` and `✓YYYY-MM-DD`
-    const datePattern = /`[+✓]\d{4}-\d{2}-\d{2}`/g;
-
-    for (let i = 0; i < editor.document.lineCount; i++) {
-        const line = editor.document.lineAt(i);
-        const matches = [...line.text.matchAll(datePattern)];
-
-        for (const match of matches) {
-            if (match.index !== undefined) {
-                decorations.push({
-                    range: new vscode.Range(i, match.index, i, match.index + match[0].length)
-                });
-            }
-        }
-    }
-
-    editor.setDecorations(decorationType, decorations);
-}
-
-// ============================================================================
-// Mention Decorations (@user references)
-// ============================================================================
-
-let mentionDecorationType: vscode.TextEditorDecorationType | undefined;
-
-function createMentionDecorationType(): vscode.TextEditorDecorationType {
-    if (mentionDecorationType) {
-        mentionDecorationType.dispose();
-    }
-    // Distinct styling from tag decorations: bold + accent color (charts.blue)
-    mentionDecorationType = vscode.window.createTextEditorDecorationType({
-        color: new vscode.ThemeColor('charts.blue'),
-        fontWeight: 'bold'
-    });
-    return mentionDecorationType;
-}
-
-function updateMentionDecorations(editor: vscode.TextEditor) {
-    const decorationType = mentionDecorationType ?? createMentionDecorationType();
-
-    if (!isTodoFile(editor.document)) {
-        editor.setDecorations(decorationType, []);
-        return;
-    }
-
-    const decorations: vscode.DecorationOptions[] = [];
-    for (let i = 0; i < editor.document.lineCount; i++) {
-        const line = editor.document.lineAt(i);
-        const matches = [...line.text.matchAll(/@[\w-]+/g)];
-        for (const match of matches) {
-            if (match.index !== undefined) {
-                decorations.push({
-                    range: new vscode.Range(i, match.index, i, match.index + match[0].length)
-                });
-            }
-        }
-    }
-    editor.setDecorations(decorationType, decorations);
-}
-
-// ============================================================================
-// Focus User: state, status bar, dimming decorations (Variant C)
+// Focus User: state, status bar (Variant C)
 // ============================================================================
 
 let focusStatusBarItem: vscode.StatusBarItem | undefined;
 let tagFocusStatusBarItem: vscode.StatusBarItem | undefined;
 let activityFocusStatusBarItem: vscode.StatusBarItem | undefined;
-let dimmedDecorationType: vscode.TextEditorDecorationType | undefined;
-
-function createDimmedDecorationType(): vscode.TextEditorDecorationType {
-    if (dimmedDecorationType) {
-        dimmedDecorationType.dispose();
-    }
-    dimmedDecorationType = vscode.window.createTextEditorDecorationType({
-        opacity: '0.25'
-    });
-    return dimmedDecorationType;
-}
 
 function refreshFocusStatusBar(editor: vscode.TextEditor | undefined) {
     if (!focusStatusBarItem) { return; }
@@ -1179,79 +1031,8 @@ function refreshFocusTagStatusBar(editor: vscode.TextEditor | undefined) {
     tagFocusStatusBarItem.show();
 }
 
-/**
- * Dim every line that does NOT belong to a top-level item whose subtree
- * matches the active focus filters.
- *
- * A top-level item is "matched" when its subtree contains at least one node
- * (the item itself or any descendant) that satisfies BOTH the user-focus and
- * tag-focus filters. Either filter alone behaves as before; both set together
- * narrows the visible items via AND semantics. When unmatched, the entire
- * subtree (including notes) is dimmed. When matched, nothing in the subtree
- * is dimmed so the user can read the parent context.
- */
-function updateDimDecorations(editor: vscode.TextEditor) {
-    const decorationType = dimmedDecorationType ?? createDimmedDecorationType();
-    if (!isTodoFile(editor.document)) {
-        editor.setDecorations(decorationType, []);
-        return;
-    }
-    const focusUser = getFocusUser();
-    const focusTag = getFocusTag();
-    const activity = getActivityFocus();
-    if (!focusUser && !focusTag && !activity) {
-        editor.setDecorations(decorationType, []);
-        return;
-    }
-    const parsed = parseDocument(editor.document);
-    const today = startOfToday();
-
-    function subtreeMatches(item: TodoItem): boolean {
-        const userOk = !focusUser || item.mentions.includes(focusUser);
-        const tagOk = !focusTag || item.tags.includes(focusTag);
-        const activityOk = !activity || itemMatchesActivity(item, activity, today);
-        if (userOk && tagOk && activityOk) { return true; }
-        for (const child of item.children) {
-            if (subtreeMatches(child)) { return true; }
-        }
-        return false;
-    }
-
-    const ranges: vscode.Range[] = [];
-
-    // (a) Subtree-level dim for non-matching top-level subtrees.
-    for (const top of parsed.items) {
-        if (subtreeMatches(top)) { continue; }
-        const endLine = getItemWithDescendantsEndLine(editor.document, top);
-        const endLineLength = editor.document.lineAt(endLine).text.length;
-        ranges.push(new vscode.Range(top.line, 0, endLine, endLineLength));
-    }
-
-    // (b) Span-level dim across the whole document. Already-dimmed spans from
-    //     (a) ride along harmlessly (idempotent).
-    for (let i = 0; i < editor.document.lineCount; i++) {
-        const lineText = editor.document.lineAt(i).text;
-        if (focusUser) {
-            for (const m of lineText.matchAll(/@([\w-]+)/g)) {
-                if (m.index !== undefined && m[1] !== focusUser) {
-                    ranges.push(new vscode.Range(i, m.index, i, m.index + m[0].length));
-                }
-            }
-        }
-        if (focusTag) {
-            for (const m of lineText.matchAll(/#([\w-]+)/g)) {
-                if (m.index !== undefined && m[1] !== focusTag) {
-                    ranges.push(new vscode.Range(i, m.index, i, m.index + m[0].length));
-                }
-            }
-        }
-    }
-
-    editor.setDecorations(decorationType, ranges);
-}
-
 // ============================================================================
-// Activity Focus: state, picker, decoration predicate, status bar
+// Activity Focus: picker, status bar
 // ============================================================================
 
 function refreshActivityFocusStatusBar(editor: vscode.TextEditor | undefined) {
