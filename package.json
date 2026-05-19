@@ -2,7 +2,7 @@
   "name": "md-todo",
   "displayName": "MD Todo",
   "description": "Markdown-based todo list manager with date tracking, notes, and archiving",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "publisher": "theryansmith",
   "license": "MIT",
   "icon": "media/extension-icon.png",
