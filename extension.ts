@@ -27,6 +27,10 @@ import { registerTreeViews } from './tree-views';
 import { registerAutoDateHandler } from './auto-date';
 import { registerEditorUiEvents } from './editor-events';
 import { clearParseCache } from './parser';
+import { clearTagDecorationCache } from './decoration-tag';
+import { clearDateDecorationCache } from './decoration-date';
+import { clearMentionDecorationCache } from './decoration-mention';
+import { clearDimDecorationCache } from './decoration-dim';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('MD Todo is now active');
@@ -74,7 +78,13 @@ export function activate(context: vscode.ExtensionContext) {
     registerEditorUiEvents(context);
 
     context.subscriptions.push(
-        vscode.workspace.onDidCloseTextDocument(doc => clearParseCache(doc.uri)),
+        vscode.workspace.onDidCloseTextDocument(doc => {
+            clearParseCache(doc.uri);
+            clearTagDecorationCache(doc.uri);
+            clearDateDecorationCache(doc.uri);
+            clearMentionDecorationCache(doc.uri);
+            clearDimDecorationCache(doc.uri);
+        }),
     );
 }
 

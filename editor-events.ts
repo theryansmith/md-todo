@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
-import { updateTagDecorations } from './decoration-tag';
-import { createDateDecorationType, updateDateDecorations } from './decoration-date';
-import { updateMentionDecorations } from './decoration-mention';
-import { updateDimDecorations } from './decoration-dim';
+import { updateTagDecorations, updateTagDecorationsIncremental } from './decoration-tag';
+import { createDateDecorationType, updateDateDecorations, updateDateDecorationsIncremental } from './decoration-date';
+import { updateMentionDecorations, updateMentionDecorationsIncremental } from './decoration-mention';
+import { updateDimDecorations, updateDimDecorationsIncremental } from './decoration-dim';
 import { refreshFocusStatusBar } from './focus-user';
 import { refreshFocusTagStatusBar } from './focus-tag';
 import { refreshActivityFocusStatusBar } from './focus-activity';
@@ -57,10 +57,15 @@ export function registerEditorUiEvents(context: vscode.ExtensionContext): void {
             // dates, user defs, or section structure — skip the decoration and
             // status-bar work entirely.
             if (isWhitespaceOnlyChange(event)) { return; }
-            updateTagDecorations(editor);
-            updateDateDecorations(editor);
-            updateMentionDecorations(editor);
-            updateDimDecorations(editor);
+            // Document edit: route through the incremental decoration path so
+            // each updater shifts its cached options past the edit and re-scans
+            // only the affected line range instead of the whole document.
+            // Initial open / editor switch still uses the full-scan path above
+            // — that's where the per-URI caches get populated.
+            updateTagDecorationsIncremental(editor, event.contentChanges);
+            updateDateDecorationsIncremental(editor, event.contentChanges);
+            updateMentionDecorationsIncremental(editor, event.contentChanges);
+            updateDimDecorationsIncremental(editor, event.contentChanges);
             // Status bar tooltip depends on parsed user defs — refresh too.
             refreshFocusStatusBar(editor);
             refreshFocusTagStatusBar(editor);
