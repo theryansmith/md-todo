@@ -268,10 +268,10 @@ export async function clearActivityFocus(): Promise<void> {
 export async function activityFocusMenu(): Promise<void> {
     type Cmd = vscode.QuickPickItem & { command: string };
     const items: Cmd[] = [
+        { label: '$(circle-slash) Clear Activity Focus', command: 'mdTodo.clearActivityFocus' },
         { label: '$(calendar) Show Recently Completed', command: 'mdTodo.showRecentlyCompleted' },
         { label: '$(calendar) Show Recently Added', command: 'mdTodo.showRecentlyAdded' },
         { label: '$(calendar) Show Stale Items', command: 'mdTodo.showStaleItems' },
-        { label: '$(circle-slash) Clear Activity Focus', command: 'mdTodo.clearActivityFocus' },
     ];
     const picked = await vscode.window.showQuickPick(items, { placeHolder: 'Activity focus' });
     if (!picked) { return; }
