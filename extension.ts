@@ -1,57 +1,29 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import {
+    TodoItem,
+    TagDefinition,
+    UserDefinition,
+    ParsedDocument,
+    TagValidationResult,
+    EffectiveEditorContext,
+    ActivityKind,
+    ActivityFocus,
+    SuggestionItem,
+    UserNode,
+    SectionNode,
+    TodoNode,
+    UnassignedNode,
+    TreeNode,
+    TagRootNode,
+    TagSectionNode,
+    TagTodoNode,
+    UntaggedNode,
+    TagsTreeNode,
+} from './types';
 
 const execAsync = promisify(exec);
-
-// ============================================================================
-// Types
-// ============================================================================
-
-interface TodoItem {
-    line: number;
-    text: string;
-    isComplete: boolean;
-    addedDate?: string;
-    completedDate?: string;
-    notes: string[];
-    raw: string;
-    indent: number;
-    tags: string[];
-    mentions: string[];      // @user mentions extracted from content
-    children: TodoItem[];    // Nested todo items
-    parent?: TodoItem;       // Reference to parent (undefined for top-level)
-}
-
-interface TagDefinition {
-    name: string;
-    description: string;
-    line: number;
-}
-
-interface UserDefinition {
-    shortname: string;
-    fullname: string;
-    description: string;
-    line: number;
-}
-
-interface ParsedDocument {
-    items: TodoItem[];
-    sections: Map<string, { start: number; end: number }>;
-    tagDefinitions: TagDefinition[];
-    userDefinitions: UserDefinition[];
-}
-
-interface TagValidationResult {
-    validTags: string[];
-    undefinedTags: string[];
-}
-
-interface EffectiveEditorContext {
-    editor: vscode.TextEditor;
-    document: vscode.TextDocument;
-}
 
 // ============================================================================
 // Utilities
@@ -1629,16 +1601,6 @@ function updateDimDecorations(editor: vscode.TextEditor) {
 // Activity Focus: state, picker, decoration predicate, status bar
 // ============================================================================
 
-type ActivityKind = 'completed' | 'added' | 'stale';
-
-interface ActivityFocus {
-    kind: ActivityKind;
-    startDate?: string;   // ISO YYYY-MM-DD, inclusive (completed/added)
-    endDate?: string;     // ISO YYYY-MM-DD, inclusive (completed/added)
-    staleDays?: number;   // for kind === 'stale'
-    label: string;        // human-readable for status bar
-}
-
 function getActivityFocus(): ActivityFocus | undefined {
     return extensionContext?.workspaceState.get<ActivityFocus>(ACTIVITY_FOCUS_STATE_KEY);
 }
@@ -2199,35 +2161,6 @@ async function assignFocusedUser(editor: vscode.TextEditor): Promise<void> {
 // Users Tree View (Variant B)
 // ============================================================================
 
-type UserNode = {
-    kind: 'user';
-    user: UserDefinition;
-    counts: { active: number; completed: number; archived: number };
-    sourceUri: vscode.Uri;
-};
-
-type SectionNode = {
-    kind: 'section';
-    user: UserDefinition | null;  // null for unassigned
-    section: 'active' | 'completed' | 'archive';
-    items: TodoItem[];
-    sourceUri: vscode.Uri;
-};
-
-type TodoNode = {
-    kind: 'todo';
-    item: TodoItem;
-    sourceUri: vscode.Uri;
-};
-
-type UnassignedNode = {
-    kind: 'unassigned';
-    counts: { active: number; completed: number; archived: number };
-    sourceUri: vscode.Uri;
-};
-
-type TreeNode = UserNode | SectionNode | TodoNode | UnassignedNode;
-
 function classifyItemSection(item: TodoItem, parsed: ParsedDocument): 'active' | 'completed' | 'archive' | null {
     for (const [sectionName, sectionInfo] of parsed.sections) {
         if (item.line >= sectionInfo.start && item.line <= sectionInfo.end) {
@@ -2573,35 +2506,6 @@ async function markDoneFromTree(treeProvider: MdTodoUsersTreeProvider, node?: Tr
 // Tags Tree View (Variant BC3)
 // ============================================================================
 
-type TagRootNode = {
-    kind: 'tag-root';
-    tag: TagDefinition;
-    counts: { active: number; completed: number; archived: number };
-    sourceUri: vscode.Uri;
-};
-
-type TagSectionNode = {
-    kind: 'tag-section';
-    tag: TagDefinition | null;  // null for untagged
-    section: 'active' | 'completed' | 'archive';
-    items: TodoItem[];
-    sourceUri: vscode.Uri;
-};
-
-type TagTodoNode = {
-    kind: 'tag-todo';
-    item: TodoItem;
-    sourceUri: vscode.Uri;
-};
-
-type UntaggedNode = {
-    kind: 'untagged';
-    counts: { active: number; completed: number; archived: number };
-    sourceUri: vscode.Uri;
-};
-
-type TagsTreeNode = TagRootNode | TagSectionNode | TagTodoNode | UntaggedNode;
-
 class MdTodoTagsTreeProvider implements vscode.TreeDataProvider<TagsTreeNode> {
     private _onDidChangeTreeData = new vscode.EventEmitter<TagsTreeNode | undefined | void>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
@@ -2895,8 +2799,6 @@ async function editTagsFromTree(node?: TagsTreeNode) {
 // ============================================================================
 // Shared input prompt with @user / #tag autocomplete
 // ============================================================================
-
-type SuggestionItem = vscode.QuickPickItem & { insertText: string };
 
 /**
  * Filter `defs` by case-insensitive substring of `partial` over the text
