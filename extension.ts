@@ -28,119 +28,26 @@ import {
     daysBetween,
     formatIsoDate,
     startOfToday,
-    isDateInRange,
     parseNaturalDateRange,
 } from './dates';
+import {
+    isTodoFile,
+    isNoteLine,
+    isNestedTodoLine,
+    findItemForSourceLine,
+    validateTags,
+    isNestedItem,
+    getItemWithDescendantsEndLine,
+    findItemByLine,
+    getEffectiveEditor,
+    parseDocument,
+    findItemAtCursor,
+    getItemEndLine,
+    classifyItemSection,
+    itemMatchesActivity,
+} from './parser';
 
 const execAsync = promisify(exec);
-
-// ============================================================================
-// Utilities
-// ============================================================================
-
-function isTodoFile(document: vscode.TextDocument): boolean {
-    if (document.languageId !== 'markdown') { return false; }
-    if (document.lineCount < 3) { return false; }
-
-    const firstLine = document.lineAt(0).text;
-    if (firstLine !== '---') { return false; }
-
-    // Find closing --- and check for md-todo: true
-    for (let i = 1; i < Math.min(document.lineCount, 20); i++) {
-        const line = document.lineAt(i).text;
-        if (line === '---') {
-            // Check if md-todo: true exists in frontmatter
-            for (let j = 1; j < i; j++) {
-                if (document.lineAt(j).text.match(/^md-todo:\s*true/i)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-    return false;
-}
-
-function isNoteLine(text: string): boolean {
-    // Indented bullet without checkbox (notes don't have checkboxes)
-    const hasCheckbox = /^\s+-\s*\[[ xX]\]/.test(text);
-    const isIndentedBullet = /^\s+-\s+.+/.test(text);
-    return isIndentedBullet && !hasCheckbox;
-}
-
-function isNestedTodoLine(text: string): boolean {
-    // Indented bullet with checkbox
-    return /^\s+-\s*\[[ xX]\]\s*.+$/.test(text);
-}
-
-function findItemForSourceLine(sourceLine: number, parsed: ParsedDocument): TodoItem | null {
-    // Find the item that owns this source line (either the item itself or a note under it)
-    function searchItems(items: TodoItem[]): TodoItem | null {
-        for (const item of items) {
-            // Direct match - cursor is on the todo item line
-            if (item.line === sourceLine) {
-                return item;
-            }
-            // Check if the source line is a note under this item
-            // Notes are on lines item.line+1 to item.line+item.notes.length
-            if (sourceLine > item.line && sourceLine <= item.line + item.notes.length) {
-                return item;
-            }
-            // Search in children
-            const foundInChildren = searchItems(item.children);
-            if (foundInChildren) {
-                return foundInChildren;
-            }
-        }
-        return null;
-    }
-
-    return searchItems(parsed.items);
-}
-
-function validateTags(tags: string[], tagDefinitions: TagDefinition[]): TagValidationResult {
-    const definedNames = new Set(tagDefinitions.map(t => t.name));
-    return {
-        validTags: tags.filter(t => definedNames.has(t)),
-        undefinedTags: tags.filter(t => !definedNames.has(t))
-    };
-}
-
-// ============================================================================
-// Nested Todo Helpers
-// ============================================================================
-
-function isNestedItem(item: TodoItem): boolean {
-    return item.parent !== undefined;
-}
-
-function getItemWithDescendantsEndLine(document: vscode.TextDocument, item: TodoItem): number {
-    let endLine = item.line;
-    // Find all consecutive lines belonging to this item (notes + children)
-    for (let i = item.line + 1; i < document.lineCount; i++) {
-        const lineText = document.lineAt(i).text;
-        const lineIndent = lineText.match(/^(\s*)/)?.[1].length ?? 0;
-        // Stop if we hit a line with same or less indent that's not empty
-        if (lineText.trim() && lineIndent <= item.indent) { break; }
-        // Stop at section headers
-        if (lineText.startsWith('#')) { break; }
-        endLine = i;
-    }
-    return endLine;
-}
-
-function findItemByLine(items: TodoItem[], lineNum: number): TodoItem | null {
-    for (const item of items) {
-        if (item.line === lineNum) { return item; }
-        const found = findItemByLine(item.children, lineNum);
-        if (found) { return found; }
-    }
-    return null;
-}
-
-async function getEffectiveEditor(currentEditor: vscode.TextEditor): Promise<EffectiveEditorContext> {
-    return { editor: currentEditor, document: currentEditor.document };
-}
 
 async function promptCreateTags(editor: vscode.TextEditor, undefinedTags: string[]): Promise<string[]> {
     const createdTags: string[] = [];
@@ -174,211 +81,6 @@ async function processTagsWithValidation(editor: vscode.TextEditor, inputTags: s
 
     const createdTags = await promptCreateTags(editor, validation.undefinedTags);
     return [...validation.validTags, ...createdTags];
-}
-
-// ============================================================================
-// Markdown Parsing
-// ============================================================================
-
-function parseDocument(document: vscode.TextDocument): ParsedDocument {
-    const items: TodoItem[] = [];  // Top-level items only
-    const sections = new Map<string, { start: number; end: number }>();
-
-    let currentSection = '';
-    let sectionStart = 0;
-
-    // Stack to track parent hierarchy: { item, indent }
-    const parentStack: { item: TodoItem; indent: number }[] = [];
-
-    for (let i = 0; i < document.lineCount; i++) {
-        const line = document.lineAt(i);
-        const text = line.text;
-
-        // Track sections (## headers)
-        const sectionMatch = text.match(/^##\s+(.+)$/);
-        if (sectionMatch) {
-            if (currentSection) {
-                sections.set(currentSection.toLowerCase(), { start: sectionStart, end: i - 1 });
-            }
-            currentSection = sectionMatch[1];
-            sectionStart = i;
-            parentStack.length = 0;  // Reset stack at section boundaries
-            continue;
-        }
-
-        // Parse todo items (both top-level and nested)
-        const todoMatch = text.match(/^(\s*)-\s*\[([ xX])\]\s*(.+)$/);
-        if (todoMatch) {
-            const indent = todoMatch[1].length;
-            const isComplete = todoMatch[2].toLowerCase() === 'x';
-            const content = todoMatch[3];
-
-            // Extract dates from content
-            const addedMatch = content.match(/`\+(\d{4}-\d{2}-\d{2})`/);
-            const completedMatch = content.match(/`✓(\d{4}-\d{2}-\d{2})`/);
-
-            // Extract tags from content
-            const tagMatches = [...content.matchAll(/#([\w-]+)/g)];
-            const tags = tagMatches.map(m => m[1]);
-
-            // Extract @mentions from content (independent of tag extraction)
-            const mentionMatches = [...content.matchAll(/@([\w-]+)/g)];
-            const mentions = mentionMatches.map(m => m[1]);
-
-            const newItem: TodoItem = {
-                line: i,
-                text: content
-                    .replace(/`[+✓]\d{4}-\d{2}-\d{2}`/g, '')
-                    .replace(/\s{2,}/g, ' ')
-                    .trim(),
-                isComplete,
-                addedDate: addedMatch ? addedMatch[1] : undefined,
-                completedDate: completedMatch ? completedMatch[1] : undefined,
-                notes: [],
-                raw: text,
-                indent,
-                tags,
-                mentions,
-                children: [],
-                parent: undefined
-            };
-
-            // Pop items from stack with >= indent (find proper parent)
-            while (parentStack.length > 0 && parentStack[parentStack.length - 1].indent >= indent) {
-                parentStack.pop();
-            }
-
-            if (parentStack.length > 0) {
-                // Nested todo - attach to parent
-                const parentEntry = parentStack[parentStack.length - 1];
-                newItem.parent = parentEntry.item;
-                parentEntry.item.children.push(newItem);
-            } else {
-                // Top-level todo
-                items.push(newItem);
-            }
-
-            // Push this item onto stack as potential parent
-            parentStack.push({ item: newItem, indent });
-            continue;
-        }
-
-        // Parse note lines (indented bullets without checkboxes)
-        if (isNoteLine(text) && parentStack.length > 0) {
-            const noteIndent = text.match(/^(\s*)/)?.[1].length ?? 0;
-            // Attach note to the closest parent with less indentation
-            for (let j = parentStack.length - 1; j >= 0; j--) {
-                if (parentStack[j].indent < noteIndent) {
-                    parentStack[j].item.notes.push(text.trim());
-                    break;
-                }
-            }
-            continue;
-        }
-
-        // Empty lines or non-matching content reset the stack
-        if (!text.trim() || text.startsWith('#')) {
-            parentStack.length = 0;
-        }
-    }
-
-    // Close the last section
-    if (currentSection) {
-        sections.set(currentSection.toLowerCase(), { start: sectionStart, end: document.lineCount - 1 });
-    }
-
-    // Parse tag definitions from ## Tags section
-    const tagDefinitions: TagDefinition[] = [];
-    const tagsSection = sections.get('tags');
-    if (tagsSection) {
-        for (let i = tagsSection.start + 1; i <= tagsSection.end; i++) {
-            const line = document.lineAt(i).text;
-            const match = line.match(/^\*\*([\w-]+)\*\*:\s*(.+)$/);
-            if (match) {
-                tagDefinitions.push({ name: match[1], description: match[2], line: i });
-            }
-        }
-    }
-
-    // Parse user definitions from ## Users section
-    // Format: **shortname** (Full Name): description
-    // Group 1: shortname; Group 2: fullname (optional); Group 3: description.
-    const userDefinitions: UserDefinition[] = [];
-    const usersSection = sections.get('users');
-    if (usersSection) {
-        for (let i = usersSection.start + 1; i <= usersSection.end; i++) {
-            const line = document.lineAt(i).text;
-            const match = line.match(/^\*\*([\w-]+)\*\*\s*(?:\(([^)]+)\))?\s*:\s*(.+)$/);
-            if (match) {
-                userDefinitions.push({
-                    shortname: match[1],
-                    fullname: match[2] ?? '',
-                    description: match[3],
-                    line: i
-                });
-            }
-        }
-    }
-
-    // Sort definitions once at the source so every consumer (QuickPick
-    // suggestion lists in promptForTodoText, completion providers, tree views,
-    // status-bar pickers, etc.) sees the same canonical alphabetical order.
-    // Case-insensitive via sensitivity: 'base'.
-    tagDefinitions.sort((a, b) =>
-        a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
-    userDefinitions.sort((a, b) =>
-        a.shortname.localeCompare(b.shortname, undefined, { sensitivity: 'base' }));
-
-    return { items, sections, tagDefinitions, userDefinitions };
-}
-
-function findItemAtCursor(editor: vscode.TextEditor): { item: TodoItem; lineNum: number } | null {
-    const document = editor.document;
-    const cursorLine = editor.selection.active.line;
-    const parsed = parseDocument(document);
-
-    // Look for a todo item at or above cursor
-    for (let i = cursorLine; i >= 0; i--) {
-        const line = document.lineAt(i);
-        const match = line.text.match(/^(\s*)-\s*\[([ xX])\]\s*(.+)$/);
-        if (match) {
-            // Search through all items including nested ones
-            const item = findItemByLine(parsed.items, i);
-            if (item) {
-                return { item, lineNum: i };
-            }
-        }
-        // Stop if we hit a section header or blank line followed by non-note content
-        if (line.text.startsWith('#') || (line.text.trim() === '' && i < cursorLine - 1)) {
-            break;
-        }
-    }
-    return null;
-}
-
-function getItemEndLine(document: vscode.TextDocument, startLine: number): number {
-    // Find where this item's content ends (notes and nested todos)
-    const startText = document.lineAt(startLine).text;
-    const startIndent = startText.match(/^(\s*)/)?.[1].length ?? 0;
-
-    for (let i = startLine + 1; i < document.lineCount; i++) {
-        const line = document.lineAt(i).text;
-        if (!line.trim()) { continue; }  // Skip blank lines
-        if (line.startsWith('#')) { return i - 1; }  // Section header
-
-        const lineIndent = line.match(/^(\s*)/)?.[1].length ?? 0;
-        // If we hit a line with same or less indent that's a todo, we're done
-        if (lineIndent <= startIndent && /^\s*-\s*\[[ xX]\]/.test(line)) {
-            return i - 1;
-        }
-        // If it's a note or nested todo with greater indent, continue
-        if (isNoteLine(line) || isNestedTodoLine(line)) {
-            continue;
-        }
-        // Otherwise, we've found the end
-        return i - 1;
-    }
-    return document.lineCount - 1;
 }
 
 // ============================================================================
@@ -1629,26 +1331,6 @@ function refreshAllActivityUI() {
     refreshActivityFocusStatusBar(vscode.window.activeTextEditor);
 }
 
-function itemMatchesActivity(item: TodoItem, activity: ActivityFocus, today: Date): boolean {
-    if (activity.kind === 'completed') {
-        if (!item.completedDate) { return false; }
-        const d = parseDate(item.completedDate);
-        if (!d) { return false; }
-        return isDateInRange(d, activity.startDate!, activity.endDate!);
-    }
-    if (activity.kind === 'added') {
-        if (!item.addedDate) { return false; }
-        const d = parseDate(item.addedDate);
-        if (!d) { return false; }
-        return isDateInRange(d, activity.startDate!, activity.endDate!);
-    }
-    // stale: incomplete + added at least staleDays ago
-    if (item.isComplete || !item.addedDate) { return false; }
-    const d = parseDate(item.addedDate);
-    if (!d) { return false; }
-    return daysBetween(today, d) >= (activity.staleDays ?? 0);
-}
-
 // ----- Pickers -----
 
 async function pickDateRange(kind: 'completed' | 'added'): Promise<{ start: string; end: string; label: string } | undefined> {
@@ -2075,18 +1757,6 @@ async function assignFocusedUser(editor: vscode.TextEditor): Promise<void> {
 // ============================================================================
 // Users Tree View (Variant B)
 // ============================================================================
-
-function classifyItemSection(item: TodoItem, parsed: ParsedDocument): 'active' | 'completed' | 'archive' | null {
-    for (const [sectionName, sectionInfo] of parsed.sections) {
-        if (item.line >= sectionInfo.start && item.line <= sectionInfo.end) {
-            if (sectionName === 'active') { return 'active'; }
-            if (sectionName === 'completed') { return 'completed'; }
-            if (sectionName === 'archive') { return 'archive'; }
-            return null;
-        }
-    }
-    return null;
-}
 
 class MdTodoUsersTreeProvider implements vscode.TreeDataProvider<TreeNode> {
     private _onDidChangeTreeData = new vscode.EventEmitter<TreeNode | undefined | void>();
