@@ -361,3 +361,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the full list of user-facing changes per re
 - [x] ~~consider making the tags and users inline autocompletion work in any type of doc, not just md.  The last selected mdtodo doc should be the source.~~ ✅ done
 - [x] ~~alphabetical sorting of tags and users works in the mdtodo panels, but not in the command pallet~~ ✅ done
 - [ ] consider ways in markdown renderers to give the tags and dates a separate text color/font/highlight/etc so they stand out more in the rendered md view (i.e. with vscode preview, or on github, etc)
+- [ ] create command 'MD Todo: Clear All Focus' which clears any focus
+- [ ] create command 'MD Todo: Set Activity Focus' which does the same as clicking the status bar button
+- [ ] unify naming of the commands 'MD Todo: Set Focus *', right now it's 'Set Tag Focus' and 'Set Focus User'
+- [ ] the command 'Activity Focus' currently puts the 'clear activity focus' at the bottom of the list, while the other Focus commands put it at the top
