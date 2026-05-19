@@ -110,7 +110,7 @@
       },
       {
         "command": "mdTodo.setFocusTag",
-        "title": "Set Tag Focus",
+        "title": "Set Focus Tag",
         "category": "MD Todo"
       },
       {
