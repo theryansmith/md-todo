@@ -2938,17 +2938,48 @@ function promptForTodoText(
         const qp = vscode.window.createQuickPick<SuggestionItem>();
         qp.title = options.prompt;
         qp.placeholder = options.placeHolder;
-        // Intentionally NOT enabling matchOnDescription / matchOnDetail: we
-        // run our own substring filter on shortname+fullname+description below.
-        // Letting VS Code additionally fuzzy-match the typed value against
-        // those fields makes items whose description/detail happens to contain
-        // '@' or '#' score higher than items without — re-ordering the list
-        // we hand to qp.items and producing the "random-looking" order users
-        // see when '@' or '#' is the very first character of input. With both
-        // flags off, scoring is uniform across items for a single trigger char
-        // and VS Code preserves the alphabetical insertion order we set.
+        // We do all of our own filtering and sorting in refreshSuggestions /
+        // sortedSuggestions, and hand qp.items a list that is already in the
+        // exact order we want shown. To make VS Code respect that order we
+        // have to neutralise THREE separate built-in QuickPick behaviours:
+        //
+        //  1. matchOnDescription / matchOnDetail (public API, default false):
+        //     when on, VS Code also fuzzy-matches the typed value against
+        //     description/detail and folds those scores into ordering. We
+        //     leave these off (their default) so only the label is considered.
+        //
+        //  2. matchOnLabel (internal, default true): VS Code always runs its
+        //     fuzzy scorer against `label`. There is no way to disable this
+        //     through the public @types/vscode QuickPick interface. We turn
+        //     it off via an `as any` cast so the scorer never runs at all,
+        //     leaving ordering up to us. Manual filtering (sortedSuggestions)
+        //     plus `alwaysShow: true` on every item means nothing gets
+        //     dropped or reordered behind our back.
+        //
+        //  3. sortByLabel (internal, default true): even when the scores are
+        //     equal, VS Code applies its own label sort on top — and for
+        //     single-character inputs like '@' or '#' the score the matcher
+        //     produces is NOT equal across items. The scorer is biased by
+        //     label length / word-boundary heuristics, so '@bob' (4 chars)
+        //     scores differently from '@charlie' (8 chars) for input '@'.
+        //     The visible result is a not-quite-alphabetical, not-quite-
+        //     source order — the exact "random-looking" order users report.
+        //     Setting sortByLabel = false tells VS Code to preserve the
+        //     insertion order of qp.items rather than re-sorting by score.
+        //
+        // Documented at microsoft/vscode#73904 ("Add option to skip sorting
+        // QuickPick items"). sortByLabel has been a stable internal field
+        // for years and is the established escape hatch for extensions that
+        // pre-sort their own items; @types/vscode just doesn't expose it.
+        //
+        // v1.4.1 only set matchOnDescription / matchOnDetail (1), which left
+        // the actual culprit — label scoring (2) and the re-sort that
+        // follows (3) — untouched, so first-character '@' / '#' still
+        // produced reordered results.
         qp.matchOnDescription = false;
         qp.matchOnDetail = false;
+        (qp as unknown as { matchOnLabel: boolean }).matchOnLabel = false;
+        (qp as unknown as { sortByLabel: boolean }).sortByLabel = false;
         qp.ignoreFocusOut = true;
 
         let resolved = false;
