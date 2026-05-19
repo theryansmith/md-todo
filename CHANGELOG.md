@@ -2,6 +2,10 @@
 
 All notable user-facing changes to MD Todo are documented here. Newest first. When an item from the README's `## ToDO` ships, it's deleted from that list and described here in user-facing language.
 
+## [1.4.3] — 2026-05-19
+
+- Internal: refactored `extension.ts` from a single 3,376-line file into ~30 focused modules (types, parser, dates, state, per-decoration files, per-tree-view files, per-command files, completions, prompts, focus subsystems). No user-visible change; same behavior, dramatically smaller cognitive surface for future work.
+
 ## [1.4.2] — 2026-05-18
 
 - Fix: the `@` and `#` autocomplete in the Add Todo Item input is now correctly alphabetized when the trigger character is the very first thing typed. v1.4.1 sorted the items we hand to VS Code, but VS Code's QuickPick view re-scored and reordered them by its internal label matcher — disabling that with the (undocumented) `matchOnLabel = false` and `sortByLabel = false` properties makes our insertion order authoritative.
