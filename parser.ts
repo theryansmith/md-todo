@@ -98,7 +98,32 @@ export async function getEffectiveEditor(currentEditor: vscode.TextEditor): Prom
     return { editor: currentEditor, document: currentEditor.document };
 }
 
+// Memoizes the most recent parse per document URI. Keyed by URI string with
+// the document version stored alongside so a lookup is a cache hit only when
+// (uri, version) matches exactly. One entry per URI is enough — older versions
+// of the same document are never useful again.
+const parseCache = new Map<string, { version: number; parsed: ParsedDocument }>();
+
+export function clearParseCache(uri?: vscode.Uri): void {
+    if (uri) {
+        parseCache.delete(uri.toString());
+    } else {
+        parseCache.clear();
+    }
+}
+
 export function parseDocument(document: vscode.TextDocument): ParsedDocument {
+    const key = document.uri.toString();
+    const cached = parseCache.get(key);
+    if (cached && cached.version === document.version) {
+        return cached.parsed;
+    }
+    const parsed = parseDocumentUncached(document);
+    parseCache.set(key, { version: document.version, parsed });
+    return parsed;
+}
+
+function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
     const items: TodoItem[] = [];
     const sections = new Map<string, { start: number; end: number }>();
 

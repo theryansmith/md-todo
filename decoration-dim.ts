@@ -11,6 +11,21 @@ import { getFocusUser, getFocusTag, getActivityFocus } from './state';
 
 let dimmedDecorationType: vscode.TextEditorDecorationType | undefined;
 
+// Tracks the most recently emitted set per URI so that an edit on a document
+// where no focus is set (the common case during normal typing) can short-
+// circuit: emit an empty list once, then skip subsequent setDecorations until
+// state changes. The cache value is the emitted Range[] for completeness, but
+// in practice the no-focus path stores an empty array.
+const dimDecorationCache = new Map<string, vscode.Range[]>();
+
+export function clearDimDecorationCache(uri?: vscode.Uri): void {
+    if (uri) {
+        dimDecorationCache.delete(uri.toString());
+    } else {
+        dimDecorationCache.clear();
+    }
+}
+
 export function createDimmedDecorationType(): vscode.TextEditorDecorationType {
     if (dimmedDecorationType) {
         dimmedDecorationType.dispose();
@@ -34,8 +49,10 @@ export function createDimmedDecorationType(): vscode.TextEditorDecorationType {
  */
 export function updateDimDecorations(editor: vscode.TextEditor) {
     const decorationType = dimmedDecorationType ?? createDimmedDecorationType();
+    const key = editor.document.uri.toString();
     if (!isTodoFile(editor.document)) {
         editor.setDecorations(decorationType, []);
+        dimDecorationCache.set(key, []);
         return;
     }
     const focusUser = getFocusUser();
@@ -43,6 +60,7 @@ export function updateDimDecorations(editor: vscode.TextEditor) {
     const activity = getActivityFocus();
     if (!focusUser && !focusTag && !activity) {
         editor.setDecorations(decorationType, []);
+        dimDecorationCache.set(key, []);
         return;
     }
     const parsed = parseDocument(editor.document);
@@ -90,4 +108,57 @@ export function updateDimDecorations(editor: vscode.TextEditor) {
     }
 
     editor.setDecorations(decorationType, ranges);
+    dimDecorationCache.set(key, ranges);
+}
+
+/**
+ * Incremental edit path for dim. Dim's decoration set has two shapes:
+ *   (a) multi-line subtree ranges anchored to parsed top-level items
+ *   (b) single-line per-token spans
+ *
+ * Shifting (a) past an arbitrary edit is fragile — an edit can re-parent a
+ * subtree, move a `##` header, or change which items match focus. We do NOT
+ * attempt to shift (a). The wins come from two cases:
+ *
+ *   - No focus state set: the decoration set is empty regardless of the edit.
+ *     Emit an empty list once and cache it; subsequent no-focus edits can
+ *     skip the setDecorations call entirely if the cache already records an
+ *     empty list.
+ *
+ *   - Focus state set: fall back to full-scan. parseDocument is memoized
+ *     (Perf-1) so on a fresh edit the cache misses (version bumped) and we
+ *     pay one parse + one O(N) range walk. That's the same cost as before
+ *     Perf-3 but with the explicit acknowledgement that dim's edit path is
+ *     not incremental in the same sense as tag/date/mention.
+ *
+ * Focus-state changes (user clicks the status bar, runs setFocusTag, etc.)
+ * call updateDimDecorations directly — those callers haven't changed.
+ */
+export function updateDimDecorationsIncremental(
+    editor: vscode.TextEditor,
+    _changes: readonly vscode.TextDocumentContentChangeEvent[],
+): void {
+    const decorationType = dimmedDecorationType ?? createDimmedDecorationType();
+    const key = editor.document.uri.toString();
+
+    if (!isTodoFile(editor.document)) {
+        const cached = dimDecorationCache.get(key);
+        if (cached && cached.length === 0) { return; }
+        editor.setDecorations(decorationType, []);
+        dimDecorationCache.set(key, []);
+        return;
+    }
+
+    const focusUser = getFocusUser();
+    const focusTag = getFocusTag();
+    const activity = getActivityFocus();
+    if (!focusUser && !focusTag && !activity) {
+        const cached = dimDecorationCache.get(key);
+        if (cached && cached.length === 0) { return; }
+        editor.setDecorations(decorationType, []);
+        dimDecorationCache.set(key, []);
+        return;
+    }
+
+    updateDimDecorations(editor);
 }
