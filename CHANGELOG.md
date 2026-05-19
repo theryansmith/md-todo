@@ -2,6 +2,10 @@
 
 All notable user-facing changes to MD Todo are documented here. Newest first. When an item from the README's `## ToDO` ships, it's deleted from that list and described here in user-facing language.
 
+## [1.4.2] — 2026-05-18
+
+- Fix: the `@` and `#` autocomplete in the Add Todo Item input is now correctly alphabetized when the trigger character is the very first thing typed. v1.4.1 sorted the items we hand to VS Code, but VS Code's QuickPick view re-scored and reordered them by its internal label matcher — disabling that with the (undocumented) `matchOnLabel = false` and `sortByLabel = false` properties makes our insertion order authoritative.
+
 ## [1.4.1] — 2026-05-18
 
 - Bug-fix follow-up to v1.4.0: the inline `@` / `#` autocomplete dropdown in `Add Todo Item` now sorts entries alphabetically even when `@` or `#` is the very first character typed. v1.4.0's sort was being silently re-ordered by the QuickPick's own fuzzy-match scoring against item descriptions and details; that secondary matching is now disabled (the dropdown still filters by shortname / fullname / description, just via our own substring filter).
