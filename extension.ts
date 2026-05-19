@@ -26,6 +26,7 @@ import {
 import { registerTreeViews } from './tree-views';
 import { registerAutoDateHandler } from './auto-date';
 import { registerEditorUiEvents } from './editor-events';
+import { clearParseCache } from './parser';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('MD Todo is now active');
@@ -71,6 +72,10 @@ export function activate(context: vscode.ExtensionContext) {
     registerTreeViews(context);
     registerAutoDateHandler(context);
     registerEditorUiEvents(context);
+
+    context.subscriptions.push(
+        vscode.workspace.onDidCloseTextDocument(doc => clearParseCache(doc.uri)),
+    );
 }
 
 export function deactivate() {}
