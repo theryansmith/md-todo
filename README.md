@@ -360,6 +360,8 @@ See [CHANGELOG.md](CHANGELOG.md) for the full list of user-facing changes per re
 
 ## ToDO
 
+- [ ] add [project] support for tasks, so I can group by project
+- [ ] modify the "completed view" to show parent times if teh completed item in the time window had a parent todo (it usually has contextual notes that give more visibility)
 - [x] ~~consider making the tags and users inline autocompletion work in any type of doc, not just md.  The last selected mdtodo doc should be the source.~~ ✅ done
 - [x] ~~alphabetical sorting of tags and users works in the mdtodo panels, but not in the command pallet~~ ✅ done
 - [ ] consider ways in markdown renderers to give the tags and dates a separate text color/font/highlight/etc so they stand out more in the rendered md view (i.e. with vscode preview, or on github, etc)
