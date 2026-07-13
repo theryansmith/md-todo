@@ -3,12 +3,14 @@ import {
     TodoItem,
     TagDefinition,
     UserDefinition,
+    ProjectDefinition,
     ParsedDocument,
     TagValidationResult,
     EffectiveEditorContext,
     ActivityFocus,
 } from './types';
 import { parseDate, daysBetween, isDateInRange } from './dates';
+import { PROJECT_TOKEN_RE, PROJECT_TOKEN_RE_G } from './tokens';
 
 export function isTodoFile(document: vscode.TextDocument): boolean {
     if (document.languageId !== 'markdown') { return false; }
@@ -162,10 +164,14 @@ function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
             const mentionMatches = [...content.matchAll(/@([\w-]+)/g)];
             const mentions = mentionMatches.map(m => m[1]);
 
+            const projectMatch = content.match(PROJECT_TOKEN_RE);
+            const project = projectMatch ? projectMatch[1] : undefined;
+
             const newItem: TodoItem = {
                 line: i,
                 text: content
                     .replace(/`[+✓]\d{4}-\d{2}-\d{2}`/g, '')
+                    .replace(PROJECT_TOKEN_RE_G, '')
                     .replace(/\s{2,}/g, ' ')
                     .trim(),
                 isComplete,
@@ -176,6 +182,7 @@ function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
                 indent,
                 tags,
                 mentions,
+                project,
                 children: [],
                 parent: undefined
             };
@@ -247,6 +254,18 @@ function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
         }
     }
 
+    const projectDefinitions: ProjectDefinition[] = [];
+    const projectsSection = sections.get('projects');
+    if (projectsSection) {
+        for (let i = projectsSection.start + 1; i <= projectsSection.end; i++) {
+            const line = document.lineAt(i).text;
+            const match = line.match(/^\*\*([\w-]+)\*\*:\s*(.+)$/);
+            if (match) {
+                projectDefinitions.push({ name: match[1], description: match[2], line: i });
+            }
+        }
+    }
+
     // Sort definitions once at the source so every consumer (QuickPick
     // suggestion lists in promptForTodoText, completion providers, tree views,
     // status-bar pickers, etc.) sees the same canonical alphabetical order.
@@ -254,8 +273,28 @@ function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
         a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
     userDefinitions.sort((a, b) =>
         a.shortname.localeCompare(b.shortname, undefined, { sensitivity: 'base' }));
+    projectDefinitions.sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 
-    return { items, sections, tagDefinitions, userDefinitions };
+    return { items, sections, tagDefinitions, userDefinitions, projectDefinitions };
+}
+
+/**
+ * Resolve the project an item belongs to: its own `[name]` token if present,
+ * otherwise the nearest ancestor's. Children inherit the enclosing project
+ * unless they carry their own token.
+ */
+export function getEffectiveProject(item: TodoItem): string | undefined {
+    let cur: TodoItem | undefined = item;
+    while (cur) {
+        if (cur.project) { return cur.project; }
+        cur = cur.parent;
+    }
+    return undefined;
+}
+
+export function isDefinedProject(name: string, projectDefinitions: ProjectDefinition[]): boolean {
+    return projectDefinitions.some(p => p.name === name);
 }
 
 export function findItemAtCursor(editor: vscode.TextEditor): { item: TodoItem; lineNum: number } | null {

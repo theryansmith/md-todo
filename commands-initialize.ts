@@ -30,6 +30,8 @@ md-todo: true
 
 ## Tags
 
+## Projects
+
 `;
 
     if (document.getText().trim() === '') {

@@ -2,6 +2,17 @@
 
 All notable user-facing changes to MD Todo are documented here. Newest first. When an item from the README's `## ToDO` ships, it's deleted from that list and described here in user-facing language.
 
+## [Unreleased]
+
+- Projects: group tasks by project with a backtick-wrapped bracket token — `` `[game-x]` `` — on the todo line. Backticks are required, so markdown links, footnotes, and the `- [ ]` checkbox are never mistaken for projects. One project per task: the first token on a line wins.
+- Inheritance: child todos belong to the nearest ancestor's project unless they carry their own token, so tagging a top-level item covers its whole subtree.
+- Define projects in a new `## Projects` section (`**project-name**: description`), parallel to `## Tags` and `## Users`. The `Initialize Todo File` template now includes the section.
+- New **MD TODO PROJECTS** tree view in the MD TODO container: every defined project plus a **No Project** bucket, each expanding to Active / Completed / Archive groupings. Right-click actions: Focus on Project in Editor, Clear Project Focus, Mark Done, Set Project.
+- New commands: `MD Todo: Set Project` (`Ctrl+Shift+T P`) sets, changes, or removes the project on the item at the cursor (with a `Create new project…` path), and `MD Todo: Manage Project Definitions` adds or edits entries in `## Projects`.
+- Project focus is a fourth focus dimension: `MD Todo: Set Focus Project` (`Ctrl+Shift+T Shift+P`, or click the new `$(project)` status bar item) dims every todo outside the chosen project, AND-composed with user, tag, and activity focus. `Clear All Focus` now clears it too.
+- Typing `[` in any document autocompletes defined projects (like `#` and `@`), and project tokens render in orange (`charts.orange`) in the editor.
+- Internal: first automated test suite (Vitest) covering the token grammar, parser extraction, project inheritance, and the line-rewrite transforms; runs in CI on every push and pull request.
+
 ## [1.4.5] — 2026-05-19
 
 - Focus commands: a small cleanup that adds two new commands, renames one display title, and reorders the activity-focus picker for consistency.

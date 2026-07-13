@@ -121,27 +121,30 @@ Users can install from the marketplace or download the VSIX asset from <https://
 
 All commands work on todo files (markdown with `md-todo: true` frontmatter). Access via Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`):
 
-| Command | Shortcut | Description |
-| ------- | -------- | ----------- |
-| `MD Todo: Add Item` | `Ctrl+Shift+T T` | Add new item with today's date |
-| `MD Todo: Mark Done` | `Ctrl+Shift+T D` | Mark item at cursor (or select from list) as complete |
-| `MD Todo: Add Note` | `Ctrl+Shift+T N` | Add dated note to item at cursor (or select) |
-| `MD Todo: Add/Edit Tags` | `Ctrl+Shift+T Shift+T` | Add or modify tags on an item |
-| `MD Todo: Manage Tags` | - | Add or edit tag definitions |
-| `MD Todo: Add User` | - | Define a new user (shortname / full name / description) in the `## Users` section |
-| `MD Todo: Archive Completed` | `Ctrl+Shift+T A` | Move old completed items to Archive section |
-| `MD Todo: Show Git History` | - | Browse git commits for this file, view diffs |
-| `MD Todo: Show Stats` | - | Velocity, avg completion time, oldest items |
-| `MD Todo: Show Recently Completed` | - | Pick a date range; opens a side-panel report and dims items outside the range |
-| `MD Todo: Show Recently Added` | - | Same as above, but for items added in the range |
-| `MD Todo: Show Stale Items` | - | Pick a threshold; opens a report of incomplete items older than N days |
-| `MD Todo: Clear Activity Focus` | - | Remove the active date filter |
-| `MD Todo: Quick Add` | - | Insert todo template at cursor |
-| `MD Todo: Set Focus Tag` | `Ctrl+Shift+T F` | Pick a tag from `## Tags` to focus on; non-matching todos dim in place |
-| `MD Todo: Set Focus User` | `Ctrl+Shift+T Shift+F` | Pick a user from `## Users` to focus on; non-mentioning todos dim |
-| `MD Todo: Set Focus Activity` | - | Open the activity-focus picker (same as clicking the status-bar `$(calendar)` item) |
-| `MD Todo: Clear All Focus` | - | Clear tag focus, user focus, and activity focus in one shot |
-| `MD Todo: Assign Focused User` | `Ctrl+Shift+T Shift+U` | Toggle `@<focusUser>` on the todo at the cursor |
+| Command                               | Shortcut               | Description                                                                         |
+| ------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------- |
+| `MD Todo: Add Item`                   | `Ctrl+Shift+T T`       | Add new item with today's date                                                      |
+| `MD Todo: Mark Done`                  | `Ctrl+Shift+T D`       | Mark item at cursor (or select from list) as complete                               |
+| `MD Todo: Add Note`                   | `Ctrl+Shift+T N`       | Add dated note to item at cursor (or select)                                        |
+| `MD Todo: Add/Edit Tags`              | `Ctrl+Shift+T Shift+T` | Add or modify tags on an item                                                       |
+| `MD Todo: Manage Tags`                | -                      | Add or edit tag definitions                                                         |
+| `MD Todo: Set Project`                | `Ctrl+Shift+T P`       | Set (or remove) the single `[project]` on an item                                   |
+| `MD Todo: Manage Project Definitions` | -                      | Add or edit project definitions in `## Projects`                                    |
+| `MD Todo: Add User`                   | -                      | Define a new user (shortname / full name / description) in the `## Users` section   |
+| `MD Todo: Archive Completed`          | `Ctrl+Shift+T A`       | Move old completed items to Archive section                                         |
+| `MD Todo: Show Git History`           | -                      | Browse git commits for this file, view diffs                                        |
+| `MD Todo: Show Stats`                 | -                      | Velocity, avg completion time, oldest items                                         |
+| `MD Todo: Show Recently Completed`    | -                      | Pick a date range; opens a side-panel report and dims items outside the range       |
+| `MD Todo: Show Recently Added`        | -                      | Same as above, but for items added in the range                                     |
+| `MD Todo: Show Stale Items`           | -                      | Pick a threshold; opens a report of incomplete items older than N days              |
+| `MD Todo: Clear Activity Focus`       | -                      | Remove the active date filter                                                       |
+| `MD Todo: Quick Add`                  | -                      | Insert todo template at cursor                                                      |
+| `MD Todo: Set Focus Tag`              | `Ctrl+Shift+T F`       | Pick a tag from `## Tags` to focus on; non-matching todos dim in place              |
+| `MD Todo: Set Focus User`             | `Ctrl+Shift+T Shift+F` | Pick a user from `## Users` to focus on; non-mentioning todos dim                   |
+| `MD Todo: Set Focus Project`          | `Ctrl+Shift+T Shift+P` | Pick a project from `## Projects` to focus on; todos outside the project dim        |
+| `MD Todo: Set Focus Activity`         | -                      | Open the activity-focus picker (same as clicking the status-bar `$(calendar)` item) |
+| `MD Todo: Clear All Focus`            | -                      | Clear tag focus, user focus, project focus, and activity focus in one shot          |
+| `MD Todo: Assign Focused User`        | `Ctrl+Shift+T Shift+U` | Toggle `@<focusUser>` on the todo at the cursor                                     |
 
 The tag and user picker lists shown by these commands — `Add/Edit Tags`, `Manage Tags`, `Set Focus Tag`, `Set Focus User`, and `Assign Focused User` — are sorted alphabetically (case-insensitive), matching the order used in the **MD TODO TAGS** and **MD TODO USERS** panels. The inline `@` / `#` autocomplete dropdown that appears while typing in the `Add Todo Item` input is sorted the same way, regardless of where the `@` / `#` appears in the input — including when it is the very first character typed.
 
@@ -158,7 +161,7 @@ md-todo: true
 
 ## Active
 
-- [ ] Finish tech audit report `+2025-01-20` #work #urgent
+- [ ] Finish tech audit report `+2025-01-20` #work #urgent `[game-x]`
   - 2025-01-22: Got rendering section drafted
   - 2025-01-25: Waiting on build metrics from infra team
 - [ ] 1:1 prep for new hires `+2025-01-26` #work @jdoe
@@ -184,6 +187,11 @@ md-todo: true
 
 **jdoe** (John Doe): team member, new hire
 **asmith** (Alice Smith): frontend lead
+
+## Projects
+
+**game-x**: The big unannounced title
+**tools**: Internal tooling and infrastructure
 
 ```
 
@@ -242,6 +250,40 @@ When a focus user, focus tag, or both are set, dimming now applies in **two laye
 
 1. **Subtree-level**: every top-level todo whose subtree does not match is rendered at 25% opacity (full lines, including descendants).
 2. **Span-level**: across the entire document — including inside still-visible matching items — every non-focused `@mention` span (when a focus user is set) and every non-focused `#tag` span (when a focus tag is set) is also dimmed to 25%. The focused span itself stays at full opacity, so the eye lands on it immediately.
+
+### Projects
+
+Group tasks by project with a backtick-wrapped bracket token:
+
+```markdown
+- [ ] Ship rework `+2026-07-10` `[game-x]` #work @jdoe
+```
+
+- Project tokens use `` `[project-name]` `` format (alphanumeric, underscores, and hyphens). The backticks are required — plain `[brackets]`, markdown links `[text](url)`, reference links, and footnotes are never treated as projects.
+- **Single project per task**: the first token on the line wins. `MD Todo: Set Project` (`Ctrl+Shift+T P`) strips every project token from the line and appends exactly one at the end (or none, to remove the project). The picker offers every defined project plus a `Create new project…` entry.
+- **Inheritance**: children inherit the nearest ancestor's project unless they carry their own token — tag a top-level item once and its whole subtree belongs to that project.
+- Define projects in a `## Projects` section with `**project-name**: description` format (`MD Todo: Manage Project Definitions` adds or edits them, auto-creating the section at the end of the document when missing).
+- Project tokens render in **orange** (`charts.orange`) — distinct from `#tags` (purple) and `@mentions` (bold blue).
+- Type `[` in any document and a completion list appears with every defined project, sourced from the most recently focused mdtodo doc — same behavior as the `#` and `@` completions. The typed `[` (and the editor's auto-closed `]`, if any) is replaced by the full `` `[name]` `` token. The inline dropdown in `Add Todo Item` also suggests projects when you type `[`.
+
+#### Project Focus (status bar)
+
+A fourth status bar item shows the current project focus:
+
+- Default: `$(project) All projects` — nothing dimmed by project.
+- After picking a project: `$(project) [game-x]` — every top-level todo whose subtree does not belong to `[game-x]` (own token or inherited) is rendered at 25% opacity, and non-focused project-token spans dim across the document.
+
+Click the status bar item, run `MD Todo: Set Focus Project`, or press `Ctrl+Shift+T Shift+P` to set or clear focus. Focus is persisted per-workspace and AND-composes with tag, user, and activity focus.
+
+#### Tree View — MD TODO PROJECTS
+
+Parallel to the tags tree, the **MD TODO** container hosts an **MD TODO PROJECTS** view listing every project defined in the active todo file's `## Projects` section, plus a **No Project** bucket for items with no own or inherited project. Each project expands to `Active`, `Completed`, and `Archive` groupings; each grouping expands to the individual todos (membership follows inheritance, so children of a `[game-x]` item appear under `game-x`). Tokens naming projects that are not defined in `## Projects` still get a root — shown with a warning icon — so those tasks stay reachable; add the definition via `MD Todo: Manage Project Definitions` to make it official.
+
+- **Click a todo leaf** — opens the source document and jumps the cursor to that line.
+- **Right-click a project → Focus on Project in Editor** — sets project focus to that project in place.
+- **Right-click a project → Clear Project Focus** — clears any active project focus.
+- **Right-click a todo → Mark Done** — marks the todo complete from the tree.
+- **Right-click a todo → Set Project** — opens the source document, places the cursor on the line, and runs `MD Todo: Set Project`.
 
 ### Users and `@mentions`
 
@@ -360,7 +402,6 @@ See [CHANGELOG.md](CHANGELOG.md) for the full list of user-facing changes per re
 
 ## ToDO
 
-- [ ] add [project] support for tasks, so I can group by project
 - [ ] modify the "completed view" to show parent times if teh completed item in the time window had a parent todo (it usually has contextual notes that give more visibility)
 - [x] ~~consider making the tags and users inline autocompletion work in any type of doc, not just md.  The last selected mdtodo doc should be the source.~~ ✅ done
 - [x] ~~alphabetical sorting of tags and users works in the mdtodo panels, but not in the command pallet~~ ✅ done

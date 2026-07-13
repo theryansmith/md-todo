@@ -1,0 +1,151 @@
+/**
+ * Minimal inert stub of the 'vscode' host API, aliased in vitest.config.ts.
+ * Only covers what the production modules under test touch at runtime —
+ * mostly class constructors used in type positions or object literals.
+ * Nothing here performs real editor work.
+ */
+
+export class Position {
+    constructor(public readonly line: number, public readonly character: number) {}
+}
+
+export class Range {
+    public readonly start: Position;
+    public readonly end: Position;
+    constructor(startLine: number | Position, startChar: number | Position, endLine?: number, endChar?: number) {
+        if (typeof startLine === 'number') {
+            this.start = new Position(startLine, startChar as number);
+            this.end = new Position(endLine as number, endChar as number);
+        } else {
+            this.start = startLine;
+            this.end = startChar as Position;
+        }
+    }
+}
+
+export class Selection extends Range {}
+
+export class ThemeIcon {
+    constructor(public readonly id: string) {}
+}
+
+export class ThemeColor {
+    constructor(public readonly id: string) {}
+}
+
+export class MarkdownString {
+    value = '';
+    appendMarkdown(text: string): MarkdownString {
+        this.value += text;
+        return this;
+    }
+}
+
+export class EventEmitter<T> {
+    private listeners: Array<(e: T) => unknown> = [];
+    event = (listener: (e: T) => unknown) => {
+        this.listeners.push(listener);
+        return { dispose: () => undefined };
+    };
+    fire(data?: T): void {
+        for (const l of this.listeners) { l(data as T); }
+    }
+    dispose(): void {
+        this.listeners = [];
+    }
+}
+
+export class TreeItem {
+    description?: string;
+    tooltip?: string;
+    contextValue?: string;
+    iconPath?: ThemeIcon;
+    command?: unknown;
+    constructor(public label: string, public collapsibleState?: number) {}
+}
+
+export enum TreeItemCollapsibleState {
+    None = 0,
+    Collapsed = 1,
+    Expanded = 2,
+}
+
+export enum StatusBarAlignment {
+    Left = 1,
+    Right = 2,
+}
+
+export class CompletionItem {
+    detail?: string;
+    documentation?: MarkdownString;
+    insertText?: string;
+    range?: Range;
+    filterText?: string;
+    sortText?: string;
+    constructor(public label: string, public kind?: number) {}
+}
+
+export enum CompletionItemKind {
+    Keyword = 13,
+    Module = 8,
+    User = 25,
+}
+
+export enum QuickPickItemKind {
+    Separator = -1,
+    Default = 0,
+}
+
+export class Hover {
+    constructor(public contents: unknown, public range?: Range) {}
+}
+
+export const Uri = {
+    parse(value: string): { toString(): string } {
+        return { toString: () => value };
+    },
+    file(path: string): { toString(): string } {
+        return { toString: () => `file://${path}` };
+    },
+};
+
+const inertDisposable = { dispose: () => undefined };
+
+export const window = {
+    activeTextEditor: undefined as unknown,
+    visibleTextEditors: [] as unknown[],
+    showInformationMessage: () => Promise.resolve(undefined),
+    showWarningMessage: () => Promise.resolve(undefined),
+    showQuickPick: () => Promise.resolve(undefined),
+    showInputBox: () => Promise.resolve(undefined),
+    createTextEditorDecorationType: () => inertDisposable,
+    createStatusBarItem: () => ({
+        show: () => undefined,
+        hide: () => undefined,
+        dispose: () => undefined,
+        text: '',
+        tooltip: '',
+        command: '',
+    }),
+    createTreeView: () => inertDisposable,
+    onDidChangeActiveTextEditor: () => inertDisposable,
+};
+
+export const workspace = {
+    getConfiguration: () => ({ get: <T>(_key: string, defaultValue?: T) => defaultValue }),
+    openTextDocument: () => Promise.reject(new Error('vscode-mock: no documents')),
+    onDidChangeTextDocument: () => inertDisposable,
+    onDidSaveTextDocument: () => inertDisposable,
+    onDidCloseTextDocument: () => inertDisposable,
+};
+
+export const commands = {
+    registerCommand: () => inertDisposable,
+    registerTextEditorCommand: () => inertDisposable,
+    executeCommand: () => Promise.resolve(undefined),
+};
+
+export const languages = {
+    registerCompletionItemProvider: () => inertDisposable,
+    registerHoverProvider: () => inertDisposable,
+};

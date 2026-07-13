@@ -6,7 +6,7 @@ md-todo: true
 
 ## Active
 
-- [ ] Ship new feature `+2026-01-28`  #work #urgent @asmith
+- [ ] Ship new feature `+2026-01-28`  #work #urgent @asmith `[game-x]`
   - Planning meeting went well `+2026-01-28`
   - [ ] Write unit tests `+2026-01-28`
     - Cover edge cases `+2026-01-28`
@@ -19,7 +19,7 @@ md-todo: true
     - [x] Address feedback `+2026-01-28` `✓2026-01-29`
 - [ ] my task 6 `+2026-01-29` #fna #urgent @jdoe
   - do it `+2026-01-29`
-- [ ] try 5 `+2026-01-28` #work #infra @bkim
+- [ ] try 5 `+2026-01-28` #work #infra @bkim `[tools]`
 - [ ] my task `+2026-01-28` #work #urgent
 - [ ] 1:1 prep for new hires `+2025-01-26` #work #infra @jdoe
   - antoher note tasdf  asdf  his one is importantasdf asdf  asdf   `+2026-01-28`
@@ -69,3 +69,8 @@ md-todo: true
 **jdoe** (John Doe): new hire
 **asmith** (Alice Smith): frontend lead
 **bkim** (Brian Kim): infra & tools
+
+## Projects
+
+**game-x**: The big unannounced title
+**tools**: Internal tooling and infrastructure

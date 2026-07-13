@@ -4,6 +4,7 @@ import { isTodoFile } from './parser';
 
 export const FOCUS_USER_STATE_KEY = 'mdTodo.focusUser';
 export const FOCUS_TAG_STATE_KEY = 'mdTodo.focusTag';
+export const FOCUS_PROJECT_STATE_KEY = 'mdTodo.focusProject';
 export const ACTIVITY_FOCUS_STATE_KEY = 'mdTodo.activityFocus';
 export const LAST_TODO_URI_STATE_KEY = 'mdTodo.completion.lastTodoFileUri';
 
@@ -35,6 +36,15 @@ export function getFocusTag(): string | undefined {
 export async function setFocusTagState(tagname: string | undefined): Promise<void> {
     if (!extensionContext) { return; }
     await extensionContext.workspaceState.update(FOCUS_TAG_STATE_KEY, tagname);
+}
+
+export function getFocusProject(): string | undefined {
+    return extensionContext?.workspaceState.get<string>(FOCUS_PROJECT_STATE_KEY);
+}
+
+export async function setFocusProjectState(name: string | undefined): Promise<void> {
+    if (!extensionContext) { return; }
+    await extensionContext.workspaceState.update(FOCUS_PROJECT_STATE_KEY, name);
 }
 
 export function getActivityFocus(): ActivityFocus | undefined {

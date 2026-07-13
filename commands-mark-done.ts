@@ -64,22 +64,27 @@ export async function markDone(editor: vscode.TextEditor, _edit?: vscode.TextEdi
     }
 }
 
+/**
+ * Pure line transform: check the box and stamp a completed date. If the line
+ * carries a `+added` date, the `✓` date is placed right after it; otherwise
+ * it is appended at the end. Already-completed lines pass through unchanged.
+ */
+export function markLineComplete(lineText: string, today: string): string {
+    let result = lineText;
+    result = result.replace(/\[\s\]/, '[x]');
+    if (!result.includes('`✓')) {
+        if (result.includes('`+')) {
+            result = result.replace(/(`\+\d{4}-\d{2}-\d{2}`)/, `$1 \`✓${today}\``);
+        } else {
+            result = result.trimEnd() + ` \`✓${today}\``;
+        }
+    }
+    return result;
+}
+
 async function markItemDone(editor: vscode.TextEditor, item: TodoItem) {
     const document = editor.document;
     const today = getToday();
-
-    function markLineComplete(lineText: string): string {
-        let result = lineText;
-        result = result.replace(/\[\s\]/, '[x]');
-        if (!result.includes('`✓')) {
-            if (result.includes('`+')) {
-                result = result.replace(/(`\+\d{4}-\d{2}-\d{2}`)/, `$1 \`✓${today}\``);
-            } else {
-                result = result.trimEnd() + ` \`✓${today}\``;
-            }
-        }
-        return result;
-    }
 
     const parsed = parseDocument(document);
     const completedSection = parsed.sections.get('completed');
@@ -90,7 +95,7 @@ async function markItemDone(editor: vscode.TextEditor, item: TodoItem) {
     for (let i = item.line; i <= endLine; i++) {
         const lineText = document.lineAt(i).text;
         if (/^\s*-\s*\[[ xX]\]/.test(lineText)) {
-            itemLines.push(markLineComplete(lineText));
+            itemLines.push(markLineComplete(lineText, today));
         } else {
             itemLines.push(lineText);
         }

@@ -99,6 +99,16 @@
         "category": "MD Todo"
       },
       {
+        "command": "mdTodo.setProject",
+        "title": "Set Project",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.manageProjects",
+        "title": "Manage Project Definitions",
+        "category": "MD Todo"
+      },
+      {
         "command": "mdTodo.addUser",
         "title": "Add User",
         "category": "MD Todo"
@@ -116,6 +126,11 @@
       {
         "command": "mdTodo.setFocusTag",
         "title": "Set Focus Tag",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.setFocusProject",
+        "title": "Set Focus Project",
         "category": "MD Todo"
       },
       {
@@ -167,6 +182,26 @@
         "command": "mdTodo.tags.editTagsFromTree",
         "title": "Edit Tags",
         "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.projects.focusOnProject",
+        "title": "Focus on Project in Editor",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.projects.clearFocus",
+        "title": "Clear Project Focus",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.projects.markDoneFromTree",
+        "title": "Mark Done",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.projects.setProjectFromTree",
+        "title": "Set Project",
+        "category": "MD Todo"
       }
     ],
     "viewsContainers": {
@@ -189,6 +224,11 @@
           "id": "mdTodoTags",
           "name": "MD TODO TAGS",
           "icon": "media/icon-check-square.svg"
+        },
+        {
+          "id": "mdTodoProjects",
+          "name": "MD TODO PROJECTS",
+          "icon": "media/icon-check-square.svg"
         }
       ]
     },
@@ -200,6 +240,10 @@
       {
         "view": "mdTodoTags",
         "contents": "Open a todo file (markdown with `md-todo: true` frontmatter) to see tags."
+      },
+      {
+        "view": "mdTodoProjects",
+        "contents": "Open a todo file (markdown with `md-todo: true` frontmatter) to see projects."
       }
     ],
     "menus": {
@@ -243,6 +287,26 @@
           "command": "mdTodo.tags.editTagsFromTree",
           "when": "view == mdTodoTags && viewItem == tag-todo",
           "group": "1_modification"
+        },
+        {
+          "command": "mdTodo.projects.focusOnProject",
+          "when": "view == mdTodoProjects && viewItem == project-root",
+          "group": "navigation"
+        },
+        {
+          "command": "mdTodo.projects.clearFocus",
+          "when": "view == mdTodoProjects && viewItem == project-root",
+          "group": "navigation"
+        },
+        {
+          "command": "mdTodo.projects.markDoneFromTree",
+          "when": "view == mdTodoProjects && viewItem == project-todo",
+          "group": "1_modification"
+        },
+        {
+          "command": "mdTodo.projects.setProjectFromTree",
+          "when": "view == mdTodoProjects && viewItem == project-todo",
+          "group": "1_modification"
         }
       ]
     },
@@ -258,7 +322,7 @@
           "type": "number",
           "default": 0.5,
           "minimum": 0.1,
-          "maximum": 1.0,
+          "maximum": 1,
           "description": "Opacity for date decorations like +2026-01-28 and ✓2026-01-28 (0.1-1.0)"
         },
         "mdTodo.staleAfterDays": {
@@ -317,6 +381,18 @@
         "key": "ctrl+shift+t shift+u",
         "mac": "cmd+shift+t shift+u",
         "when": "editorTextFocus && editorLangId == markdown"
+      },
+      {
+        "command": "mdTodo.setProject",
+        "key": "ctrl+shift+t p",
+        "mac": "cmd+shift+t p",
+        "when": "editorTextFocus && editorLangId == markdown"
+      },
+      {
+        "command": "mdTodo.setFocusProject",
+        "key": "ctrl+shift+t shift+p",
+        "mac": "cmd+shift+t shift+p",
+        "when": "editorTextFocus && editorLangId == markdown"
       }
     ]
   },
@@ -324,12 +400,14 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
+    "test": "vitest run",
     "package": "vsce package"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.74.0",
+    "@vscode/vsce": "^3.0.0",
     "typescript": "^5.0.0",
-    "@vscode/vsce": "^3.0.0"
+    "vitest": "^3.2.7"
   }
 }
