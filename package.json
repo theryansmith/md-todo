@@ -109,6 +109,11 @@
         "category": "MD Todo"
       },
       {
+        "command": "mdTodo.showProjectView",
+        "title": "Show Project View",
+        "category": "MD Todo"
+      },
+      {
         "command": "mdTodo.addUser",
         "title": "Add User",
         "category": "MD Todo"
@@ -201,6 +206,11 @@
       {
         "command": "mdTodo.projects.setProjectFromTree",
         "title": "Set Project",
+        "category": "MD Todo"
+      },
+      {
+        "command": "mdTodo.projects.showProjectViewFromTree",
+        "title": "Show Project View",
         "category": "MD Todo"
       }
     ],
@@ -295,6 +305,11 @@
         },
         {
           "command": "mdTodo.projects.clearFocus",
+          "when": "view == mdTodoProjects && viewItem == project-root",
+          "group": "navigation"
+        },
+        {
+          "command": "mdTodo.projects.showProjectViewFromTree",
           "when": "view == mdTodoProjects && viewItem == project-root",
           "group": "navigation"
         },

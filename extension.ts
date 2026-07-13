@@ -13,6 +13,7 @@ import { addTags } from './commands-add-tags';
 import { manageTags } from './commands-manage-tags';
 import { setProject } from './commands-set-project';
 import { manageProjects } from './commands-manage-projects';
+import { showProjectView } from './project-view';
 import { addUser } from './commands-add-user';
 import { assignFocusedUser } from './commands-assign-focused-user';
 import { initFocusUserStatusBar, setFocusUser, clearFocusUser } from './focus-user';
@@ -52,6 +53,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerTextEditorCommand('mdTodo.manageTags', manageTags),
         vscode.commands.registerTextEditorCommand('mdTodo.setProject', setProject),
         vscode.commands.registerTextEditorCommand('mdTodo.manageProjects', manageProjects),
+        vscode.commands.registerTextEditorCommand('mdTodo.showProjectView', showProjectView),
         vscode.commands.registerTextEditorCommand('mdTodo.addUser', addUser),
         vscode.commands.registerTextEditorCommand('mdTodo.initialize', initializeTodoFile),
         vscode.commands.registerCommand('mdTodo.setFocusUser', setFocusUser),

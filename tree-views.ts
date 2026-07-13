@@ -22,6 +22,7 @@ import {
     clearProjectFocusFromTree,
     markDoneFromProjectsTree,
     setProjectFromTree,
+    showProjectViewFromTree,
 } from './tree-projects';
 import { isWhitespaceOnlyChange } from './editor-events';
 
@@ -111,6 +112,8 @@ export function registerTreeViews(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('mdTodo.projects.markDoneFromTree', (node?: ProjectsTreeNode) =>
             markDoneFromProjectsTree(projectsTreeProvider, node)),
         vscode.commands.registerCommand('mdTodo.projects.setProjectFromTree', (node?: ProjectsTreeNode) =>
-            setProjectFromTree(node))
+            setProjectFromTree(node)),
+        vscode.commands.registerCommand('mdTodo.projects.showProjectViewFromTree', (node?: ProjectsTreeNode) =>
+            showProjectViewFromTree(node))
     );
 }

@@ -117,6 +117,30 @@ async function pickStaleThreshold(): Promise<{ days: number; label: string } | u
     return { days: picked.days!, label: `older than ${picked.days} days` };
 }
 
+/**
+ * Renders one completed item's report line plus, when it has a parent todo,
+ * a context line naming that parent and any notes attached to it — parent
+ * notes are often the only place the surrounding intent got written down.
+ * Pure — exported for unit tests.
+ */
+export function renderCompletedItemLines(item: TodoItem): string[] {
+    const lines: string[] = [];
+    let info = '';
+    if (item.addedDate && item.completedDate) {
+        const a = parseDate(item.addedDate);
+        const c = parseDate(item.completedDate);
+        if (a && c) { info = ` — added ${item.addedDate}, completed in ${daysBetween(c, a)} days`; }
+    }
+    lines.push(`- ${item.text}${info}`);
+    if (item.parent) {
+        lines.push(`  - _Parent: ${item.parent.text}_`);
+        for (const note of item.parent.notes) {
+            lines.push(`    ${note}`);
+        }
+    }
+    return lines;
+}
+
 async function openActivityReport(
     document: vscode.TextDocument,
     activity: ActivityFocus
@@ -152,13 +176,7 @@ async function openActivityReport(
             const items = groups.get(d)!;
             lines.push(`## ${d} (${items.length})`);
             for (const item of items) {
-                let info = '';
-                if (item.addedDate && item.completedDate) {
-                    const a = parseDate(item.addedDate);
-                    const c = parseDate(item.completedDate);
-                    if (a && c) { info = ` — added ${item.addedDate}, completed in ${daysBetween(c, a)} days`; }
-                }
-                lines.push(`- ${item.text}${info}`);
+                lines.push(...renderCompletedItemLines(item));
             }
             lines.push('');
         }
