@@ -2,9 +2,11 @@ import * as vscode from 'vscode';
 import { updateTagDecorations, updateTagDecorationsIncremental } from './decoration-tag';
 import { createDateDecorationType, updateDateDecorations, updateDateDecorationsIncremental } from './decoration-date';
 import { updateMentionDecorations, updateMentionDecorationsIncremental } from './decoration-mention';
+import { updateProjectDecorations, updateProjectDecorationsIncremental } from './decoration-project';
 import { updateDimDecorations, updateDimDecorationsIncremental } from './decoration-dim';
 import { refreshFocusStatusBar } from './focus-user';
 import { refreshFocusTagStatusBar } from './focus-tag';
+import { refreshFocusProjectStatusBar } from './focus-project';
 import { refreshActivityFocusStatusBar } from './focus-activity';
 
 /**
@@ -32,9 +34,11 @@ export function registerEditorUiEvents(context: vscode.ExtensionContext): void {
         updateTagDecorations(vscode.window.activeTextEditor);
         updateDateDecorations(vscode.window.activeTextEditor);
         updateMentionDecorations(vscode.window.activeTextEditor);
+        updateProjectDecorations(vscode.window.activeTextEditor);
         updateDimDecorations(vscode.window.activeTextEditor);
         refreshFocusStatusBar(vscode.window.activeTextEditor);
         refreshFocusTagStatusBar(vscode.window.activeTextEditor);
+        refreshFocusProjectStatusBar(vscode.window.activeTextEditor);
         refreshActivityFocusStatusBar(vscode.window.activeTextEditor);
     }
 
@@ -44,10 +48,12 @@ export function registerEditorUiEvents(context: vscode.ExtensionContext): void {
                 updateTagDecorations(editor);
                 updateDateDecorations(editor);
                 updateMentionDecorations(editor);
+                updateProjectDecorations(editor);
                 updateDimDecorations(editor);
             }
             refreshFocusStatusBar(editor);
             refreshFocusTagStatusBar(editor);
+            refreshFocusProjectStatusBar(editor);
             refreshActivityFocusStatusBar(editor);
         }),
         vscode.workspace.onDidChangeTextDocument(event => {
@@ -65,10 +71,12 @@ export function registerEditorUiEvents(context: vscode.ExtensionContext): void {
             updateTagDecorationsIncremental(editor, event.contentChanges);
             updateDateDecorationsIncremental(editor, event.contentChanges);
             updateMentionDecorationsIncremental(editor, event.contentChanges);
+            updateProjectDecorationsIncremental(editor, event.contentChanges);
             updateDimDecorationsIncremental(editor, event.contentChanges);
             // Status bar tooltip depends on parsed user defs — refresh too.
             refreshFocusStatusBar(editor);
             refreshFocusTagStatusBar(editor);
+            refreshFocusProjectStatusBar(editor);
             refreshActivityFocusStatusBar(editor);
         }),
         vscode.workspace.onDidChangeConfiguration(event => {

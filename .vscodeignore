@@ -6,6 +6,8 @@
 node_modules/
 out/**/*.map
 *.ts
+test/
+vitest.config.ts
 tsconfig.json
 package-lock.json
 example-todo.md

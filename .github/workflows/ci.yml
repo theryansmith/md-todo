@@ -25,6 +25,9 @@ jobs:
       - name: Compile TypeScript
         run: npm run compile
 
+      - name: Run tests
+        run: npm test
+
       - name: Package VSIX
         run: npx @vscode/vsce package --no-git-tag-version
 

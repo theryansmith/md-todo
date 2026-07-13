@@ -11,6 +11,8 @@ export interface TodoItem {
     indent: number;
     tags: string[];
     mentions: string[];
+    /** Project from the first `[name]` token on the line, if any. */
+    project?: string;
     children: TodoItem[];
     parent?: TodoItem;
 }
@@ -28,11 +30,18 @@ export interface UserDefinition {
     line: number;
 }
 
+export interface ProjectDefinition {
+    name: string;
+    description: string;
+    line: number;
+}
+
 export interface ParsedDocument {
     items: TodoItem[];
     sections: Map<string, { start: number; end: number }>;
     tagDefinitions: TagDefinition[];
     userDefinitions: UserDefinition[];
+    projectDefinitions: ProjectDefinition[];
 }
 
 export interface TagValidationResult {
@@ -114,3 +123,32 @@ export type UntaggedNode = {
 };
 
 export type TagsTreeNode = TagRootNode | TagSectionNode | TagTodoNode | UntaggedNode;
+
+export type ProjectRootNode = {
+    kind: 'project-root';
+    project: ProjectDefinition;
+    counts: { active: number; completed: number; archived: number };
+    sourceUri: vscode.Uri;
+};
+
+export type ProjectSectionNode = {
+    kind: 'project-section';
+    project: ProjectDefinition | null;
+    section: 'active' | 'completed' | 'archive';
+    items: TodoItem[];
+    sourceUri: vscode.Uri;
+};
+
+export type ProjectTodoNode = {
+    kind: 'project-todo';
+    item: TodoItem;
+    sourceUri: vscode.Uri;
+};
+
+export type NoProjectNode = {
+    kind: 'no-project';
+    counts: { active: number; completed: number; archived: number };
+    sourceUri: vscode.Uri;
+};
+
+export type ProjectsTreeNode = ProjectRootNode | ProjectSectionNode | ProjectTodoNode | NoProjectNode;

@@ -67,17 +67,25 @@ export async function addTags(editor: vscode.TextEditor) {
     await updateItemTags(effectiveEditor, result.item, finalTags);
 }
 
+/**
+ * Pure line transform: strip every #tag, trim trailing whitespace, then
+ * append the new tag set at the end of the line (or nothing, when empty).
+ */
+export function computeTagsLine(lineText: string, tags: string[]): string {
+    let newText = lineText.replace(/#[\w-]+/g, '').replace(/\s+$/, '');
+
+    if (tags.length > 0) {
+        const tagString = tags.map(t => `#${t}`).join(' ');
+        newText = newText + ' ' + tagString;
+    }
+
+    return newText;
+}
+
 async function updateItemTags(editor: vscode.TextEditor, item: TodoItem, newTags: string[]) {
     const document = editor.document;
     const line = document.lineAt(item.line);
-    let newText = line.text;
-
-    newText = newText.replace(/#[\w-]+/g, '').replace(/\s+$/, '');
-
-    if (newTags.length > 0) {
-        const tagString = newTags.map(t => `#${t}`).join(' ');
-        newText = newText + ' ' + tagString;
-    }
+    const newText = computeTagsLine(line.text, newTags);
 
     await editor.edit((editBuilder: vscode.TextEditorEdit) => {
         editBuilder.replace(line.range, newText);

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { setExtensionContext } from './state';
-import { userHoverProvider, userCompletionProvider, tagCompletionProvider } from './completions';
+import { userHoverProvider, userCompletionProvider, tagCompletionProvider, projectCompletionProvider } from './completions';
 import { addItem } from './commands-add-item';
 import { markDone } from './commands-mark-done';
 import { addNote } from './commands-add-note';
@@ -11,10 +11,13 @@ import { quickAdd } from './commands-quick-add';
 import { initializeTodoFile } from './commands-initialize';
 import { addTags } from './commands-add-tags';
 import { manageTags } from './commands-manage-tags';
+import { setProject } from './commands-set-project';
+import { manageProjects } from './commands-manage-projects';
 import { addUser } from './commands-add-user';
 import { assignFocusedUser } from './commands-assign-focused-user';
 import { initFocusUserStatusBar, setFocusUser, clearFocusUser } from './focus-user';
 import { initFocusTagStatusBar, setFocusTag, clearFocusTag } from './focus-tag';
+import { initFocusProjectStatusBar, setFocusProject, clearFocusProject } from './focus-project';
 import {
     initActivityFocusStatusBar,
     showRecentlyCompleted,
@@ -30,6 +33,7 @@ import { clearParseCache } from './parser';
 import { clearTagDecorationCache } from './decoration-tag';
 import { clearDateDecorationCache } from './decoration-date';
 import { clearMentionDecorationCache } from './decoration-mention';
+import { clearProjectDecorationCache } from './decoration-project';
 import { clearDimDecorationCache } from './decoration-dim';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -46,10 +50,13 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerTextEditorCommand('mdTodo.quickAdd', quickAdd),
         vscode.commands.registerTextEditorCommand('mdTodo.addTags', addTags),
         vscode.commands.registerTextEditorCommand('mdTodo.manageTags', manageTags),
+        vscode.commands.registerTextEditorCommand('mdTodo.setProject', setProject),
+        vscode.commands.registerTextEditorCommand('mdTodo.manageProjects', manageProjects),
         vscode.commands.registerTextEditorCommand('mdTodo.addUser', addUser),
         vscode.commands.registerTextEditorCommand('mdTodo.initialize', initializeTodoFile),
         vscode.commands.registerCommand('mdTodo.setFocusUser', setFocusUser),
         vscode.commands.registerCommand('mdTodo.setFocusTag', setFocusTag),
+        vscode.commands.registerCommand('mdTodo.setFocusProject', setFocusProject),
         vscode.commands.registerTextEditorCommand('mdTodo.assignFocusedUser', assignFocusedUser),
         vscode.commands.registerTextEditorCommand('mdTodo.showRecentlyCompleted', showRecentlyCompleted),
         vscode.commands.registerTextEditorCommand('mdTodo.showRecentlyAdded', showRecentlyAdded),
@@ -60,12 +67,14 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('mdTodo.clearAllFocus', async () => {
             await clearFocusUser();
             await clearFocusTag();
+            await clearFocusProject();
             await clearActivityFocus();
         }),
     );
 
     initFocusUserStatusBar(context);
     initFocusTagStatusBar(context);
+    initFocusProjectStatusBar(context);
     initActivityFocusStatusBar(context);
 
     // Completion providers register against all docs so tags/users can be
@@ -76,6 +85,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.languages.registerCompletionItemProvider('*', tagCompletionProvider, '#'),
         vscode.languages.registerCompletionItemProvider('*', userCompletionProvider, '@'),
+        vscode.languages.registerCompletionItemProvider('*', projectCompletionProvider, '['),
         vscode.languages.registerHoverProvider({ language: 'markdown' }, userHoverProvider),
     );
 
@@ -89,6 +99,7 @@ export function activate(context: vscode.ExtensionContext) {
             clearTagDecorationCache(doc.uri);
             clearDateDecorationCache(doc.uri);
             clearMentionDecorationCache(doc.uri);
+            clearProjectDecorationCache(doc.uri);
             clearDimDecorationCache(doc.uri);
         }),
     );

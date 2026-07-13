@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { SuggestionItem } from './types';
 import { parseDocument, validateTags } from './parser';
+import { formatProjectToken } from './tokens';
 
 export async function addTagDefinition(editor: vscode.TextEditor, name: string, description: string) {
     const document = editor.document;
@@ -28,6 +29,34 @@ export async function addTagDefinition(editor: vscode.TextEditor, name: string, 
     }
 
     vscode.window.showInformationMessage(`Added tag: #${name}`);
+}
+
+export async function addProjectDefinition(editor: vscode.TextEditor, name: string, description: string) {
+    const document = editor.document;
+    const parsed = parseDocument(document);
+    const projectsSection = parsed.sections.get('projects');
+
+    const newLine = `**${name}**: ${description}`;
+
+    if (projectsSection) {
+        let insertLine = projectsSection.start + 1;
+        while (insertLine < document.lineCount && document.lineAt(insertLine).text.trim() === '') {
+            insertLine++;
+        }
+
+        await editor.edit((editBuilder: vscode.TextEditorEdit) => {
+            editBuilder.insert(new vscode.Position(insertLine, 0), newLine + '\n');
+        });
+    } else {
+        const insertLine = document.lineCount;
+
+        await editor.edit((editBuilder: vscode.TextEditorEdit) => {
+            const text = `\n## Projects\n\n${newLine}\n`;
+            editBuilder.insert(new vscode.Position(insertLine, 0), text);
+        });
+    }
+
+    vscode.window.showInformationMessage(`Added project: [${name}]`);
 }
 
 export async function addUserDefinition(editor: vscode.TextEditor, shortname: string, newLine: string) {
@@ -112,9 +141,9 @@ export function sortedSuggestions<T>(
 }
 
 /**
- * Prompt the user for free-form todo / note text with inline @user / #tag
- * suggestions. As the user types an `@xxx` or `#xxx` token at the end of the
- * value, matching users / tags from the document populate the picker. Selecting
+ * Prompt the user for free-form todo / note text with inline @user / #tag /
+ * [project suggestions. As the user types an `@xxx`, `#xxx`, or `[xxx` token
+ * at the end of the value, matching definitions populate the picker. Selecting
  * one inserts it into the value and keeps the picker open. Pressing Enter with
  * no item highlighted submits the value as the result.
  */
@@ -181,7 +210,7 @@ export function promptForTodoText(
         };
 
         const refreshSuggestions = (value: string) => {
-            const tokenMatch = value.match(/([@#])([\w-]*)$/);
+            const tokenMatch = value.match(/([@#[])([\w-]*)$/);
             if (!tokenMatch) {
                 qp.items = [];
                 qp.activeItems = [];
@@ -199,6 +228,17 @@ export function promptForTodoText(
                         description: u.fullname,
                         detail: u.description,
                         insertText: `@${u.shortname}`,
+                        alwaysShow: true,
+                    }));
+            } else if (trigger === '[') {
+                items = sortedSuggestions(parsed.projectDefinitions, partial,
+                    p => `${p.name} ${p.description}`,
+                    p => p.name,
+                    p => ({
+                        label: `[${p.name}]`,
+                        description: p.description,
+                        detail: '',
+                        insertText: formatProjectToken(p.name),
                         alwaysShow: true,
                     }));
             } else {
@@ -222,7 +262,7 @@ export function promptForTodoText(
         qp.onDidAccept(() => {
             const active = qp.activeItems[0];
             if (active) {
-                const newValue = qp.value.replace(/([@#])([\w-]*)$/, `${active.insertText} `);
+                const newValue = qp.value.replace(/([@#[])([\w-]*)$/, `${active.insertText} `);
                 qp.value = newValue;
                 qp.items = [];
                 qp.activeItems = [];

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { TreeNode, TagsTreeNode } from './types';
+import { TreeNode, TagsTreeNode, ProjectsTreeNode } from './types';
 import { isTodoFile } from './parser';
 import { rememberLastTodoUri } from './state';
 import {
@@ -16,25 +16,35 @@ import {
     markDoneFromTagsTree,
     editTagsFromTree,
 } from './tree-tags';
+import {
+    MdTodoProjectsTreeProvider,
+    focusOnProjectFromTree,
+    clearProjectFocusFromTree,
+    markDoneFromProjectsTree,
+    setProjectFromTree,
+} from './tree-projects';
 import { isWhitespaceOnlyChange } from './editor-events';
 
 /**
- * Create both tree providers + views, seed them with the active todo file,
+ * Create the tree providers + views, seed them with the active todo file,
  * subscribe them to editor/document events, and register the tree-driven
- * commands. Tree-views (Users + Tags) are siblings sharing identical wiring,
- * so they're set up together here.
+ * commands. Tree-views (Users + Tags + Projects) are siblings sharing
+ * identical wiring, so they're set up together here.
  */
 export function registerTreeViews(context: vscode.ExtensionContext): void {
     const treeProvider = new MdTodoUsersTreeProvider(context.workspaceState);
     const tagsTreeProvider = new MdTodoTagsTreeProvider(context.workspaceState);
+    const projectsTreeProvider = new MdTodoProjectsTreeProvider(context.workspaceState);
     const treeView = vscode.window.createTreeView('mdTodoUsers', { treeDataProvider: treeProvider });
     const tagsTreeView = vscode.window.createTreeView('mdTodoTags', { treeDataProvider: tagsTreeProvider });
-    context.subscriptions.push(treeView, tagsTreeView);
+    const projectsTreeView = vscode.window.createTreeView('mdTodoProjects', { treeDataProvider: projectsTreeProvider });
+    context.subscriptions.push(treeView, tagsTreeView, projectsTreeView);
 
     const initialEditor = vscode.window.activeTextEditor;
     if (initialEditor && isTodoFile(initialEditor.document)) {
         treeProvider.setCurrentTodoFile(initialEditor.document.uri);
         tagsTreeProvider.setCurrentTodoFile(initialEditor.document.uri);
+        projectsTreeProvider.setCurrentTodoFile(initialEditor.document.uri);
         rememberLastTodoUri(initialEditor.document.uri);
     }
 
@@ -45,6 +55,7 @@ export function registerTreeViews(context: vscode.ExtensionContext): void {
             if (editor && isTodoFile(editor.document)) {
                 treeProvider.setCurrentTodoFile(editor.document.uri);
                 tagsTreeProvider.setCurrentTodoFile(editor.document.uri);
+                projectsTreeProvider.setCurrentTodoFile(editor.document.uri);
                 rememberLastTodoUri(editor.document.uri);
             }
         }),
@@ -58,6 +69,10 @@ export function registerTreeViews(context: vscode.ExtensionContext): void {
             if (tagUri && event.document.uri.toString() === tagUri.toString()) {
                 tagsTreeProvider.refreshDebounced();
             }
+            const projectUri = projectsTreeProvider.getCurrentUri();
+            if (projectUri && event.document.uri.toString() === projectUri.toString()) {
+                projectsTreeProvider.refreshDebounced();
+            }
         }),
         vscode.workspace.onDidSaveTextDocument(doc => {
             const userUri = treeProvider.getCurrentUri();
@@ -67,6 +82,10 @@ export function registerTreeViews(context: vscode.ExtensionContext): void {
             const tagUri = tagsTreeProvider.getCurrentUri();
             if (tagUri && doc.uri.toString() === tagUri.toString()) {
                 tagsTreeProvider.refresh();
+            }
+            const projectUri = projectsTreeProvider.getCurrentUri();
+            if (projectUri && doc.uri.toString() === projectUri.toString()) {
+                projectsTreeProvider.refresh();
             }
         })
     );
@@ -85,6 +104,13 @@ export function registerTreeViews(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('mdTodo.tags.markDoneFromTree', (node?: TagsTreeNode) =>
             markDoneFromTagsTree(tagsTreeProvider, node)),
         vscode.commands.registerCommand('mdTodo.tags.editTagsFromTree', (node?: TagsTreeNode) =>
-            editTagsFromTree(node))
+            editTagsFromTree(node)),
+        vscode.commands.registerCommand('mdTodo.projects.focusOnProject', (node?: ProjectsTreeNode) =>
+            focusOnProjectFromTree(node)),
+        vscode.commands.registerCommand('mdTodo.projects.clearFocus', clearProjectFocusFromTree),
+        vscode.commands.registerCommand('mdTodo.projects.markDoneFromTree', (node?: ProjectsTreeNode) =>
+            markDoneFromProjectsTree(projectsTreeProvider, node)),
+        vscode.commands.registerCommand('mdTodo.projects.setProjectFromTree', (node?: ProjectsTreeNode) =>
+            setProjectFromTree(node))
     );
 }

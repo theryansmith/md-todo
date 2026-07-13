@@ -5,9 +5,11 @@ import {
     parseDocument,
     getItemWithDescendantsEndLine,
     itemMatchesActivity,
+    getEffectiveProject,
 } from './parser';
 import { startOfToday } from './dates';
-import { getFocusUser, getFocusTag, getActivityFocus } from './state';
+import { getFocusUser, getFocusTag, getFocusProject, getActivityFocus } from './state';
+import { PROJECT_TOKEN_RE_G } from './tokens';
 
 let dimmedDecorationType: vscode.TextEditorDecorationType | undefined;
 
@@ -41,11 +43,12 @@ export function createDimmedDecorationType(): vscode.TextEditorDecorationType {
  * matches the active focus filters.
  *
  * A top-level item is "matched" when its subtree contains at least one node
- * (the item itself or any descendant) that satisfies BOTH the user-focus and
- * tag-focus filters. Either filter alone behaves as before; both set together
- * narrows the visible items via AND semantics. When unmatched, the entire
- * subtree (including notes) is dimmed. When matched, nothing in the subtree
- * is dimmed so the user can read the parent context.
+ * (the item itself or any descendant) that satisfies ALL of the user-focus,
+ * tag-focus, and project-focus filters (project membership is inherited from
+ * the nearest ancestor's `[name]` token). Any filter alone behaves as before;
+ * several set together narrow the visible items via AND semantics. When
+ * unmatched, the entire subtree (including notes) is dimmed. When matched,
+ * nothing in the subtree is dimmed so the user can read the parent context.
  */
 export function updateDimDecorations(editor: vscode.TextEditor) {
     const decorationType = dimmedDecorationType ?? createDimmedDecorationType();
@@ -57,8 +60,9 @@ export function updateDimDecorations(editor: vscode.TextEditor) {
     }
     const focusUser = getFocusUser();
     const focusTag = getFocusTag();
+    const focusProject = getFocusProject();
     const activity = getActivityFocus();
-    if (!focusUser && !focusTag && !activity) {
+    if (!focusUser && !focusTag && !focusProject && !activity) {
         editor.setDecorations(decorationType, []);
         dimDecorationCache.set(key, []);
         return;
@@ -69,8 +73,9 @@ export function updateDimDecorations(editor: vscode.TextEditor) {
     function subtreeMatches(item: TodoItem): boolean {
         const userOk = !focusUser || item.mentions.includes(focusUser);
         const tagOk = !focusTag || item.tags.includes(focusTag);
+        const projectOk = !focusProject || getEffectiveProject(item) === focusProject;
         const activityOk = !activity || itemMatchesActivity(item, activity, today);
-        if (userOk && tagOk && activityOk) { return true; }
+        if (userOk && tagOk && projectOk && activityOk) { return true; }
         for (const child of item.children) {
             if (subtreeMatches(child)) { return true; }
         }
@@ -101,6 +106,13 @@ export function updateDimDecorations(editor: vscode.TextEditor) {
         if (focusTag) {
             for (const m of lineText.matchAll(/#([\w-]+)/g)) {
                 if (m.index !== undefined && m[1] !== focusTag) {
+                    ranges.push(new vscode.Range(i, m.index, i, m.index + m[0].length));
+                }
+            }
+        }
+        if (focusProject) {
+            for (const m of lineText.matchAll(PROJECT_TOKEN_RE_G)) {
+                if (m.index !== undefined && m[1] !== focusProject) {
                     ranges.push(new vscode.Range(i, m.index, i, m.index + m[0].length));
                 }
             }
@@ -151,8 +163,9 @@ export function updateDimDecorationsIncremental(
 
     const focusUser = getFocusUser();
     const focusTag = getFocusTag();
+    const focusProject = getFocusProject();
     const activity = getActivityFocus();
-    if (!focusUser && !focusTag && !activity) {
+    if (!focusUser && !focusTag && !focusProject && !activity) {
         const cached = dimDecorationCache.get(key);
         if (cached && cached.length === 0) { return; }
         editor.setDecorations(decorationType, []);
