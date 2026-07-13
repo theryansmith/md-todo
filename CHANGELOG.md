@@ -2,7 +2,7 @@
 
 All notable user-facing changes to MD Todo are documented here. Newest first. When an item from the README's `## ToDO` ships, it's deleted from that list and described here in user-facing language.
 
-## [Unreleased]
+## [1.5.0] — 2026-07-13
 
 - Projects: group tasks by project with a backtick-wrapped bracket token — `` `[game-x]` `` — on the todo line. Backticks are required, so markdown links, footnotes, and the `- [ ]` checkbox are never mistaken for projects. One project per task: the first token on a line wins.
 - Inheritance: child todos belong to the nearest ancestor's project unless they carry their own token, so tagging a top-level item covers its whole subtree.
