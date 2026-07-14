@@ -16,6 +16,7 @@ import { setFocusProjectState } from './state';
 import { updateDimDecorations } from './decoration-dim';
 import { refreshFocusProjectStatusBar } from './focus-project';
 import { markDone } from './commands-mark-done';
+import { showProjectViewForProject } from './project-view';
 
 /**
  * Project names that are used on items (own token or inherited) but have no
@@ -323,6 +324,14 @@ export async function markDoneFromProjectsTree(treeProvider: MdTodoProjectsTreeP
     const editor = await vscode.window.showTextDocument(doc, { preview: false });
     await markDone(editor, undefined, node.item.line);
     treeProvider.refresh();
+}
+
+export async function showProjectViewFromTree(node?: ProjectsTreeNode) {
+    if (!node || node.kind !== 'project-root') {
+        vscode.window.showWarningMessage('Right-click a project in the MD Todo Projects view.');
+        return;
+    }
+    await showProjectViewForProject(node.sourceUri, node.project);
 }
 
 export async function setProjectFromTree(node?: ProjectsTreeNode) {

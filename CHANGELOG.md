@@ -2,6 +2,11 @@
 
 All notable user-facing changes to MD Todo are documented here. Newest first. When an item from the README's `## ToDO` ships, it's deleted from that list and described here in user-facing language.
 
+## [Unreleased]
+
+- New command `MD Todo: Show Project View` opens a read-only report of every item in a chosen project — active, completed, and archived alike — grouped by section and preserving the parent/child hierarchy those items appear in. A matching task nested under a non-matching parent still shows that parent, marked `_(context)_`, so its place in the document stays legible. Also reachable via a new "Show Project View" entry on the **MD TODO PROJECTS** tree's right-click menu.
+- `MD Todo: Show Recently Completed` now shows, for each completed item that has a parent todo, the parent's text and any notes attached to it — the notes are often the only place the surrounding context was written down.
+
 ## [1.5.0] — 2026-07-13
 
 - Projects: group tasks by project with a backtick-wrapped bracket token — `` `[game-x]` `` — on the todo line. Backticks are required, so markdown links, footnotes, and the `- [ ]` checkbox are never mistaken for projects. One project per task: the first token on a line wins.
