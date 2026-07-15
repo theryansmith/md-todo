@@ -5,7 +5,19 @@ import { DecorationController } from '../../vscode/decoration-controller';
 import { getItemWithDescendantsEndLine } from '../../core/query/items';
 import { itemMatchesActivity, getEffectiveProject } from '../../core/query/activity';
 import { startOfToday } from '../../core/dates';
-import { getFocusUser, getFocusTag, getFocusProject, getActivityFocus } from '../../vscode/workspace-state';
+import {
+    getWorkspaceState,
+    FOCUS_USER_STATE_KEY,
+    FOCUS_TAG_STATE_KEY,
+    FOCUS_PROJECT_STATE_KEY,
+    ACTIVITY_FOCUS_STATE_KEY,
+} from '../../vscode/workspace-state';
+
+// Local typed readers for the four focus values dim composes (AND semantics).
+const getFocusUser = () => getWorkspaceState(FOCUS_USER_STATE_KEY);
+const getFocusTag = () => getWorkspaceState(FOCUS_TAG_STATE_KEY);
+const getFocusProject = () => getWorkspaceState(FOCUS_PROJECT_STATE_KEY);
+const getActivityFocus = () => getWorkspaceState(ACTIVITY_FOCUS_STATE_KEY);
 import { PROJECT_TOKEN_RE_G } from '../../core/tokens';
 
 /** True when no focus dimension is set — dim's set is then trivially empty. */

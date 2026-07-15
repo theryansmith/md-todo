@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { parseDocument } from '../../vscode/document-cache';
 import { requireTodoEditor } from '../../vscode/guards';
-import { getFocusUser } from '../../vscode/workspace-state';
+import { userFocus } from '../focus/focus-user';
 
 /**
  * Toggle `@<shortname>` on the current todo line at the cursor.
@@ -27,7 +27,7 @@ export async function assignFocusedUser(editor: vscode.TextEditor): Promise<void
         return;
     }
 
-    let shortname = getFocusUser();
+    let shortname = userFocus.get();
     if (!shortname) {
         const parsed = parseDocument(document);
         if (parsed.userDefinitions.length === 0) {

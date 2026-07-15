@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { ParsedDocument } from '../core/model';
 import { isTodoFile, parseDocument } from './document-cache';
 import { requireTodoEditor } from './guards';
-import { getExtensionContext } from './workspace-state';
+import { StateKey, getWorkspaceState, updateWorkspaceState } from './workspace-state';
 
 /**
  * One focus engine, four instances (F-04). A focus dimension is: a
@@ -42,8 +42,8 @@ export interface FocusPickDescriptor<T> {
 
 export interface FocusDimensionDescriptor<T> {
     id: 'user' | 'tag' | 'project' | 'activity';
-    /** workspaceState key the focus value persists under (row B1). */
-    stateKey: string;
+    /** Typed workspaceState key the focus value persists under (row B1). */
+    stateKey: StateKey<T>;
     statusBar: {
         /**
          * Right-alignment priority (row B2). All four items are Right-aligned,
@@ -116,7 +116,7 @@ export class FocusDimension<T> implements RegisteredFocusDimension {
 
     /** The current focus value, or undefined when unfocused. */
     get(): T | undefined {
-        return getExtensionContext()?.workspaceState.get<T>(this.descriptor.stateKey);
+        return getWorkspaceState(this.descriptor.stateKey);
     }
 
     /**
@@ -126,11 +126,7 @@ export class FocusDimension<T> implements RegisteredFocusDimension {
      * set()/clear() below.
      */
     async setState(value: T | undefined): Promise<void> {
-        const context = getExtensionContext();
-        if (!context) {
-            return;
-        }
-        await context.workspaceState.update(this.descriptor.stateKey, value);
+        await updateWorkspaceState(this.descriptor.stateKey, value);
     }
 
     /**

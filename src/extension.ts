@@ -22,10 +22,6 @@ import { showProjectView } from './features/projects/project-view';
 import { addUser } from './features/users/commands-add-user';
 import { assignFocusedUser } from './features/users/commands-assign-focused-user';
 import { focusDimensions } from './features/focus';
-import { userFocus } from './features/focus/focus-user';
-import { tagFocus } from './features/focus/focus-tag';
-import { projectFocus } from './features/focus/focus-project';
-import { activityFocus } from './features/focus/focus-activity';
 import {
     showRecentlyCompleted,
     showRecentlyAdded,
@@ -66,10 +62,10 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('mdTodo.activityFocusMenu', activityFocusMenu),
         vscode.commands.registerCommand('mdTodo.setFocusActivity', activityFocusMenu),
         vscode.commands.registerCommand('mdTodo.clearAllFocus', async () => {
-            await userFocus.clear();
-            await tagFocus.clear();
-            await projectFocus.clear();
-            await activityFocus.clear();
+            // Registry order = user, tag, project, activity (the pre-3d order).
+            for (const dimension of focusDimensions) {
+                await dimension.clear();
+            }
         })
     );
 

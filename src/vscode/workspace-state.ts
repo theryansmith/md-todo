@@ -2,66 +2,59 @@ import * as vscode from 'vscode';
 import { ActivityFocus } from '../core/model';
 import { isTodoFile } from './document-cache';
 
-export const FOCUS_USER_STATE_KEY = 'mdTodo.focusUser';
-export const FOCUS_TAG_STATE_KEY = 'mdTodo.focusTag';
-export const FOCUS_PROJECT_STATE_KEY = 'mdTodo.focusProject';
-export const ACTIVITY_FOCUS_STATE_KEY = 'mdTodo.activityFocus';
-export const LAST_TODO_URI_STATE_KEY = 'mdTodo.completion.lastTodoFileUri';
+/**
+ * Typed workspaceState access (replaces the old state.ts free-form
+ * getter/setter pairs). A StateKey<T> binds the persisted key string to the
+ * value type stored under it; getWorkspaceState/updateWorkspaceState are the
+ * only readers and writers, so a key can never be read at one type and
+ * written at another. The grouping trees' per-view `lastTodoFileUri` keys are
+ * not listed here — the providers receive a Memento at construction and
+ * derive their keys from the descriptor id (vscode/grouping-tree.ts).
+ */
+export interface StateKey<T> {
+    readonly key: string;
+    /** Phantom marker binding T to the key — never present at runtime. */
+    readonly __valueType?: T;
+}
 
-// Module-level reference so commands and event handlers can read/write the
-// per-workspace focus user without threading context everywhere.
+function stateKey<T>(key: string): StateKey<T> {
+    return { key };
+}
+
+export const FOCUS_USER_STATE_KEY = stateKey<string>('mdTodo.focusUser');
+export const FOCUS_TAG_STATE_KEY = stateKey<string>('mdTodo.focusTag');
+export const FOCUS_PROJECT_STATE_KEY = stateKey<string>('mdTodo.focusProject');
+export const ACTIVITY_FOCUS_STATE_KEY = stateKey<ActivityFocus>('mdTodo.activityFocus');
+export const LAST_TODO_URI_STATE_KEY = stateKey<string>('mdTodo.completion.lastTodoFileUri');
+
+// THE one host-lifecycle concession to a module-level singleton: workspace
+// state hangs off the ExtensionContext, which only exists once activate()
+// has run, yet it is read from command handlers, decoration scans, and
+// completion providers that would otherwise all need the context threaded
+// through their signatures. activate() sets it exactly once; everything else
+// reaches it through the typed helpers below. Contained here by design — no
+// other module may hold the ExtensionContext (enterprise-restructure TDD,
+// Phase 3d).
 let extensionContext: vscode.ExtensionContext | undefined;
 
 export function setExtensionContext(ctx: vscode.ExtensionContext): void {
     extensionContext = ctx;
 }
 
-export function getExtensionContext(): vscode.ExtensionContext | undefined {
-    return extensionContext;
+/** Read a typed workspaceState value; undefined before activation or when unset. */
+export function getWorkspaceState<T>(key: StateKey<T>): T | undefined {
+    return extensionContext?.workspaceState.get<T>(key.key);
 }
 
-export function getFocusUser(): string | undefined {
-    return extensionContext?.workspaceState.get<string>(FOCUS_USER_STATE_KEY);
-}
-
-export async function setFocusUserState(shortname: string | undefined): Promise<void> {
+/** Write (or, with undefined, clear) a typed workspaceState value. */
+export async function updateWorkspaceState<T>(
+    key: StateKey<T>,
+    value: T | undefined
+): Promise<void> {
     if (!extensionContext) {
         return;
     }
-    await extensionContext.workspaceState.update(FOCUS_USER_STATE_KEY, shortname);
-}
-
-export function getFocusTag(): string | undefined {
-    return extensionContext?.workspaceState.get<string>(FOCUS_TAG_STATE_KEY);
-}
-
-export async function setFocusTagState(tagname: string | undefined): Promise<void> {
-    if (!extensionContext) {
-        return;
-    }
-    await extensionContext.workspaceState.update(FOCUS_TAG_STATE_KEY, tagname);
-}
-
-export function getFocusProject(): string | undefined {
-    return extensionContext?.workspaceState.get<string>(FOCUS_PROJECT_STATE_KEY);
-}
-
-export async function setFocusProjectState(name: string | undefined): Promise<void> {
-    if (!extensionContext) {
-        return;
-    }
-    await extensionContext.workspaceState.update(FOCUS_PROJECT_STATE_KEY, name);
-}
-
-export function getActivityFocus(): ActivityFocus | undefined {
-    return extensionContext?.workspaceState.get<ActivityFocus>(ACTIVITY_FOCUS_STATE_KEY);
-}
-
-export async function setActivityFocusState(focus: ActivityFocus | undefined): Promise<void> {
-    if (!extensionContext) {
-        return;
-    }
-    await extensionContext.workspaceState.update(ACTIVITY_FOCUS_STATE_KEY, focus);
+    await extensionContext.workspaceState.update(key.key, value);
 }
 
 // Records the URI of the most recently active mdtodo document so that
@@ -71,13 +64,13 @@ let lastTodoUri: vscode.Uri | undefined;
 
 export function rememberLastTodoUri(uri: vscode.Uri): void {
     lastTodoUri = uri;
-    extensionContext?.workspaceState.update(LAST_TODO_URI_STATE_KEY, uri.toString());
+    void updateWorkspaceState(LAST_TODO_URI_STATE_KEY, uri.toString());
 }
 
 export async function getLastTodoSourceDoc(): Promise<vscode.TextDocument | undefined> {
     let uri = lastTodoUri;
     if (!uri) {
-        const stored = extensionContext?.workspaceState.get<string>(LAST_TODO_URI_STATE_KEY);
+        const stored = getWorkspaceState(LAST_TODO_URI_STATE_KEY);
         if (!stored) {
             return undefined;
         }
