@@ -3,19 +3,6 @@ import { TodoItem } from '../core/model';
 import { findItemByLine } from '../core/query/items';
 import { parseDocument } from './document-cache';
 
-// Both exports here die in Phase 3a (requireTodoEditor / F-10); the type is
-// kept beside its only producer rather than polluting core/model.ts.
-export interface EffectiveEditorContext {
-    editor: vscode.TextEditor;
-    document: vscode.TextDocument;
-}
-
-export function getEffectiveEditor(
-    currentEditor: vscode.TextEditor
-): Promise<EffectiveEditorContext> {
-    return Promise.resolve({ editor: currentEditor, document: currentEditor.document });
-}
-
 /**
  * Walk upward from the cursor to the nearest todo line and resolve it in the
  * (cached) parse. Editor/cursor geometry is a host concern; the resolution

@@ -1,20 +1,16 @@
 import * as vscode from 'vscode';
-import { isTodoFile, parseDocument } from '../../vscode/document-cache';
-import { getEffectiveEditor } from '../../vscode/editor-queries';
+import { parseDocument } from '../../vscode/document-cache';
+import { requireTodoEditor } from '../../vscode/guards';
 import { getItemEndLine } from '../../core/query/items';
 import { parseDate, daysBetween } from '../../core/dates';
 
 export async function archiveItems(editor: vscode.TextEditor) {
-    const ctx = await getEffectiveEditor(editor);
-    const effectiveEditor = ctx.editor;
-    const effectiveDocument = ctx.document;
-
-    if (!isTodoFile(effectiveDocument)) {
-        vscode.window.showWarningMessage(
-            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
-        );
+    const ctx = requireTodoEditor(editor);
+    if (!ctx) {
         return;
     }
+    const effectiveEditor = ctx.editor;
+    const effectiveDocument = ctx.document;
 
     const config = vscode.workspace.getConfiguration('mdTodo');
     const archiveAfterDays = config.get<number>('archiveAfterDays', 7);

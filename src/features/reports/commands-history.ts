@@ -1,21 +1,16 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { isTodoFile } from '../../vscode/document-cache';
-import { getEffectiveEditor } from '../../vscode/editor-queries';
+import { requireTodoEditor } from '../../vscode/guards';
 
 const execAsync = promisify(exec);
 
 export async function showHistory(editor: vscode.TextEditor) {
-    const ctx = await getEffectiveEditor(editor);
-    const effectiveDocument = ctx.document;
-
-    if (!isTodoFile(effectiveDocument)) {
-        vscode.window.showWarningMessage(
-            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
-        );
+    const ctx = requireTodoEditor(editor);
+    if (!ctx) {
         return;
     }
+    const effectiveDocument = ctx.document;
 
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(effectiveDocument.uri);
     if (!workspaceFolder) {

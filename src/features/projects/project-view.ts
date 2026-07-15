@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { TodoItem, ParsedDocument, ProjectDefinition } from '../../core/model';
-import { isTodoFile, parseDocument } from '../../vscode/document-cache';
-import { getEffectiveEditor } from '../../vscode/editor-queries';
+import { parseDocument } from '../../vscode/document-cache';
+import { requireTodoEditor } from '../../vscode/guards';
 import { getEffectiveProject } from '../../core/query/activity';
 import { classifyItemSection } from '../../core/parse/sections';
 
@@ -129,11 +129,8 @@ async function openProjectViewDocument(
 }
 
 export async function showProjectView(editor: vscode.TextEditor): Promise<void> {
-    const ctx = await getEffectiveEditor(editor);
-    if (!isTodoFile(ctx.document)) {
-        vscode.window.showWarningMessage(
-            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
-        );
+    const ctx = requireTodoEditor(editor);
+    if (!ctx) {
         return;
     }
     const parsed = parseDocument(ctx.document);

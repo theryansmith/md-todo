@@ -1,21 +1,17 @@
 import * as vscode from 'vscode';
 import { ProjectDefinition } from '../../core/model';
-import { isTodoFile, parseDocument } from '../../vscode/document-cache';
-import { getEffectiveEditor } from '../../vscode/editor-queries';
+import { parseDocument } from '../../vscode/document-cache';
+import { requireTodoEditor } from '../../vscode/guards';
 import { PROJECT_NAME_RE } from '../../core/tokens';
 import { addProjectDefinition } from '../../vscode/prompts';
 
 export async function manageProjects(editor: vscode.TextEditor) {
-    const ctx = await getEffectiveEditor(editor);
-    const effectiveEditor = ctx.editor;
-    const effectiveDocument = ctx.document;
-
-    if (!isTodoFile(effectiveDocument)) {
-        vscode.window.showWarningMessage(
-            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
-        );
+    const ctx = requireTodoEditor(editor);
+    if (!ctx) {
         return;
     }
+    const effectiveEditor = ctx.editor;
+    const effectiveDocument = ctx.document;
 
     const parsed = parseDocument(effectiveDocument);
 

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { isTodoFile, parseDocument } from '../../vscode/document-cache';
-import { getEffectiveEditor } from '../../vscode/editor-queries';
+import { requireTodoEditor } from '../../vscode/guards';
 import { getFocusProject, setFocusProjectState } from '../../vscode/state';
 import { updateDimDecorations } from './decoration-dim';
 
@@ -52,11 +52,8 @@ export async function setFocusProject(): Promise<void> {
         vscode.window.showWarningMessage('Open a todo file first');
         return;
     }
-    const ctx = await getEffectiveEditor(editor);
-    if (!isTodoFile(ctx.document)) {
-        vscode.window.showWarningMessage(
-            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
-        );
+    const ctx = requireTodoEditor(editor);
+    if (!ctx) {
         return;
     }
     const parsed = parseDocument(ctx.document);

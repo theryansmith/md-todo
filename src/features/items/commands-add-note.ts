@@ -1,22 +1,19 @@
 import * as vscode from 'vscode';
 import { TodoItem } from '../../core/model';
-import { isTodoFile, parseDocument } from '../../vscode/document-cache';
-import { findItemAtCursor, getEffectiveEditor } from '../../vscode/editor-queries';
+import { parseDocument } from '../../vscode/document-cache';
+import { requireTodoEditor } from '../../vscode/guards';
+import { findItemAtCursor } from '../../vscode/editor-queries';
 import { getItemEndLine } from '../../core/query/items';
 import { getToday } from '../../core/dates';
 import { promptForTodoText } from '../../vscode/prompts';
 
 export async function addNote(editor: vscode.TextEditor) {
-    const ctx = await getEffectiveEditor(editor);
-    const effectiveEditor = ctx.editor;
-    const effectiveDocument = ctx.document;
-
-    if (!isTodoFile(effectiveDocument)) {
-        vscode.window.showWarningMessage(
-            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
-        );
+    const ctx = requireTodoEditor(editor);
+    if (!ctx) {
         return;
     }
+    const effectiveEditor = ctx.editor;
+    const effectiveDocument = ctx.document;
 
     const result = findItemAtCursor(effectiveEditor);
 

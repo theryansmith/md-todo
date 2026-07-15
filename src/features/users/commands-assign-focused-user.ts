@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { isTodoFile, parseDocument } from '../../vscode/document-cache';
-import { getEffectiveEditor } from '../../vscode/editor-queries';
+import { parseDocument } from '../../vscode/document-cache';
+import { requireTodoEditor } from '../../vscode/guards';
 import { getFocusUser } from '../../vscode/state';
 
 /**
@@ -11,16 +11,12 @@ import { getFocusUser } from '../../vscode/state';
  * - Otherwise INSERT at the cursor with surrounding whitespace as needed.
  */
 export async function assignFocusedUser(editor: vscode.TextEditor): Promise<void> {
-    const ctx = await getEffectiveEditor(editor);
-    const document = ctx.document;
-    const targetEditor = ctx.editor;
-
-    if (!isTodoFile(document)) {
-        vscode.window.showWarningMessage(
-            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
-        );
+    const ctx = requireTodoEditor(editor);
+    if (!ctx) {
         return;
     }
+    const document = ctx.document;
+    const targetEditor = ctx.editor;
 
     const cursorLine = editor.selection.active.line;
     const cursorChar = editor.selection.active.character;

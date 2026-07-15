@@ -1,18 +1,14 @@
 import * as vscode from 'vscode';
-import { isTodoFile, parseDocument } from '../../vscode/document-cache';
-import { getEffectiveEditor } from '../../vscode/editor-queries';
+import { parseDocument } from '../../vscode/document-cache';
+import { requireTodoEditor } from '../../vscode/guards';
 import { parseDate, daysBetween } from '../../core/dates';
 
 export async function showStats(editor: vscode.TextEditor) {
-    const ctx = await getEffectiveEditor(editor);
-    const effectiveDocument = ctx.document;
-
-    if (!isTodoFile(effectiveDocument)) {
-        vscode.window.showWarningMessage(
-            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
-        );
+    const ctx = requireTodoEditor(editor);
+    if (!ctx) {
         return;
     }
+    const effectiveDocument = ctx.document;
 
     const parsed = parseDocument(effectiveDocument);
     const today = new Date();

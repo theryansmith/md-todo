@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { TodoItem, ActivityFocus } from '../../core/model';
 import { isTodoFile, parseDocument } from '../../vscode/document-cache';
-import { getEffectiveEditor } from '../../vscode/editor-queries';
+import { requireTodoEditor } from '../../vscode/guards';
 import { itemMatchesActivity } from '../../core/query/activity';
 import { parseDate, daysBetween, startOfToday, parseNaturalDateRange } from '../../core/dates';
 import { getActivityFocus, setActivityFocusState } from '../../vscode/state';
@@ -280,11 +280,8 @@ async function openActivityReport(document: vscode.TextDocument, activity: Activ
 }
 
 export async function showRecentlyCompleted(editor: vscode.TextEditor) {
-    const ctx = await getEffectiveEditor(editor);
-    if (!isTodoFile(ctx.document)) {
-        vscode.window.showWarningMessage(
-            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
-        );
+    const ctx = requireTodoEditor(editor);
+    if (!ctx) {
         return;
     }
     const range = await pickDateRange('completed');
@@ -303,11 +300,8 @@ export async function showRecentlyCompleted(editor: vscode.TextEditor) {
 }
 
 export async function showRecentlyAdded(editor: vscode.TextEditor) {
-    const ctx = await getEffectiveEditor(editor);
-    if (!isTodoFile(ctx.document)) {
-        vscode.window.showWarningMessage(
-            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
-        );
+    const ctx = requireTodoEditor(editor);
+    if (!ctx) {
         return;
     }
     const range = await pickDateRange('added');
@@ -326,11 +320,8 @@ export async function showRecentlyAdded(editor: vscode.TextEditor) {
 }
 
 export async function showStaleItems(editor: vscode.TextEditor) {
-    const ctx = await getEffectiveEditor(editor);
-    if (!isTodoFile(ctx.document)) {
-        vscode.window.showWarningMessage(
-            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
-        );
+    const ctx = requireTodoEditor(editor);
+    if (!ctx) {
         return;
     }
     const threshold = await pickStaleThreshold();

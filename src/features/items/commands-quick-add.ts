@@ -1,18 +1,13 @@
 import * as vscode from 'vscode';
-import { isTodoFile } from '../../vscode/document-cache';
-import { getEffectiveEditor } from '../../vscode/editor-queries';
+import { requireTodoEditor } from '../../vscode/guards';
 import { getToday } from '../../core/dates';
 
 export async function quickAdd(editor: vscode.TextEditor) {
-    const ctx = await getEffectiveEditor(editor);
-    const effectiveEditor = ctx.editor;
-
-    if (!isTodoFile(ctx.document)) {
-        vscode.window.showWarningMessage(
-            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
-        );
+    const ctx = requireTodoEditor(editor);
+    if (!ctx) {
         return;
     }
+    const effectiveEditor = ctx.editor;
 
     const today = getToday();
     const cursorPos = effectiveEditor.selection.active;
