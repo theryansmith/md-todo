@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { ParsedDocument } from '../core/model';
 import { parseDocument as parseDocumentPure } from '../core/parse/parser';
 import { isTodoContent } from '../core/parse/detect';
+import { registerUriCache } from './cache-registry';
 
 /**
  * A markdown document that opts in via `md-todo: true` frontmatter. The
@@ -25,6 +26,9 @@ export function clearParseCache(uri?: vscode.Uri): void {
         parseCache.clear();
     }
 }
+
+// Invalidated with every other per-URI cache on document close (F-11).
+registerUriCache(clearParseCache);
 
 export function parseDocument(document: vscode.TextDocument): ParsedDocument {
     const key = document.uri.toString();

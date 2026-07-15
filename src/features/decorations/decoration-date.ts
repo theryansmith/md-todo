@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { isTodoFile } from '../../vscode/document-cache';
+import { registerUriCache } from '../../vscode/cache-registry';
 import { applyChangesToCache, affectedNewLineRange, mergeAndSort } from './decoration-incremental';
 
 let dateDecorationType: vscode.TextEditorDecorationType | undefined;
@@ -13,6 +14,9 @@ export function clearDateDecorationCache(uri?: vscode.Uri): void {
         dateDecorationCache.clear();
     }
 }
+
+// Invalidated with every other per-URI cache on document close (F-11).
+registerUriCache(clearDateDecorationCache);
 
 export function createDateDecorationType(): vscode.TextEditorDecorationType {
     const config = vscode.workspace.getConfiguration('mdTodo');

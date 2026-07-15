@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { TodoItem } from '../../core/model';
 import { isTodoFile, parseDocument } from '../../vscode/document-cache';
+import { registerUriCache } from '../../vscode/cache-registry';
 import { getItemWithDescendantsEndLine } from '../../core/query/items';
 import { itemMatchesActivity, getEffectiveProject } from '../../core/query/activity';
 import { startOfToday } from '../../core/dates';
@@ -23,6 +24,9 @@ export function clearDimDecorationCache(uri?: vscode.Uri): void {
         dimDecorationCache.clear();
     }
 }
+
+// Invalidated with every other per-URI cache on document close (F-11).
+registerUriCache(clearDimDecorationCache);
 
 export function createDimmedDecorationType(): vscode.TextEditorDecorationType {
     if (dimmedDecorationType) {

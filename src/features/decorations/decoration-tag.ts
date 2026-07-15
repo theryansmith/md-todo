@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { isTodoFile } from '../../vscode/document-cache';
+import { registerUriCache } from '../../vscode/cache-registry';
 import { applyChangesToCache, affectedNewLineRange, mergeAndSort } from './decoration-incremental';
 
 let tagDecorationType: vscode.TextEditorDecorationType | undefined;
@@ -16,6 +17,9 @@ export function clearTagDecorationCache(uri?: vscode.Uri): void {
         tagDecorationCache.clear();
     }
 }
+
+// Invalidated with every other per-URI cache on document close (F-11).
+registerUriCache(clearTagDecorationCache);
 
 export function createTagDecorationType(): vscode.TextEditorDecorationType {
     if (tagDecorationType) {

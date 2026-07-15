@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { isTodoFile } from '../../vscode/document-cache';
+import { registerUriCache } from '../../vscode/cache-registry';
 import { applyChangesToCache, affectedNewLineRange, mergeAndSort } from './decoration-incremental';
 
 let mentionDecorationType: vscode.TextEditorDecorationType | undefined;
@@ -13,6 +14,9 @@ export function clearMentionDecorationCache(uri?: vscode.Uri): void {
         mentionDecorationCache.clear();
     }
 }
+
+// Invalidated with every other per-URI cache on document close (F-11).
+registerUriCache(clearMentionDecorationCache);
 
 export function createMentionDecorationType(): vscode.TextEditorDecorationType {
     if (mentionDecorationType) {

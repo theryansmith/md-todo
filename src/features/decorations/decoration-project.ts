@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { isTodoFile } from '../../vscode/document-cache';
+import { registerUriCache } from '../../vscode/cache-registry';
 import { PROJECT_TOKEN_RE_G } from '../../core/tokens';
 import { applyChangesToCache, affectedNewLineRange, mergeAndSort } from './decoration-incremental';
 
@@ -17,6 +18,9 @@ export function clearProjectDecorationCache(uri?: vscode.Uri): void {
         projectDecorationCache.clear();
     }
 }
+
+// Invalidated with every other per-URI cache on document close (F-11).
+registerUriCache(clearProjectDecorationCache);
 
 export function createProjectDecorationType(): vscode.TextEditorDecorationType {
     if (projectDecorationType) {

@@ -39,12 +39,7 @@ import {
 import { registerTreeViews } from './registrations/views';
 import { registerAutoDateHandler } from './features/auto-date/auto-date';
 import { registerEditorUiEvents } from './registrations/events';
-import { clearParseCache } from './vscode/document-cache';
-import { clearTagDecorationCache } from './features/decorations/decoration-tag';
-import { clearDateDecorationCache } from './features/decorations/decoration-date';
-import { clearMentionDecorationCache } from './features/decorations/decoration-mention';
-import { clearProjectDecorationCache } from './features/decorations/decoration-project';
-import { clearDimDecorationCache } from './features/focus/decoration-dim';
+import { clearAllForUri, clearAll } from './vscode/cache-registry';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('MD Todo is now active');
@@ -107,15 +102,14 @@ export function activate(context: vscode.ExtensionContext) {
     registerAutoDateHandler(context);
     registerEditorUiEvents(context);
 
+    // Every per-URI cache (parse memo + decoration caches) registers itself
+    // with the CacheRegistry, so closing a document invalidates all of them
+    // with one call (F-11) and deactivation empties them wholesale (F-12).
     context.subscriptions.push(
         vscode.workspace.onDidCloseTextDocument((doc) => {
-            clearParseCache(doc.uri);
-            clearTagDecorationCache(doc.uri);
-            clearDateDecorationCache(doc.uri);
-            clearMentionDecorationCache(doc.uri);
-            clearProjectDecorationCache(doc.uri);
-            clearDimDecorationCache(doc.uri);
-        })
+            clearAllForUri(doc.uri);
+        }),
+        { dispose: clearAll }
     );
 }
 
