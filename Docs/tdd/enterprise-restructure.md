@@ -417,6 +417,7 @@ Sub-PR 3d: `FocusDimension` × 4; `clearAllFocus` iterates the registry;
 `state.ts` replaced by `vscode/workspace-state.ts` typed keys (the
 `ExtensionContext` singleton remains, contained, as the one host-lifecycle
 concession — documented there).
+
 - **Acceptance per sub-PR:** LOC of the axis drops materially (target:
   trees ~-600, decorations ~-250, focus ~-180 net); all existing tests pass;
   new engine-level unit tests added; manual smoke of the affected surface.
