@@ -8,7 +8,7 @@ import { dimDecoration } from '../features/focus/decoration-dim';
 import { refreshFocusStatusBar } from '../features/focus/focus-user';
 import { refreshFocusTagStatusBar } from '../features/focus/focus-tag';
 import { refreshFocusProjectStatusBar } from '../features/focus/focus-project';
-import { refreshActivityFocusStatusBar } from '../features/focus/focus-activity';
+import { refreshActivityFocusStatusBar } from '../features/reports/activity-reports';
 
 // Each decoration type is layered additively — the historical tag → date →
 // mention → project → dim order is preserved for clarity; VS Code applies

@@ -5,7 +5,7 @@ import { requireTodoEditor } from '../../vscode/guards';
 import { itemMatchesActivity } from '../../core/query/activity';
 import { parseDate, daysBetween, startOfToday, parseNaturalDateRange } from '../../core/dates';
 import { getActivityFocus, setActivityFocusState } from '../../vscode/state';
-import { dimDecoration } from './decoration-dim';
+import { dimDecoration } from '../focus/decoration-dim';
 
 let activityFocusStatusBarItem: vscode.StatusBarItem | undefined;
 

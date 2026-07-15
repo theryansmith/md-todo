@@ -35,7 +35,7 @@ import {
     showStaleItems,
     clearActivityFocus,
     activityFocusMenu,
-} from './features/focus/focus-activity';
+} from './features/reports/activity-reports';
 import { registerTreeViews } from './registrations/views';
 import { registerAutoDateHandler } from './features/auto-date/auto-date';
 import { registerEditorUiEvents } from './registrations/events';

@@ -62,7 +62,7 @@ import {
     clearActivityFocus,
     activityFocusMenu,
     showRecentlyCompleted,
-} from '../../src/features/focus/focus-activity';
+} from '../../src/features/reports/activity-reports';
 
 interface FocusSurface {
     init(context: vscode.ExtensionContext): void;
