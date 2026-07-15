@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { getEffectiveProject, isDefinedProject, parseDocument } from '../src/core/parser';
-import { ProjectDefinition } from '../src/core/types';
+import { ProjectDefinition } from '../src/core/model';
 import { makeDoc } from './helpers';
 
 describe('getEffectiveProject', () => {

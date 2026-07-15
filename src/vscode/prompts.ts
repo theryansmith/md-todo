@@ -1,7 +1,10 @@
 import * as vscode from 'vscode';
-import { SuggestionItem } from '../core/types';
 import { parseDocument, validateTags } from '../core/parser';
 import { formatProjectToken } from '../core/tokens';
+
+// Lives here (not in core/model.ts) because it extends a vscode UI type; the
+// QuickPick helpers below are its only consumers.
+export type SuggestionItem = vscode.QuickPickItem & { insertText: string };
 
 export async function addTagDefinition(
     editor: vscode.TextEditor,

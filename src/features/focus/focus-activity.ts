@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { TodoItem, ActivityFocus } from '../../core/types';
+import { TodoItem, ActivityFocus } from '../../core/model';
 import {
     isTodoFile,
     parseDocument,

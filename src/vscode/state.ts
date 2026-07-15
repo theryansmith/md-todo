@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ActivityFocus } from '../core/types';
+import { ActivityFocus } from '../core/model';
 import { isTodoFile } from '../core/parser';
 
 export const FOCUS_USER_STATE_KEY = 'mdTodo.focusUser';

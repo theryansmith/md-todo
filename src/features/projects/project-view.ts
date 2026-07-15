@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { TodoItem, ParsedDocument, ProjectDefinition } from '../../core/types';
+import { TodoItem, ParsedDocument, ProjectDefinition } from '../../core/model';
 import {
     isTodoFile,
     parseDocument,

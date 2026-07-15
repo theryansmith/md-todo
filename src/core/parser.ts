@@ -6,9 +6,8 @@ import {
     ProjectDefinition,
     ParsedDocument,
     TagValidationResult,
-    EffectiveEditorContext,
     ActivityFocus,
-} from './types';
+} from './model';
 import { parseDate, daysBetween, isDateInRange } from './dates';
 import { PROJECT_TOKEN_RE, PROJECT_TOKEN_RE_G } from './tokens';
 
@@ -111,6 +110,14 @@ export function findItemByLine(items: TodoItem[], lineNum: number): TodoItem | n
         }
     }
     return null;
+}
+
+// Type lives here (not in core/model.ts) because it references vscode; both it
+// and getEffectiveEditor move to the vscode layer in the Phase 2 parser split
+// and die entirely in Phase 3a.
+export interface EffectiveEditorContext {
+    editor: vscode.TextEditor;
+    document: vscode.TextDocument;
 }
 
 export function getEffectiveEditor(

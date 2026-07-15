@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { TagDefinition } from '../../core/types';
+import { TagDefinition } from '../../core/model';
 import { isTodoFile, parseDocument, getEffectiveEditor } from '../../core/parser';
 import { addTagDefinition } from '../../vscode/prompts';
 

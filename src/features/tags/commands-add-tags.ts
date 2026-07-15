@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { TodoItem } from '../../core/types';
+import { TodoItem } from '../../core/model';
 import { isTodoFile, parseDocument, findItemAtCursor, getEffectiveEditor } from '../../core/parser';
 import { processTagsWithValidation } from '../../vscode/prompts';
 
