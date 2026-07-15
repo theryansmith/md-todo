@@ -69,7 +69,9 @@ export function registerAutoDateHandler(context: vscode.ExtensionContext): void 
                         try {
                             const lineRange = event.document.lineAt(lineBeforeNum).range;
                             const indent = todoMatch[1];
-                            const checkbox = todoMatch[2];
+                            // Rewriting the line anyway — normalize a
+                            // mixed-case checkbox to lowercase (F-16).
+                            const checkbox = todoMatch[2].toLowerCase();
                             const newText = `${indent}- [${checkbox}] ${existingText} \`+${today}\``;
                             await editor.edit(
                                 (editBuilder) => {

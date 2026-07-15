@@ -2,7 +2,7 @@ import { ParsedDocument, TodoItem } from '../model';
 import { TextDocumentLike } from '../text-document';
 import { parseDate, daysBetween } from '../dates';
 import { getItemEndLine, getItemWithDescendantsEndLine, isNestedItem } from '../query/items';
-import { markLineComplete } from './line-transforms';
+import { markLineComplete, normalizeCheckbox } from './line-transforms';
 
 /**
  * EditPlan — atomic document mutations (F-07).
@@ -216,7 +216,9 @@ export function buildArchivePlan(
     for (const item of toArchive) {
         const endLine = getItemEndLine(document, item.line);
         for (let i = item.line; i <= endLine; i++) {
-            movedLines.push(document.lineAt(i).text);
+            // The move rewrites these lines anyway, so mixed-case checkboxes
+            // converge to lowercase `[x]` on the way to the Archive (F-16).
+            movedLines.push(normalizeCheckbox(document.lineAt(i).text));
         }
         ops.push(...deleteBlockOps(document, item.line, endLine).ops);
     }

@@ -355,6 +355,32 @@ describe('buildMarkDonePlan — the four-case matrix', () => {
     });
 });
 
+describe('buildMarkDonePlan — checkbox normalization (F-16)', () => {
+    it('a moved subtree converges mixed-case children to lowercase [x]', () => {
+        const lines = [
+            ...FRONT,
+            '## Active',
+            '',
+            '- [ ] parent task',
+            '    - [X] loud child `✓2026-07-01`',
+            '',
+            '## Completed',
+            '',
+        ];
+        const { out } = markDoneResult(lines, 6);
+        expect(out).toEqual([
+            ...FRONT,
+            '## Active',
+            '',
+            '## Completed',
+            '- [x] parent task `✓2026-07-15`',
+            '    - [x] loud child `✓2026-07-01`',
+            '',
+            '',
+        ]);
+    });
+});
+
 describe('buildArchivePlan', () => {
     function archiveResult(
         lines: string[],
@@ -501,6 +527,35 @@ describe('buildArchivePlan', () => {
             '- [x] old `✓2026-07-01`',
             '',
             '- [x] ancient `✓2026-05-01`',
+            '',
+            '',
+        ]);
+    });
+
+    it('normalizes mixed-case [X] checkboxes on the moved lines (F-16)', () => {
+        const lines = [
+            ...FRONT,
+            '## Completed',
+            '',
+            '- [X] loud old `✓2026-07-01`',
+            '    - [X] loud child `✓2026-07-01`',
+            '    - note mentioning [X] stays',
+            '',
+            '## Archive',
+            '',
+        ];
+        const { out } = archiveResult(lines);
+        // The block's trailing blank line moves with it (old behavior), so
+        // the Completed section ends flush against the Archive header.
+        expect(out).toEqual([
+            ...FRONT,
+            '## Completed',
+            '',
+            '## Archive',
+            '',
+            '- [x] loud old `✓2026-07-01`',
+            '    - [x] loud child `✓2026-07-01`',
+            '    - note mentioning [X] stays',
             '',
             '',
         ]);
