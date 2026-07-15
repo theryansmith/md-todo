@@ -116,6 +116,27 @@ export default tseslint.config(
         },
     },
     {
+        // Phase 2 hard ban: core/ is the host-free domain layer. The zones
+        // above stop core from importing other src/ layers; this stops it from
+        // importing the vscode API module itself.
+        files: ['src/core/**/*.ts'],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    paths: [
+                        {
+                            name: 'vscode',
+                            message:
+                                'src/core/** is host-free — it may not import the vscode API. ' +
+                                'Put host-coupled code in src/vscode/ (see Docs/tdd/enterprise-restructure.md).',
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+    {
         // Config and build scripts are not part of the typed project graph.
         files: ['**/*.mjs'],
         extends: [tseslint.configs.disableTypeChecked],
