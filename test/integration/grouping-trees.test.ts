@@ -17,13 +17,16 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import * as vscode from 'vscode';
 import { makeDoc } from '../helpers';
 import { clearParseCache } from '../../src/vscode/document-cache';
-import { MdTodoUsersTreeProvider } from '../../src/features/users/tree-users';
-import { MdTodoTagsTreeProvider } from '../../src/features/tags/tree-tags';
-import { MdTodoProjectsTreeProvider } from '../../src/features/projects/tree-projects';
+import { GroupingTreeProvider } from '../../src/vscode/grouping-tree';
+import { usersGrouping } from '../../src/features/users/tree-users';
+import { tagsGrouping } from '../../src/features/tags/tree-tags';
+import { projectsGrouping } from '../../src/features/projects/tree-projects';
 
 // ── Wiring: bind the three tree surfaces under test. ───────────────────────
-// This block is the only part of the file that may change when Phase 3c's
-// generic GroupingTreeProvider replaces the per-feature classes.
+// This table was written against the pre-3c per-feature provider classes and
+// swapped to GroupingTreeProvider + descriptors when the generic engine
+// landed; the pinned expectations below are unchanged from the pre-refactor
+// originals.
 interface TreeSurface {
     setCurrentTodoFile(uri: vscode.Uri | undefined): void;
     getCurrentUri(): vscode.Uri | undefined;
@@ -33,9 +36,9 @@ interface TreeSurface {
 
 function makeSurfaces(memento: vscode.Memento): Record<'users' | 'tags' | 'projects', TreeSurface> {
     return {
-        users: new MdTodoUsersTreeProvider(memento),
-        tags: new MdTodoTagsTreeProvider(memento),
-        projects: new MdTodoProjectsTreeProvider(memento),
+        users: new GroupingTreeProvider(usersGrouping, memento),
+        tags: new GroupingTreeProvider(tagsGrouping, memento),
+        projects: new GroupingTreeProvider(projectsGrouping, memento),
     };
 }
 // ───────────────────────────────────────────────────────────────────────────

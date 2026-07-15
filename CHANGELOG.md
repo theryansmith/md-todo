@@ -7,9 +7,11 @@ All notable user-facing changes to MD Todo are documented here. Newest first. Wh
 - Internal: sources restructured into a layered `src/` tree (enterprise-restructure TDD, Phases 0–1) and packaging switched from per-file `tsc` output to a single esbuild bundle — the installed extension shrinks from 102 files / 314 KB to 11 files / 47 KB and loads from one `dist/extension.js`. No user-facing behavior changes.
 - Internal: the parsing/query core is now fully host-independent (Phase 2) — `src/core/` imports no VS Code API (lint-enforced), and the parser, date logic, and token grammar are unit-tested without any editor mock.
 - Internal: consolidation of the copy-paste axes began (Phases 3a/3b) — a single `requireTodoEditor` guard replaces the 20 duplicated "Not a todo file" checks, one `DecorationController` with five small descriptors replaces the five hand-cloned decoration modules, per-URI caches now invalidate through one `CacheRegistry` on document close, and every decoration type, status-bar item, and cache is disposed with the extension. Decoration output is pinned by new characterization tests; no user-facing behavior changes.
+- Internal: the three hand-cloned tree providers behind the **MD TODO USERS/TAGS/PROJECTS** views are now one generic grouping-tree engine plus three small descriptors (Phase 3c); every label, count, tooltip, icon, right-click menu, and ordering is pinned by characterization tests and unchanged, and the trees' internal refresh timers are now cleaned up when the extension deactivates.
 
 ### Fixed
 
+- "Mark Done" from a tree view's right-click menu now always edits the file the clicked item came from. The Users tree previously targeted the view's *current* file, so if the tree had switched to a different todo file between rendering and the click, the wrong file's line could be marked. (The Tags and Projects trees already behaved correctly.)
 - Timezone off-by-one: `getToday()` derived "today" from the **UTC** clock while every other date function used **local** time, so users west of UTC who added or completed items in the evening got tomorrow's date stamped into their files (`` `+date` ``/`` `✓date` ``), and activity ranges like "today" could miss items just written. All "today" derivations now agree on local time.
 
 ## [1.6.0] — 2026-07-14

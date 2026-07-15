@@ -1,10 +1,6 @@
 import * as vscode from 'vscode';
 import { TodoItem, ParsedDocument, ProjectDefinition } from '../../core/model';
-import {
-    GroupingDescriptor,
-    GroupingTreeNode,
-    GroupingTreeProvider,
-} from '../../vscode/grouping-tree';
+import { GroupingDescriptor, GroupingTreeNode } from '../../vscode/grouping-tree';
 import { getEffectiveProject, isDefinedProject } from '../../core/query/activity';
 import { setFocusProjectState } from '../../vscode/state';
 import { refreshFocusProjectStatusBar } from '../focus/focus-project';
@@ -72,13 +68,6 @@ export const projectsGrouping: GroupingDescriptor<ProjectDefinition> = {
 
 export type ProjectsTreeNode = GroupingTreeNode<ProjectDefinition>;
 
-/** Compatibility shim over the generic provider; removed when views.ts iterates descriptors. */
-export class MdTodoProjectsTreeProvider extends GroupingTreeProvider<ProjectDefinition> {
-    constructor(workspaceState: vscode.Memento) {
-        super(projectsGrouping, workspaceState);
-    }
-}
-
 export async function focusOnProjectFromTree(node?: ProjectsTreeNode): Promise<void> {
     await focusFromTreeRoot(
         node,
@@ -92,8 +81,6 @@ export async function focusOnProjectFromTree(node?: ProjectsTreeNode): Promise<v
 export async function clearProjectFocusFromTree(): Promise<void> {
     await clearFocusFromTree(setFocusProjectState, refreshFocusProjectStatusBar);
 }
-
-export { markDoneFromTreeNode as markDoneFromProjectsTree } from '../tree-commands';
 
 export async function showProjectViewFromTree(node?: ProjectsTreeNode): Promise<void> {
     if (node?.kind !== 'root') {

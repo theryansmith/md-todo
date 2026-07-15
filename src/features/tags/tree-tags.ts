@@ -1,10 +1,5 @@
-import * as vscode from 'vscode';
 import { TagDefinition } from '../../core/model';
-import {
-    GroupingDescriptor,
-    GroupingTreeNode,
-    GroupingTreeProvider,
-} from '../../vscode/grouping-tree';
+import { GroupingDescriptor, GroupingTreeNode } from '../../vscode/grouping-tree';
 import { setFocusTagState } from '../../vscode/state';
 import { refreshFocusTagStatusBar } from '../focus/focus-tag';
 import { clearFocusFromTree, focusFromTreeRoot, runCommandAtTreeTodo } from '../tree-commands';
@@ -35,13 +30,6 @@ export const tagsGrouping: GroupingDescriptor<TagDefinition> = {
 
 export type TagsTreeNode = GroupingTreeNode<TagDefinition>;
 
-/** Compatibility shim over the generic provider; removed when views.ts iterates descriptors. */
-export class MdTodoTagsTreeProvider extends GroupingTreeProvider<TagDefinition> {
-    constructor(workspaceState: vscode.Memento) {
-        super(tagsGrouping, workspaceState);
-    }
-}
-
 export async function focusOnTagFromTree(node?: TagsTreeNode): Promise<void> {
     await focusFromTreeRoot(
         node,
@@ -55,8 +43,6 @@ export async function focusOnTagFromTree(node?: TagsTreeNode): Promise<void> {
 export async function clearTagFocusFromTree(): Promise<void> {
     await clearFocusFromTree(setFocusTagState, refreshFocusTagStatusBar);
 }
-
-export { markDoneFromTreeNode as markDoneFromTagsTree } from '../tree-commands';
 
 export async function editTagsFromTree(node?: TagsTreeNode): Promise<void> {
     await runCommandAtTreeTodo(node, 'mdTodo.addTags');

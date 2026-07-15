@@ -32,13 +32,6 @@ export const usersGrouping: GroupingDescriptor<UserDefinition> = {
 
 export type UsersTreeNode = GroupingTreeNode<UserDefinition>;
 
-/** Compatibility shim over the generic provider; removed when views.ts iterates descriptors. */
-export class MdTodoUsersTreeProvider extends GroupingTreeProvider<UserDefinition> {
-    constructor(workspaceState: vscode.Memento) {
-        super(usersGrouping, workspaceState);
-    }
-}
-
 export async function focusOnUserFromTree(node?: UsersTreeNode): Promise<void> {
     await focusFromTreeRoot(
         node,
@@ -52,8 +45,6 @@ export async function focusOnUserFromTree(node?: UsersTreeNode): Promise<void> {
 export async function clearUserFocusFromTree(): Promise<void> {
     await clearFocusFromTree(setFocusUserState, refreshFocusStatusBar);
 }
-
-export { markDoneFromTreeNode as markDoneFromTree } from '../tree-commands';
 
 export async function reassignUserFromTree(
     treeProvider: GroupingTreeProvider<UserDefinition>,
