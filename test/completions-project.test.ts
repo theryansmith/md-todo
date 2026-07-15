@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as vscode from 'vscode';
-import { projectCompletionProvider } from '../completions';
+import { projectCompletionProvider } from '../src/features/completions/completions';
 import { makeDoc } from './helpers';
 
 // Todo-file fixture (frontmatter makes isTodoFile pass) with one defined

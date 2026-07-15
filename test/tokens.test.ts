@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PROJECT_TOKEN_RE, PROJECT_TOKEN_RE_G, formatProjectToken } from '../tokens';
+import { PROJECT_TOKEN_RE, PROJECT_TOKEN_RE_G, formatProjectToken } from '../src/core/tokens';
 
 describe('formatProjectToken', () => {
     it('round-trips through PROJECT_TOKEN_RE', () => {

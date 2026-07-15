@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { renderCompletedItemLines } from '../focus-activity';
-import { parseDocument } from '../parser';
+import { renderCompletedItemLines } from '../src/features/focus/focus-activity';
+import { parseDocument } from '../src/core/parser';
 import { makeDoc } from './helpers';
 
 describe('renderCompletedItemLines', () => {

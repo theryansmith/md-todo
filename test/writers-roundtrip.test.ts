@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { markLineComplete } from '../commands-mark-done';
-import { computeTagsLine } from '../commands-add-tags';
-import { computeProjectLine } from '../commands-set-project';
-import { parseDocument } from '../parser';
+import { markLineComplete } from '../src/features/items/commands-mark-done';
+import { computeTagsLine } from '../src/features/tags/commands-add-tags';
+import { computeProjectLine } from '../src/features/projects/commands-set-project';
+import { parseDocument } from '../src/core/parser';
 import { makeDoc } from './helpers';
 
 const TODAY = '2026-07-10';

@@ -18,7 +18,7 @@ export default defineConfig({
             // Production modules import the 'vscode' host API, which only
             // exists inside a running VS Code extension host. Point it at an
             // inert mock so pure logic can be unit-tested in Node.
-            vscode: path.resolve(__dirname, 'test/vscode-mock.ts'),
+            vscode: path.resolve(__dirname, 'test/mocks/vscode.ts'),
         },
     },
 });
