@@ -9,6 +9,7 @@ import {
     isNestedItem,
 } from '../../core/query/items';
 import { getToday } from '../../core/dates';
+import { markLineComplete } from '../../core/edit/line-transforms';
 
 export async function markDone(
     editor: vscode.TextEditor,
@@ -65,24 +66,6 @@ export async function markDone(
         }
         await markItemDone(effectiveEditor, result.item);
     }
-}
-
-/**
- * Pure line transform: check the box and stamp a completed date. If the line
- * carries a `+added` date, the `✓` date is placed right after it; otherwise
- * it is appended at the end. Already-completed lines pass through unchanged.
- */
-export function markLineComplete(lineText: string, today: string): string {
-    let result = lineText;
-    result = result.replace(/\[\s\]/, '[x]');
-    if (!result.includes('`✓')) {
-        if (result.includes('`+')) {
-            result = result.replace(/(`\+\d{4}-\d{2}-\d{2}`)/, `$1 \`✓${today}\``);
-        } else {
-            result = result.trimEnd() + ` \`✓${today}\``;
-        }
-    }
-    return result;
 }
 
 async function markItemDone(editor: vscode.TextEditor, item: TodoItem) {

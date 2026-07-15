@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { markLineComplete } from '../src/features/items/commands-mark-done';
+import { markLineComplete } from '../src/core/edit/line-transforms';
 import { computeTagsLine } from '../src/features/tags/commands-add-tags';
 import { computeProjectLine } from '../src/features/projects/commands-set-project';
 import { parseDocument } from '../src/core/parse/parser';
