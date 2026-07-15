@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { isTodoFile, getEffectiveEditor } from '../../core/parse/parser';
+import { isTodoFile } from '../../vscode/document-cache';
+import { getEffectiveEditor } from '../../vscode/editor-queries';
 
 const execAsync = promisify(exec);
 

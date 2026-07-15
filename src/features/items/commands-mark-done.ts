@@ -1,14 +1,12 @@
 import * as vscode from 'vscode';
 import { TodoItem } from '../../core/model';
+import { isTodoFile, parseDocument } from '../../vscode/document-cache';
+import { findItemAtCursor, getEffectiveEditor } from '../../vscode/editor-queries';
 import {
-    isTodoFile,
-    parseDocument,
     findItemForSourceLine,
-    findItemAtCursor,
-    getEffectiveEditor,
     getItemWithDescendantsEndLine,
     isNestedItem,
-} from '../../core/parse/parser';
+} from '../../core/query/items';
 import { getToday } from '../../core/dates';
 
 export async function markDone(

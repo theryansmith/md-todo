@@ -1,12 +1,8 @@
 import * as vscode from 'vscode';
 import { TodoItem } from '../../core/model';
-import {
-    isTodoFile,
-    parseDocument,
-    getItemWithDescendantsEndLine,
-    itemMatchesActivity,
-    getEffectiveProject,
-} from '../../core/parse/parser';
+import { isTodoFile, parseDocument } from '../../vscode/document-cache';
+import { getItemWithDescendantsEndLine } from '../../core/query/items';
+import { itemMatchesActivity, getEffectiveProject } from '../../core/query/activity';
 import { startOfToday } from '../../core/dates';
 import { getFocusUser, getFocusTag, getFocusProject, getActivityFocus } from '../../vscode/state';
 import { PROJECT_TOKEN_RE_G } from '../../core/tokens';

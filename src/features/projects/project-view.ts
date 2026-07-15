@@ -1,12 +1,9 @@
 import * as vscode from 'vscode';
 import { TodoItem, ParsedDocument, ProjectDefinition } from '../../core/model';
-import {
-    isTodoFile,
-    parseDocument,
-    getEffectiveEditor,
-    getEffectiveProject,
-    classifyItemSection,
-} from '../../core/parse/parser';
+import { isTodoFile, parseDocument } from '../../vscode/document-cache';
+import { getEffectiveEditor } from '../../vscode/editor-queries';
+import { getEffectiveProject } from '../../core/query/activity';
+import { classifyItemSection } from '../../core/parse/sections';
 
 export interface ProjectViewNode {
     item: TodoItem;

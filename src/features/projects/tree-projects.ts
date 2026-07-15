@@ -1,13 +1,9 @@
 import * as vscode from 'vscode';
 import { TodoItem, ProjectDefinition, ParsedDocument } from '../../core/model';
 import { ProjectsTreeNode } from '../tree-nodes';
-import {
-    isTodoFile,
-    parseDocument,
-    classifyItemSection,
-    getEffectiveProject,
-    isDefinedProject,
-} from '../../core/parse/parser';
+import { isTodoFile, parseDocument } from '../../vscode/document-cache';
+import { classifyItemSection } from '../../core/parse/sections';
+import { getEffectiveProject, isDefinedProject } from '../../core/query/activity';
 import { setFocusProjectState } from '../../vscode/state';
 import { updateDimDecorations } from '../focus/decoration-dim';
 import { refreshFocusProjectStatusBar } from '../focus/focus-project';

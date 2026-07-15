@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { TreeNode, TagsTreeNode, ProjectsTreeNode } from '../features/tree-nodes';
-import { isTodoFile } from '../core/parse/parser';
+import { isTodoFile } from '../vscode/document-cache';
 import { rememberLastTodoUri } from '../vscode/state';
 import {
     MdTodoUsersTreeProvider,

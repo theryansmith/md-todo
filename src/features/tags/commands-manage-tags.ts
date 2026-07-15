@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { TagDefinition } from '../../core/model';
-import { isTodoFile, parseDocument, getEffectiveEditor } from '../../core/parse/parser';
+import { isTodoFile, parseDocument } from '../../vscode/document-cache';
+import { getEffectiveEditor } from '../../vscode/editor-queries';
 import { addTagDefinition } from '../../vscode/prompts';
 
 export async function manageTags(editor: vscode.TextEditor) {

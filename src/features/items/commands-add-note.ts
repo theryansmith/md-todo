@@ -1,12 +1,8 @@
 import * as vscode from 'vscode';
 import { TodoItem } from '../../core/model';
-import {
-    isTodoFile,
-    parseDocument,
-    findItemAtCursor,
-    getEffectiveEditor,
-    getItemEndLine,
-} from '../../core/parse/parser';
+import { isTodoFile, parseDocument } from '../../vscode/document-cache';
+import { findItemAtCursor, getEffectiveEditor } from '../../vscode/editor-queries';
+import { getItemEndLine } from '../../core/query/items';
 import { getToday } from '../../core/dates';
 import { promptForTodoText } from '../../vscode/prompts';
 

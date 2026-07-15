@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
-import { parseDocument, validateTags } from '../core/parse/parser';
+import { parseDocument } from './document-cache';
+import { validateTags } from '../core/query/items';
 import { formatProjectToken } from '../core/tokens';
 
 // Lives here (not in core/model.ts) because it extends a vscode UI type; the

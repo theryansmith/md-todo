@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
-import { isTodoFile, parseDocument, getEffectiveEditor, getItemEndLine } from '../../core/parse/parser';
+import { isTodoFile, parseDocument } from '../../vscode/document-cache';
+import { getEffectiveEditor } from '../../vscode/editor-queries';
+import { getItemEndLine } from '../../core/query/items';
 import { parseDate, daysBetween } from '../../core/dates';
 
 export async function archiveItems(editor: vscode.TextEditor) {

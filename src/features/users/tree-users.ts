@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import { TodoItem, UserDefinition, ParsedDocument } from '../../core/model';
 import { TreeNode } from '../tree-nodes';
-import { isTodoFile, parseDocument, classifyItemSection } from '../../core/parse/parser';
+import { isTodoFile, parseDocument } from '../../vscode/document-cache';
+import { classifyItemSection } from '../../core/parse/sections';
 import { setFocusUserState } from '../../vscode/state';
 import { updateDimDecorations } from '../focus/decoration-dim';
 import { refreshFocusStatusBar } from '../focus/focus-user';

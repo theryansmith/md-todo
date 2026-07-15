@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
-import { isTodoFile, parseDocument, getEffectiveEditor } from '../../core/parse/parser';
+import { isTodoFile, parseDocument } from '../../vscode/document-cache';
+import { getEffectiveEditor } from '../../vscode/editor-queries';
 import { getFocusUser, setFocusUserState } from '../../vscode/state';
 import { updateDimDecorations } from './decoration-dim';
 

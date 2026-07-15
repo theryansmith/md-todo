@@ -1,11 +1,8 @@
 import * as vscode from 'vscode';
 import { TodoItem, ActivityFocus } from '../../core/model';
-import {
-    isTodoFile,
-    parseDocument,
-    getEffectiveEditor,
-    itemMatchesActivity,
-} from '../../core/parse/parser';
+import { isTodoFile, parseDocument } from '../../vscode/document-cache';
+import { getEffectiveEditor } from '../../vscode/editor-queries';
+import { itemMatchesActivity } from '../../core/query/activity';
 import { parseDate, daysBetween, startOfToday, parseNaturalDateRange } from '../../core/dates';
 import { getActivityFocus, setActivityFocusState } from '../../vscode/state';
 import { updateDimDecorations } from './decoration-dim';

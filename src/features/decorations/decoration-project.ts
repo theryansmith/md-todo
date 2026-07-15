@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isTodoFile } from '../../core/parse/parser';
+import { isTodoFile } from '../../vscode/document-cache';
 import { PROJECT_TOKEN_RE_G } from '../../core/tokens';
 import { applyChangesToCache, affectedNewLineRange, mergeAndSort } from './decoration-incremental';
 
