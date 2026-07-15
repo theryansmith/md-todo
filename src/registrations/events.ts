@@ -7,6 +7,11 @@ import { projectDecoration } from '../features/decorations/decoration-project';
 import { dimDecoration } from '../features/focus/decoration-dim';
 import { focusDimensions } from '../features/focus';
 
+// Re-exported so the composition root (which imports registrations/ and
+// vscode/ only, lint-enforced since the Phase 4 registry) can wire the
+// auto-date document listener without importing features/ directly.
+export { registerAutoDateHandler } from '../features/auto-date/auto-date';
+
 // Each decoration type is layered additively — the historical tag → date →
 // mention → project → dim order is preserved for clarity; VS Code applies
 // them all. Adding a decoration dimension now means adding a descriptor to

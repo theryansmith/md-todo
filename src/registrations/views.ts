@@ -28,6 +28,31 @@ import {
 import { isWhitespaceOnlyChange } from './events';
 
 /**
+ * Every tree context-menu command ID registered by registerTreeViews() —
+ * frozen (referenced from package.json contributes.menus) and exported for
+ * the package.json ↔ registration consistency test. The handler record in
+ * registerTreeViews is keyed by this list, so TypeScript guarantees the two
+ * cannot drift: an id here without a handler (or vice versa) fails to
+ * compile.
+ */
+export const treeCommandIds = [
+    'mdTodo.users.focusOnUser',
+    'mdTodo.users.clearFocus',
+    'mdTodo.users.reassignUser',
+    'mdTodo.users.markDoneFromTree',
+    'mdTodo.tags.focusOnTag',
+    'mdTodo.tags.clearFocus',
+    'mdTodo.tags.markDoneFromTree',
+    'mdTodo.tags.editTagsFromTree',
+    'mdTodo.projects.focusOnProject',
+    'mdTodo.projects.clearFocus',
+    'mdTodo.projects.markDoneFromTree',
+    'mdTodo.projects.setProjectFromTree',
+    'mdTodo.projects.showProjectViewFromTree',
+] as const;
+export type TreeCommandId = (typeof treeCommandIds)[number];
+
+/**
  * Create the three grouping-tree providers + views, seed them with the active
  * todo file, subscribe them to editor/document events, and register the
  * tree-driven commands. The Users/Tags/Projects views share one generic
@@ -90,43 +115,29 @@ export function registerTreeViews(context: vscode.ExtensionContext): void {
         })
     );
 
-    context.subscriptions.push(
-        vscode.commands.registerCommand('mdTodo.users.focusOnUser', (node?: UsersTreeNode) =>
-            focusOnUserFromTree(node)
-        ),
-        vscode.commands.registerCommand('mdTodo.users.clearFocus', clearUserFocusFromTree),
-        vscode.commands.registerCommand('mdTodo.users.reassignUser', (node?: UsersTreeNode) =>
-            reassignUserFromTree(usersProvider, node)
-        ),
-        vscode.commands.registerCommand('mdTodo.users.markDoneFromTree', (node?: UsersTreeNode) =>
-            markDoneFromTreeNode(usersProvider, node)
-        ),
-        vscode.commands.registerCommand('mdTodo.tags.focusOnTag', (node?: TagsTreeNode) =>
-            focusOnTagFromTree(node)
-        ),
-        vscode.commands.registerCommand('mdTodo.tags.clearFocus', clearTagFocusFromTree),
-        vscode.commands.registerCommand('mdTodo.tags.markDoneFromTree', (node?: TagsTreeNode) =>
-            markDoneFromTreeNode(tagsProvider, node)
-        ),
-        vscode.commands.registerCommand('mdTodo.tags.editTagsFromTree', (node?: TagsTreeNode) =>
-            editTagsFromTree(node)
-        ),
-        vscode.commands.registerCommand(
-            'mdTodo.projects.focusOnProject',
-            (node?: ProjectsTreeNode) => focusOnProjectFromTree(node)
-        ),
-        vscode.commands.registerCommand('mdTodo.projects.clearFocus', clearProjectFocusFromTree),
-        vscode.commands.registerCommand(
-            'mdTodo.projects.markDoneFromTree',
-            (node?: ProjectsTreeNode) => markDoneFromTreeNode(projectsProvider, node)
-        ),
-        vscode.commands.registerCommand(
-            'mdTodo.projects.setProjectFromTree',
-            (node?: ProjectsTreeNode) => setProjectFromTree(node)
-        ),
-        vscode.commands.registerCommand(
-            'mdTodo.projects.showProjectViewFromTree',
-            (node?: ProjectsTreeNode) => showProjectViewFromTree(node)
-        )
-    );
+    type TreeCommandHandler = Parameters<typeof vscode.commands.registerCommand>[1];
+    const handlers: Record<TreeCommandId, TreeCommandHandler> = {
+        'mdTodo.users.focusOnUser': (node?: UsersTreeNode) => focusOnUserFromTree(node),
+        'mdTodo.users.clearFocus': clearUserFocusFromTree,
+        'mdTodo.users.reassignUser': (node?: UsersTreeNode) =>
+            reassignUserFromTree(usersProvider, node),
+        'mdTodo.users.markDoneFromTree': (node?: UsersTreeNode) =>
+            markDoneFromTreeNode(usersProvider, node),
+        'mdTodo.tags.focusOnTag': (node?: TagsTreeNode) => focusOnTagFromTree(node),
+        'mdTodo.tags.clearFocus': clearTagFocusFromTree,
+        'mdTodo.tags.markDoneFromTree': (node?: TagsTreeNode) =>
+            markDoneFromTreeNode(tagsProvider, node),
+        'mdTodo.tags.editTagsFromTree': (node?: TagsTreeNode) => editTagsFromTree(node),
+        'mdTodo.projects.focusOnProject': (node?: ProjectsTreeNode) => focusOnProjectFromTree(node),
+        'mdTodo.projects.clearFocus': clearProjectFocusFromTree,
+        'mdTodo.projects.markDoneFromTree': (node?: ProjectsTreeNode) =>
+            markDoneFromTreeNode(projectsProvider, node),
+        'mdTodo.projects.setProjectFromTree': (node?: ProjectsTreeNode) => setProjectFromTree(node),
+        'mdTodo.projects.showProjectViewFromTree': (node?: ProjectsTreeNode) =>
+            showProjectViewFromTree(node),
+    };
+
+    for (const id of treeCommandIds) {
+        context.subscriptions.push(vscode.commands.registerCommand(id, handlers[id]));
+    }
 }

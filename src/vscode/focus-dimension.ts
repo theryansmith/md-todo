@@ -82,6 +82,12 @@ export interface RegisteredFocusDimension {
     register(context: vscode.ExtensionContext): void;
     refreshStatusBar(editor: vscode.TextEditor | undefined): void;
     clear(): Promise<void>;
+    /**
+     * Every command ID register() registers for this dimension (the pick
+     * command and/or the dedicated clear command). Consumed by the
+     * package.json ↔ registration consistency test.
+     */
+    readonly commandIds: readonly string[];
 }
 
 export class FocusDimension<T> implements RegisteredFocusDimension {
@@ -112,6 +118,18 @@ export class FocusDimension<T> implements RegisteredFocusDimension {
                 vscode.commands.registerCommand(this.descriptor.clearCommandId, () => this.clear())
             );
         }
+    }
+
+    /** The command IDs register() registers — mirrors its two branches. */
+    get commandIds(): readonly string[] {
+        const ids: string[] = [];
+        if (this.descriptor.pick) {
+            ids.push(this.descriptor.pick.commandId);
+        }
+        if (this.descriptor.clearCommandId) {
+            ids.push(this.descriptor.clearCommandId);
+        }
+        return ids;
     }
 
     /** The current focus value, or undefined when unfocused. */

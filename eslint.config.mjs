@@ -40,11 +40,10 @@ export default tseslint.config(
             //   features/       -> core/, vscode/ (feature-to-feature imports are the
             //                      Phase 3 duplication being consolidated; not banned yet)
             //   registrations/  -> features/, vscode/, core/
-            //   extension.ts    -> registrations/, vscode/ — TEMPORARY exception:
-            //                      extension.ts may import features/ until the Phase 4
-            //                      command registry lands, and core/ until the Phase 3b
-            //                      CacheRegistry replaces the manual clear-cache
-            //                      enumeration (F-11), so no zone bans it here yet.
+            //   extension.ts    -> registrations/, vscode/ only — features reach
+            //                      activation exclusively through the Phase 4 command
+            //                      registry (registrations/commands.ts); the Phase 1
+            //                      temporary exception is gone.
             // The "no vscode inside src/core" ban is deferred to Phase 2 (see TDD).
             // test/ is unrestricted for now.
             'import-x/no-restricted-paths': [
@@ -77,6 +76,14 @@ export default tseslint.config(
                             from: ['./src/extension.ts'],
                             message:
                                 'registrations/ may import from features/, vscode/, and core/ only.',
+                        },
+                        {
+                            target: './src/extension.ts',
+                            from: ['./src/features', './src/core'],
+                            message:
+                                'extension.ts may import from registrations/ and vscode/ only — ' +
+                                'feature handlers register through the command registry ' +
+                                '(registrations/commands.ts).',
                         },
                     ],
                 },
