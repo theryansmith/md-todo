@@ -682,3 +682,77 @@ verbatim.
 `reassignUserFromTree` also reads `treeProvider.getCurrentUri()`, but it has
 no counterpart in the other trees to unify against; it keeps its existing
 behavior unchanged.
+
+## Appendix B — Phase 3d divergence audit (focus modules)
+
+Produced by a side-by-side read of `focus-user.ts` (95 LOC) /
+`focus-tag.ts` (83) / `focus-project.ts` (84) / `focus-activity.ts` (297)
+**before** the `FocusDimension` consolidation, per the "diff the triplets"
+mitigation in Design Risks. `focus-activity.ts` is two things in one file:
+a focus dimension (state + status bar + clear) that joins the engine, and
+the activity **reports** (`showRecentlyCompleted` / `showRecentlyAdded` /
+`showStaleItems`, `pickDateRange`, `pickStaleThreshold`,
+`renderCompletedItemLines`, `openActivityReport`, `activityFocusMenu`) that
+are not focus mechanics and move to `features/reports/activity-reports.ts`
+with their command IDs frozen.
+
+### Identical across user/tag/project (absorbed into the engine)
+
+- Status-bar item lifecycle: module-level `let`; `init*` creates the item
+  with `StatusBarAlignment.Right` + a per-dimension priority, sets
+  `item.command` to the dimension's pick command, pushes it into
+  `context.subscriptions`. Activity follows the same shape (its click
+  command is the menu, see B3).
+- `refresh*(editor)`: item never created → no-op; `!editor ||
+  !isTodoFile(document)` → `hide()`; focus unset → "All ..." text +
+  "No ... focus — click to ..." tooltip; focus set → token text +
+  "Focused on ... — click to change" tooltip; then `show()`.
+- Pick-and-set command flow: no `activeTextEditor` →
+  `showWarningMessage('Open a todo file first')` (a distinct pre-guard
+  message, deliberately preserved in 3a — NOT the canonical guard warning);
+  then `requireTodoEditor` (canonical warning on non-todo docs); parse via
+  the memoized `parseDocument`; QuickPick whose first entry is
+  `$(circle-slash) Clear focus` (description "Show all ...", value
+  `undefined`) followed by the definitions sorted case-insensitively
+  (`localeCompare` with `sensitivity: 'base'`); when the definitions list
+  is empty an information message fires (not awaited) and the QuickPick
+  still opens with just the Clear entry; placeholder is
+  `Currently focused on <token>` when set, else
+  `Select a <noun> to focus on (or clear)`; options are
+  `matchOnDescription: true, matchOnDetail: true` in **all three** pickers;
+  Esc/cancel → return with no side effects.
+- Side effects on set AND clear, in exact order: (1) workspaceState write,
+  (2) dim repaint in every **visible editor that is a todo file** — the
+  repaint-ALL-visible-editors variant exists only in the tree context-menu
+  handlers (`features/tree-commands.ts`, Appendix A) and is untouched by
+  3d, (3) the dimension's own status-bar refresh against
+  `window.activeTextEditor`. No tree refresh fires — the grouping trees do
+  not filter by focus. Activity's `refreshAllActivityUI` is byte-equivalent
+  to steps (2)+(3).
+- State access via `state.ts`'s module-level `ExtensionContext` singleton;
+  setters silently no-op when the context was never set.
+
+### Intentional divergences across the four dimensions (descriptor fields)
+
+| #   | Axis                               | User                                                                                                            | Tag                                                                                         | Project                                                                                              | Activity                                                                                                                                              |
+| --- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B1  | workspaceState key/type            | `mdTodo.focusUser` (string)                                                                                     | `mdTodo.focusTag` (string)                                                                  | `mdTodo.focusProject` (string)                                                                       | `mdTodo.activityFocus` (`ActivityFocus` object)                                                                                                       |
+| B2  | Status-bar priority                | 100                                                                                                             | 99                                                                                          | 97                                                                                                   | 98 — all Right-aligned, so on-screen left-to-right is **user, tag, activity, project** (descending priority); priorities are frozen descriptor inputs |
+| B3  | Status-bar click command           | `mdTodo.setFocusUser`                                                                                           | `mdTodo.setFocusTag`                                                                        | `mdTodo.setFocusProject`                                                                             | `mdTodo.activityFocusMenu` (an external command menu, not an engine pick; `mdTodo.setFocusActivity` is a registered alias)                            |
+| B4  | Icon                               | `$(person)`                                                                                                     | `$(tag)`                                                                                    | `$(project)`                                                                                         | `$(calendar)`                                                                                                                                         |
+| B5  | Unset text                         | `All users`                                                                                                     | `All tags`                                                                                  | `All projects`                                                                                       | `All time`                                                                                                                                            |
+| B6  | Unset tooltip                      | `No user focus — click to focus on a user`                                                                      | `No tag focus — click to focus on a tag`                                                    | `No project focus — click to focus on a project`                                                     | `No activity focus — click to filter by date`                                                                                                         |
+| B7  | Set text token                     | `@<focus>`                                                                                                      | `#<focus>`                                                                                  | `[<focus>]`                                                                                          | `<Prefix>: <label>`, Prefix ∈ Completed \| Added \| Stale                                                                                             |
+| B8  | Set tooltip                        | parses the ACTIVE document on every refresh to resolve `Focused on <fullname \|\| shortname> — click to change` | `Focused on #<focus> — click to change`                                                     | `Focused on [<focus>] — click to change`                                                             | `Activity focus: <Prefix> (<label>) — click to change`                                                                                                |
+| B9  | Pick source + entry                | `userDefinitions` sorted by shortname; label `$(person) @<short>`, description fullname, detail description     | `tagDefinitions` sorted by name; label `$(tag) #<name>`, no description, detail description | `projectDefinitions` sorted by name; label `$(project) <name>` (no `[]` wrapper), detail description | — (no definitions pick; focus is set by the report commands, which build an `ActivityFocus` from `pickDateRange`/`pickStaleThreshold`)                |
+| B10 | No-defs info message               | `No users defined. Add a "## Users" section first.`                                                             | `No tags defined. Add a "## Tags" section first.`                                           | `No projects defined. Add a "## Projects" section first.`                                            | —                                                                                                                                                     |
+| B11 | Pick placeholders                  | `Currently focused on @<x>` / `Select a user to focus on (or clear)`                                            | `Currently focused on #<x>` / `Select a tag to focus on (or clear)`                         | `Currently focused on [<x>]` / `Select a project to focus on (or clear)`                             | —                                                                                                                                                     |
+| B12 | 'Open a todo file first' pre-guard | yes (pick command)                                                                                              | yes                                                                                         | yes                                                                                                  | not needed — the report commands are `registerTextEditorCommand` (never fire without an editor) and go through `requireTodoEditor` only               |
+| B13 | Clear surface                      | no per-dimension command; `clearFocusUser` reached only via `mdTodo.clearAllFocus`                              | same                                                                                        | same                                                                                                 | dedicated `mdTodo.clearActivityFocus` command (also first entry of the activity menu)                                                                 |
+| B14 | Bespoke extras                     | —                                                                                                               | —                                                                                           | —                                                                                                    | `activityFocusMenu` (4-entry command QuickPick, placeholder `Activity focus`) + the three report commands and their renderers → `features/reports/`   |
+
+### Accidental divergences
+
+None found — unlike 3c (row U1) the four modules' non-tree set/clear paths
+are byte-equivalent modulo the descriptor fields above. Phase 3d targets
+**zero behavior change**.

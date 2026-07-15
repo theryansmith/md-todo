@@ -88,6 +88,13 @@ export enum StatusBarAlignment {
     Right = 2,
 }
 
+export enum ViewColumn {
+    Beside = -2,
+    Active = -1,
+    One = 1,
+    Two = 2,
+}
+
 export class CompletionItem {
     detail?: string;
     documentation?: MarkdownString;
@@ -138,15 +145,25 @@ export const window = {
     showQuickPick: () => Promise.resolve(undefined),
     showInputBox: () => Promise.resolve(undefined),
     createTextEditorDecorationType: () => inertDisposable,
-    createStatusBarItem: () => ({
-        show: () => undefined,
-        hide: () => undefined,
-        dispose: () => undefined,
+    // Records alignment/priority and tracks show()/hide() via `visible` so
+    // status-bar characterization tests can pin text/tooltip/visibility.
+    createStatusBarItem: (alignment?: number, priority?: number) => ({
+        alignment,
+        priority,
         text: '',
         tooltip: '',
         command: '',
+        visible: false,
+        show(): void {
+            this.visible = true;
+        },
+        hide(): void {
+            this.visible = false;
+        },
+        dispose: () => undefined,
     }),
     createTreeView: () => inertDisposable,
+    showTextDocument: () => Promise.resolve(undefined),
     onDidChangeActiveTextEditor: () => inertDisposable,
 };
 
