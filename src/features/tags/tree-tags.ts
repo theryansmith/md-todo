@@ -4,7 +4,7 @@ import { TagsTreeNode } from '../tree-nodes';
 import { isTodoFile, parseDocument } from '../../vscode/document-cache';
 import { classifyItemSection } from '../../core/parse/sections';
 import { setFocusTagState } from '../../vscode/state';
-import { updateDimDecorations } from '../focus/decoration-dim';
+import { dimDecoration } from '../focus/decoration-dim';
 import { refreshFocusTagStatusBar } from '../focus/focus-tag';
 import { markDone } from '../items/commands-mark-done';
 
@@ -304,7 +304,7 @@ export async function focusOnTagFromTree(node?: TagsTreeNode) {
     await setFocusTagState(node.tag.name);
     refreshFocusTagStatusBar(vscode.window.activeTextEditor);
     for (const visible of vscode.window.visibleTextEditors) {
-        updateDimDecorations(visible);
+        dimDecoration.update(visible);
     }
 }
 
@@ -313,7 +313,7 @@ export async function clearTagFocusFromTree() {
     refreshFocusTagStatusBar(vscode.window.activeTextEditor);
     for (const visible of vscode.window.visibleTextEditors) {
         if (isTodoFile(visible.document)) {
-            updateDimDecorations(visible);
+            dimDecoration.update(visible);
         }
     }
 }

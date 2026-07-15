@@ -5,7 +5,7 @@ import { isTodoFile, parseDocument } from '../../vscode/document-cache';
 import { classifyItemSection } from '../../core/parse/sections';
 import { getEffectiveProject, isDefinedProject } from '../../core/query/activity';
 import { setFocusProjectState } from '../../vscode/state';
-import { updateDimDecorations } from '../focus/decoration-dim';
+import { dimDecoration } from '../focus/decoration-dim';
 import { refreshFocusProjectStatusBar } from '../focus/focus-project';
 import { markDone } from '../items/commands-mark-done';
 import { showProjectViewForProject } from './project-view';
@@ -348,7 +348,7 @@ export async function focusOnProjectFromTree(node?: ProjectsTreeNode) {
     await setFocusProjectState(node.project.name);
     refreshFocusProjectStatusBar(vscode.window.activeTextEditor);
     for (const visible of vscode.window.visibleTextEditors) {
-        updateDimDecorations(visible);
+        dimDecoration.update(visible);
     }
 }
 
@@ -357,7 +357,7 @@ export async function clearProjectFocusFromTree() {
     refreshFocusProjectStatusBar(vscode.window.activeTextEditor);
     for (const visible of vscode.window.visibleTextEditors) {
         if (isTodoFile(visible.document)) {
-            updateDimDecorations(visible);
+            dimDecoration.update(visible);
         }
     }
 }

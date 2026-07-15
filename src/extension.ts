@@ -113,7 +113,10 @@ export function activate(context: vscode.ExtensionContext) {
     );
 }
 
-// Intentionally empty: disposal is centralized in Phase 3 (F-12); VS Code
-// requires the export to exist.
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-export function deactivate() {}
+export function deactivate() {
+    // Nothing to do here (F-12): every decoration type and per-URI cache is
+    // owned by a DecorationController pushed to context.subscriptions, the
+    // status-bar items, tree views, providers, and event listeners are all
+    // subscription-managed, and the CacheRegistry clearAll disposable empties
+    // the remaining memos. VS Code requires the export to exist.
+}

@@ -4,7 +4,7 @@ import { TreeNode } from '../tree-nodes';
 import { isTodoFile, parseDocument } from '../../vscode/document-cache';
 import { classifyItemSection } from '../../core/parse/sections';
 import { setFocusUserState } from '../../vscode/state';
-import { updateDimDecorations } from '../focus/decoration-dim';
+import { dimDecoration } from '../focus/decoration-dim';
 import { refreshFocusStatusBar } from '../focus/focus-user';
 import { markDone } from '../items/commands-mark-done';
 
@@ -308,7 +308,7 @@ export async function focusOnUserFromTree(node?: TreeNode) {
     await setFocusUserState(node.user.shortname);
     refreshFocusStatusBar(vscode.window.activeTextEditor);
     for (const visible of vscode.window.visibleTextEditors) {
-        updateDimDecorations(visible);
+        dimDecoration.update(visible);
     }
 }
 
@@ -317,7 +317,7 @@ export async function clearUserFocusFromTree() {
     refreshFocusStatusBar(vscode.window.activeTextEditor);
     for (const visible of vscode.window.visibleTextEditors) {
         if (isTodoFile(visible.document)) {
-            updateDimDecorations(visible);
+            dimDecoration.update(visible);
         }
     }
 }

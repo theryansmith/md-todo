@@ -2,13 +2,13 @@ import * as vscode from 'vscode';
 import { isTodoFile, parseDocument } from '../../vscode/document-cache';
 import { requireTodoEditor } from '../../vscode/guards';
 import { getFocusProject, setFocusProjectState } from '../../vscode/state';
-import { updateDimDecorations } from './decoration-dim';
+import { dimDecoration } from './decoration-dim';
 
 export async function clearFocusProject(): Promise<void> {
     await setFocusProjectState(undefined);
     for (const visible of vscode.window.visibleTextEditors) {
         if (isTodoFile(visible.document)) {
-            updateDimDecorations(visible);
+            dimDecoration.update(visible);
         }
     }
     refreshFocusProjectStatusBar(vscode.window.activeTextEditor);
@@ -96,7 +96,7 @@ export async function setFocusProject(): Promise<void> {
     await setFocusProjectState(picked.projectName);
     for (const visible of vscode.window.visibleTextEditors) {
         if (isTodoFile(visible.document)) {
-            updateDimDecorations(visible);
+            dimDecoration.update(visible);
         }
     }
     refreshFocusProjectStatusBar(vscode.window.activeTextEditor);

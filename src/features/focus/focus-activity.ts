@@ -5,7 +5,7 @@ import { requireTodoEditor } from '../../vscode/guards';
 import { itemMatchesActivity } from '../../core/query/activity';
 import { parseDate, daysBetween, startOfToday, parseNaturalDateRange } from '../../core/dates';
 import { getActivityFocus, setActivityFocusState } from '../../vscode/state';
-import { updateDimDecorations } from './decoration-dim';
+import { dimDecoration } from './decoration-dim';
 
 let activityFocusStatusBarItem: vscode.StatusBarItem | undefined;
 
@@ -43,7 +43,7 @@ export function refreshActivityFocusStatusBar(editor: vscode.TextEditor | undefi
 export function refreshAllActivityUI() {
     for (const v of vscode.window.visibleTextEditors) {
         if (isTodoFile(v.document)) {
-            updateDimDecorations(v);
+            dimDecoration.update(v);
         }
     }
     refreshActivityFocusStatusBar(vscode.window.activeTextEditor);

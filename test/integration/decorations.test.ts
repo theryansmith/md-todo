@@ -13,36 +13,17 @@ import * as vscode from 'vscode';
 import { makeDoc } from '../helpers';
 import { setExtensionContext } from '../../src/vscode/state';
 import { clearParseCache } from '../../src/vscode/document-cache';
-import {
-    updateTagDecorations,
-    updateTagDecorationsIncremental,
-    clearTagDecorationCache,
-} from '../../src/features/decorations/decoration-tag';
-import {
-    updateDateDecorations,
-    updateDateDecorationsIncremental,
-    clearDateDecorationCache,
-} from '../../src/features/decorations/decoration-date';
-import {
-    updateMentionDecorations,
-    updateMentionDecorationsIncremental,
-    clearMentionDecorationCache,
-} from '../../src/features/decorations/decoration-mention';
-import {
-    updateProjectDecorations,
-    updateProjectDecorationsIncremental,
-    clearProjectDecorationCache,
-} from '../../src/features/decorations/decoration-project';
-import {
-    updateDimDecorations,
-    updateDimDecorationsIncremental,
-    clearDimDecorationCache,
-} from '../../src/features/focus/decoration-dim';
+import { DecorationController } from '../../src/vscode/decoration-controller';
+import { tagDecoration } from '../../src/features/decorations/decoration-tag';
+import { dateDecoration } from '../../src/features/decorations/decoration-date';
+import { mentionDecoration } from '../../src/features/decorations/decoration-mention';
+import { projectDecoration } from '../../src/features/decorations/decoration-project';
+import { dimDecoration } from '../../src/features/focus/decoration-dim';
 
 // ── Wiring: bind the five decoration surfaces under test. ──────────────────
-// When the DecorationController refactor lands, ONLY this table changes
-// (full/incremental/clear route to the controllers); the pinned expectations
-// below stay byte-identical.
+// This table was written against the pre-controller per-module functions and
+// swapped to the DecorationController instances when Phase 3b landed; the
+// pinned expectations below are unchanged from the pre-refactor originals.
 interface Surface {
     full: (editor: vscode.TextEditor) => void;
     incremental: (
@@ -51,42 +32,25 @@ interface Surface {
     ) => void;
     clear: () => void;
 }
+function controllerSurface(controller: DecorationController): Surface {
+    return {
+        full: (editor) => {
+            controller.update(editor);
+        },
+        incremental: (editor, changes) => {
+            controller.updateIncremental(editor, changes);
+        },
+        clear: () => {
+            controller.clearCache();
+        },
+    };
+}
 const surfaces: Record<'tag' | 'date' | 'mention' | 'project' | 'dim', Surface> = {
-    tag: {
-        full: updateTagDecorations,
-        incremental: updateTagDecorationsIncremental,
-        clear: () => {
-            clearTagDecorationCache();
-        },
-    },
-    date: {
-        full: updateDateDecorations,
-        incremental: updateDateDecorationsIncremental,
-        clear: () => {
-            clearDateDecorationCache();
-        },
-    },
-    mention: {
-        full: updateMentionDecorations,
-        incremental: updateMentionDecorationsIncremental,
-        clear: () => {
-            clearMentionDecorationCache();
-        },
-    },
-    project: {
-        full: updateProjectDecorations,
-        incremental: updateProjectDecorationsIncremental,
-        clear: () => {
-            clearProjectDecorationCache();
-        },
-    },
-    dim: {
-        full: updateDimDecorations,
-        incremental: updateDimDecorationsIncremental,
-        clear: () => {
-            clearDimDecorationCache();
-        },
-    },
+    tag: controllerSurface(tagDecoration),
+    date: controllerSurface(dateDecoration),
+    mention: controllerSurface(mentionDecoration),
+    project: controllerSurface(projectDecoration),
+    dim: controllerSurface(dimDecoration),
 };
 // ───────────────────────────────────────────────────────────────────────────
 

@@ -1,29 +1,33 @@
 import * as vscode from 'vscode';
-import {
-    updateTagDecorations,
-    updateTagDecorationsIncremental,
-} from '../features/decorations/decoration-tag';
-import {
-    createDateDecorationType,
-    updateDateDecorations,
-    updateDateDecorationsIncremental,
-} from '../features/decorations/decoration-date';
-import {
-    updateMentionDecorations,
-    updateMentionDecorationsIncremental,
-} from '../features/decorations/decoration-mention';
-import {
-    updateProjectDecorations,
-    updateProjectDecorationsIncremental,
-} from '../features/decorations/decoration-project';
-import {
-    updateDimDecorations,
-    updateDimDecorationsIncremental,
-} from '../features/focus/decoration-dim';
+import { DecorationController } from '../vscode/decoration-controller';
+import { tagDecoration } from '../features/decorations/decoration-tag';
+import { dateDecoration } from '../features/decorations/decoration-date';
+import { mentionDecoration } from '../features/decorations/decoration-mention';
+import { projectDecoration } from '../features/decorations/decoration-project';
+import { dimDecoration } from '../features/focus/decoration-dim';
 import { refreshFocusStatusBar } from '../features/focus/focus-user';
 import { refreshFocusTagStatusBar } from '../features/focus/focus-tag';
 import { refreshFocusProjectStatusBar } from '../features/focus/focus-project';
 import { refreshActivityFocusStatusBar } from '../features/focus/focus-activity';
+
+// Each decoration type is layered additively — the historical tag → date →
+// mention → project → dim order is preserved for clarity; VS Code applies
+// them all. Adding a decoration dimension now means adding a descriptor to
+// this list, not cloning a module.
+const decorationControllers: readonly DecorationController[] = [
+    tagDecoration,
+    dateDecoration,
+    mentionDecoration,
+    projectDecoration,
+    dimDecoration,
+];
+
+const statusBarRefreshers: readonly ((editor: vscode.TextEditor | undefined) => void)[] = [
+    refreshFocusStatusBar,
+    refreshFocusTagStatusBar,
+    refreshFocusProjectStatusBar,
+    refreshActivityFocusStatusBar,
+];
 
 /**
  * True only when every content change in the event is a pure insertion of
@@ -46,33 +50,30 @@ export function isWhitespaceOnlyChange(event: vscode.TextDocumentChangeEvent): b
  * UI stays in sync as the user navigates and edits.
  */
 export function registerEditorUiEvents(context: vscode.ExtensionContext): void {
-    // Tag, date, mention, and dim decorations. Each decoration type is layered
-    // additively — order matters for clarity but VSCode applies them all.
-    if (vscode.window.activeTextEditor) {
-        updateTagDecorations(vscode.window.activeTextEditor);
-        updateDateDecorations(vscode.window.activeTextEditor);
-        updateMentionDecorations(vscode.window.activeTextEditor);
-        updateProjectDecorations(vscode.window.activeTextEditor);
-        updateDimDecorations(vscode.window.activeTextEditor);
-        refreshFocusStatusBar(vscode.window.activeTextEditor);
-        refreshFocusTagStatusBar(vscode.window.activeTextEditor);
-        refreshFocusProjectStatusBar(vscode.window.activeTextEditor);
-        refreshActivityFocusStatusBar(vscode.window.activeTextEditor);
+    // The controllers own the TextEditorDecorationType singletons and per-URI
+    // caches — dispose them with the extension (F-12).
+    context.subscriptions.push(...decorationControllers);
+
+    const initialEditor = vscode.window.activeTextEditor;
+    if (initialEditor) {
+        for (const controller of decorationControllers) {
+            controller.update(initialEditor);
+        }
+        for (const refresh of statusBarRefreshers) {
+            refresh(initialEditor);
+        }
     }
 
     context.subscriptions.push(
         vscode.window.onDidChangeActiveTextEditor((editor) => {
             if (editor) {
-                updateTagDecorations(editor);
-                updateDateDecorations(editor);
-                updateMentionDecorations(editor);
-                updateProjectDecorations(editor);
-                updateDimDecorations(editor);
+                for (const controller of decorationControllers) {
+                    controller.update(editor);
+                }
             }
-            refreshFocusStatusBar(editor);
-            refreshFocusTagStatusBar(editor);
-            refreshFocusProjectStatusBar(editor);
-            refreshActivityFocusStatusBar(editor);
+            for (const refresh of statusBarRefreshers) {
+                refresh(editor);
+            }
         }),
         vscode.workspace.onDidChangeTextDocument((event) => {
             const editor = vscode.window.activeTextEditor;
@@ -86,27 +87,26 @@ export function registerEditorUiEvents(context: vscode.ExtensionContext): void {
                 return;
             }
             // Document edit: route through the incremental decoration path so
-            // each updater shifts its cached options past the edit and re-scans
-            // only the affected line range instead of the whole document.
-            // Initial open / editor switch still uses the full-scan path above
-            // — that's where the per-URI caches get populated.
-            updateTagDecorationsIncremental(editor, event.contentChanges);
-            updateDateDecorationsIncremental(editor, event.contentChanges);
-            updateMentionDecorationsIncremental(editor, event.contentChanges);
-            updateProjectDecorationsIncremental(editor, event.contentChanges);
-            updateDimDecorationsIncremental(editor, event.contentChanges);
+            // each controller shifts its cached options past the edit and
+            // re-scans only the affected line range instead of the whole
+            // document. Initial open / editor switch still uses the full-scan
+            // path above — that's where the per-URI caches get populated.
+            for (const controller of decorationControllers) {
+                controller.updateIncremental(editor, event.contentChanges);
+            }
             // Status bar tooltip depends on parsed user defs — refresh too.
-            refreshFocusStatusBar(editor);
-            refreshFocusTagStatusBar(editor);
-            refreshFocusProjectStatusBar(editor);
-            refreshActivityFocusStatusBar(editor);
+            for (const refresh of statusBarRefreshers) {
+                refresh(editor);
+            }
         }),
         vscode.workspace.onDidChangeConfiguration((event) => {
-            if (event.affectsConfiguration('mdTodo.dateOpacity')) {
-                createDateDecorationType();
-                const editor = vscode.window.activeTextEditor;
-                if (editor) {
-                    updateDateDecorations(editor);
+            for (const controller of decorationControllers) {
+                if (controller.affectsConfiguration(event)) {
+                    controller.recreateType();
+                    const editor = vscode.window.activeTextEditor;
+                    if (editor) {
+                        controller.update(editor);
+                    }
                 }
             }
         })

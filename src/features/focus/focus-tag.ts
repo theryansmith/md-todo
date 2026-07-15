@@ -2,13 +2,13 @@ import * as vscode from 'vscode';
 import { isTodoFile, parseDocument } from '../../vscode/document-cache';
 import { requireTodoEditor } from '../../vscode/guards';
 import { getFocusTag, setFocusTagState } from '../../vscode/state';
-import { updateDimDecorations } from './decoration-dim';
+import { dimDecoration } from './decoration-dim';
 
 export async function clearFocusTag(): Promise<void> {
     await setFocusTagState(undefined);
     for (const visible of vscode.window.visibleTextEditors) {
         if (isTodoFile(visible.document)) {
-            updateDimDecorations(visible);
+            dimDecoration.update(visible);
         }
     }
     refreshFocusTagStatusBar(vscode.window.activeTextEditor);
@@ -86,7 +86,7 @@ export async function setFocusTag(): Promise<void> {
     await setFocusTagState(picked.tagname);
     for (const visible of vscode.window.visibleTextEditors) {
         if (isTodoFile(visible.document)) {
-            updateDimDecorations(visible);
+            dimDecoration.update(visible);
         }
     }
     refreshFocusTagStatusBar(vscode.window.activeTextEditor);
