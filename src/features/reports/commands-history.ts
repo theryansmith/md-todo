@@ -1,9 +1,6 @@
 import * as vscode from 'vscode';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import { requireTodoEditor } from '../../vscode/guards';
-
-const execAsync = promisify(exec);
+import { logForFile, showCommit } from '../../vscode/git';
 
 export async function showHistory(editor: vscode.TextEditor) {
     const ctx = requireTodoEditor(editor);
@@ -22,9 +19,7 @@ export async function showHistory(editor: vscode.TextEditor) {
     const cwd = workspaceFolder.uri.fsPath;
 
     try {
-        const { stdout } = await execAsync(`git log --oneline --follow -20 -- "${filePath}"`, {
-            cwd,
-        });
+        const stdout = await logForFile(cwd, filePath, 20);
 
         if (!stdout.trim()) {
             vscode.window.showInformationMessage('No git history found for this file');
@@ -58,10 +53,7 @@ export async function showHistory(editor: vscode.TextEditor) {
             return;
         }
 
-        const { stdout: diff } = await execAsync(
-            `git show ${selected.commit.hash} --format="" -- "${filePath}"`,
-            { cwd }
-        );
+        const diff = await showCommit(cwd, selected.commit.hash, filePath);
 
         const doc = await vscode.workspace.openTextDocument({
             content: `# Changes in ${selected.commit.hash}\n${selected.commit.message}\n\n${diff}`,
