@@ -27,7 +27,7 @@ import { ActivityFocus } from '../../src/core/model';
 // This table was written against the pre-3d per-dimension modules and swapped
 // to FocusDimension instances when the generic engine landed; the pinned
 // expectations below are unchanged from the pre-refactor originals.
-import { setExtensionContext } from '../../src/vscode/state';
+import { setExtensionContext } from '../../src/vscode/workspace-state';
 import { FocusDimension } from '../../src/vscode/focus-dimension';
 import { userFocus } from '../../src/features/focus/focus-user';
 import { tagFocus } from '../../src/features/focus/focus-tag';

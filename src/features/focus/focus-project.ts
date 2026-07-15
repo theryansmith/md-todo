@@ -1,5 +1,5 @@
 import { FocusDimension } from '../../vscode/focus-dimension';
-import { FOCUS_PROJECT_STATE_KEY } from '../../vscode/state';
+import { FOCUS_PROJECT_STATE_KEY } from '../../vscode/workspace-state';
 import { repaintDimInVisibleTodoEditors } from './decoration-dim';
 
 /**

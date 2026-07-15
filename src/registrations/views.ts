@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { GroupingTreeProvider } from '../vscode/grouping-tree';
 import { isTodoFile } from '../vscode/document-cache';
-import { rememberLastTodoUri } from '../vscode/state';
+import { rememberLastTodoUri } from '../vscode/workspace-state';
 import { markDoneFromTreeNode } from '../features/tree-commands';
 import {
     usersGrouping,

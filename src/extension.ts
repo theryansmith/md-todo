@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { setExtensionContext } from './vscode/state';
+import { setExtensionContext } from './vscode/workspace-state';
 import {
     userHoverProvider,
     userCompletionProvider,

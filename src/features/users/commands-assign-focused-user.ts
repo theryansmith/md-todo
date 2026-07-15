@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { parseDocument } from '../../vscode/document-cache';
 import { requireTodoEditor } from '../../vscode/guards';
-import { getFocusUser } from '../../vscode/state';
+import { getFocusUser } from '../../vscode/workspace-state';
 
 /**
  * Toggle `@<shortname>` on the current todo line at the cursor.

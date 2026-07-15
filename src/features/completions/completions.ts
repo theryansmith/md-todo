@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { isTodoFile, parseDocument } from '../../vscode/document-cache';
 import { formatProjectToken } from '../../core/tokens';
-import { getLastTodoSourceDoc } from '../../vscode/state';
+import { getLastTodoSourceDoc } from '../../vscode/workspace-state';
 
 export const userHoverProvider: vscode.HoverProvider = {
     provideHover(document, position) {

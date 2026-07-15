@@ -1,6 +1,6 @@
 import { ActivityFocus } from '../../core/model';
 import { FocusDimension } from '../../vscode/focus-dimension';
-import { ACTIVITY_FOCUS_STATE_KEY } from '../../vscode/state';
+import { ACTIVITY_FOCUS_STATE_KEY } from '../../vscode/workspace-state';
 import { repaintDimInVisibleTodoEditors } from './decoration-dim';
 
 function prefixOf(focus: ActivityFocus): string {

@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { ParsedDocument } from '../core/model';
 import { isTodoFile, parseDocument } from './document-cache';
 import { requireTodoEditor } from './guards';
-import { getExtensionContext } from './state';
+import { getExtensionContext } from './workspace-state';
 
 /**
  * One focus engine, four instances (F-04). A focus dimension is: a

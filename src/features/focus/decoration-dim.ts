@@ -5,7 +5,7 @@ import { DecorationController } from '../../vscode/decoration-controller';
 import { getItemWithDescendantsEndLine } from '../../core/query/items';
 import { itemMatchesActivity, getEffectiveProject } from '../../core/query/activity';
 import { startOfToday } from '../../core/dates';
-import { getFocusUser, getFocusTag, getFocusProject, getActivityFocus } from '../../vscode/state';
+import { getFocusUser, getFocusTag, getFocusProject, getActivityFocus } from '../../vscode/workspace-state';
 import { PROJECT_TOKEN_RE_G } from '../../core/tokens';
 
 /** True when no focus dimension is set — dim's set is then trivially empty. */

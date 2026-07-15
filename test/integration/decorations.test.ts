@@ -11,7 +11,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import * as vscode from 'vscode';
 import { makeDoc } from '../helpers';
-import { setExtensionContext } from '../../src/vscode/state';
+import { setExtensionContext } from '../../src/vscode/workspace-state';
 import { clearParseCache } from '../../src/vscode/document-cache';
 import { DecorationController } from '../../src/vscode/decoration-controller';
 import { tagDecoration } from '../../src/features/decorations/decoration-tag';
