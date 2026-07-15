@@ -121,8 +121,14 @@ describe('parseNaturalDateRange', () => {
         ['this week', { start: '2026-07-13', end: '2026-07-15', label: 'this week' }],
         ['this month', { start: '2026-07-01', end: '2026-07-15', label: 'this month' }],
         ['last 3 days', { start: '2026-07-12', end: '2026-07-15', label: 'last 3 days' }],
+        ['last 1 day', { start: '2026-07-14', end: '2026-07-15', label: 'last 1 day' }],
+        // Singular unit with n > 1 is accepted by the grammar (pinned).
+        ['last 5 day', { start: '2026-07-10', end: '2026-07-15', label: 'last 5 day' }],
         ['last 2 weeks', { start: '2026-07-01', end: '2026-07-15', label: 'last 2 weeks' }],
+        ['last 1 week', { start: '2026-07-08', end: '2026-07-15', label: 'last 1 week' }],
         ['last 1 month', { start: '2026-06-15', end: '2026-07-15', label: 'last 1 month' }],
+        // Months are approximated as 30 days each (pinned).
+        ['last 2 months', { start: '2026-05-16', end: '2026-07-15', label: 'last 2 months' }],
         ['2026-05-01', { start: '2026-05-01', end: '2026-05-01', label: '2026-05-01' }],
         [
             '2026-05-01 to 2026-05-31',
