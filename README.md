@@ -37,14 +37,14 @@ cd md-todo
 # Install dependencies
 npm install
 
-# Compile TypeScript
-npm run compile
+# Bundle the extension (esbuild -> dist/extension.js)
+npm run build
 
 # Package as VSIX
 npm run package
 ```
 
-This creates `md-todo-1.0.0.vsix` in the project folder.
+Sources live under `src/` and are bundled by [esbuild](https://esbuild.github.io/) into a single `dist/extension.js` (the extension entry point). `npm run build` produces the minified production bundle; `npm run build:dev` builds unminified and `npm run watch` rebuilds on change. Typechecking is a separate step (`npm run typecheck` — esbuild does not typecheck), and `npm run verify` runs every CI gate locally (typecheck, lint, format, markdownlint, tests). Packaging creates `md-todo-<version>.vsix` in the project folder.
 
 ### Install the VSIX
 
@@ -52,7 +52,7 @@ In VS Code: Extensions → `...` → **Install from VSIX** → select the `.vsix
 
 ### Development Mode
 
-For active development, symlink the extension folder so changes are picked up after reloading without reinstalling.
+For active development, symlink the extension folder so changes are picked up after reloading without reinstalling. The extension loads from the bundled `dist/extension.js` (`main` in `package.json`), so run a build at least once before reloading — the symlinked folder must contain `dist/`.
 
 **Windows (requires Administrator):**
 
@@ -73,13 +73,13 @@ rm -rf ~/.vscode/extensions/md-todo
 ln -s /path/to/md-todo ~/.vscode/extensions/md-todo
 ```
 
-After making changes, compile and reload VS Code:
+After making changes, rebuild the bundle and reload VS Code:
 
 ```bash
-npm run compile
+npm run build:dev
 ```
 
-Then press `Ctrl+Shift+P` → "Developer: Reload Window" (or `Ctrl+R` if DevTools is focused).
+(or leave `npm run watch` running to rebuild on every save). Then press `Ctrl+Shift+P` → "Developer: Reload Window" (or `Ctrl+R` if DevTools is focused).
 
 **Switching back to released version:**
 

@@ -2,6 +2,10 @@
 
 All notable user-facing changes to MD Todo are documented here. Newest first. When an item from the README's `## ToDO` ships, it's deleted from that list and described here in user-facing language.
 
+## [Unreleased]
+
+- Internal: sources restructured into a layered `src/` tree (enterprise-restructure TDD, Phases 0–1) and packaging switched from per-file `tsc` output to a single esbuild bundle — the installed extension shrinks from 102 files / 314 KB to 11 files / 47 KB and loads from one `dist/extension.js`. No user-facing behavior changes.
+
 ## [1.6.0] — 2026-07-14
 
 - New command `MD Todo: Show Project View` opens a read-only report of every item in a chosen project — active, completed, and archived alike — grouped by section and preserving the parent/child hierarchy those items appear in. A matching task nested under a non-matching parent still shows that parent, marked `_(context)_`, so its place in the document stays legible. Also reachable via a new "Show Project View" entry on the **MD TODO PROJECTS** tree's right-click menu.

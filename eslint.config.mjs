@@ -14,11 +14,7 @@ export default tseslint.config(
         files: ['**/*.ts'],
         languageOptions: {
             parserOptions: {
-                projectService: {
-                    // vitest.config.ts is excluded from the compile tsconfig on purpose;
-                    // lint it against the default project instead.
-                    allowDefaultProject: ['vitest.config.ts'],
-                },
+                projectService: true,
                 tsconfigRootDir: import.meta.dirname,
             },
         },

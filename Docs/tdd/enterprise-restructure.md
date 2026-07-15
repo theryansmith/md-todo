@@ -462,7 +462,7 @@ concession — documented there).
 | Phase | Scope                                                                                           | Status                         | PR  | Notes                                                                                                                              |
 | ----- | ----------------------------------------------------------------------------------------------- | ------------------------------ | --- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | 0     | TDD + tooling baseline (lint, format, coverage, markdownlint, Dependabot, CI gates)             | Done (this branch, 2026-07-15) | —   | ESLint strict + prettier + markdownlint + coverage (baseline 10.65% lines / 72.97% branches) + Dependabot + CI gates on Node 20/24 |
-| 1     | `src/` layout + esbuild bundling                                                                | Not started                    | —   | Pure moves; no logic edits                                                                                                         |
+| 1     | `src/` layout + esbuild bundling                                                                | Done (this branch, 2026-07-15) | —   | Pure `git mv` + import fixes; esbuild bundle + smoke test; layering zones on; VSIX 102 files/314 KB → 11 files/47 KB               |
 | 2     | Pure `core/` + timezone fix (F-06)                                                              | Not started                    | —   |                                                                                                                                    |
 | 3a    | `requireTodoEditor` guard (F-09/F-10)                                                           | Not started                    | —   |                                                                                                                                    |
 | 3b    | `DecorationController` + `CacheRegistry` (F-03/F-11/F-12)                                       | Not started                    | —   |                                                                                                                                    |
@@ -476,9 +476,10 @@ concession — documented there).
 
 Record every deviation from this design here, newest first.
 
-| Date       | Decision                           | Rationale |
-| ---------- | ---------------------------------- | --------- |
-| 2026-07-15 | Initial design accepted as drafted | —         |
+| Date       | Decision                                                                                                                                | Rationale                                                                                                                                                                                                                                                            |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-15 | Phase 1 layering zones: `extension.ts` temporarily allowed to import `features/` and `core/`; feature-to-feature imports not banned yet | Zero-logic-edit constraint: the composition root registers feature handlers until the Phase 4 command registry, and enumerates `core/` cache clears until the Phase 3b `CacheRegistry`; cross-feature imports are exactly the Phase 3 duplication being consolidated |
+| 2026-07-15 | Initial design accepted as drafted                                                                                                      | —                                                                                                                                                                                                                                                                    |
 
 ## Alternatives Considered
 
