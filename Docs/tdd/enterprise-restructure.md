@@ -608,3 +608,73 @@ are catalogued in `IMPROVEMENTS.md`):
 - typescript-eslint strict-type-checked preset; `eslint-plugin-import`
   `no-restricted-paths`
 - CI/release workflows: `.github/workflows/{ci,release}.yml`
+
+## Appendix A — Phase 3c divergence audit (Users / Tags / Projects trees)
+
+Produced by a side-by-side diff of `tree-users.ts` / `tree-tags.ts` /
+`tree-projects.ts` **before** the `GroupingDescriptor` consolidation, per the
+"diff the triplets" mitigation in Design Risks. Everything not listed under
+"Intentional divergences" below was byte-identical modulo type names and is
+absorbed into the engine unchanged.
+
+### Identical across all three (absorbed into the engine)
+
+- Current-URI tracking: `setCurrentTodoFile` no-ops on same URI, persists to
+  `workspaceState`, fires a full refresh; constructor restores the last URI.
+- `refresh()` (immediate) + `refreshDebounced()` (200 ms, timer coalesced).
+- `getCurrentParsed()` via `vscode.workspace.openTextDocument` +
+  `isTodoFile` gate + memoized `parseDocument`; any failure → empty tree.
+- Recursive traversal (item + all descendants) for both counts and buckets.
+- Section bucketing via `classifyItemSection`; fixed `active → completed →
+  archive` order; **empty sections omitted**; section nodes always Expanded;
+  labels `Active (n)` / `Completed (n)` / `Archive (n)`; icons
+  `list-unordered` / `check-all` / `archive`.
+- Root/unassigned nodes: Collapsed iff `active+completed+archived > 0`,
+  else None; description `(n active)` (Users adds a prefix, see D3); tooltip
+  is a header line + `\nActive: a  Completed: c  Archive: r`.
+- Todo nodes: label `item.text || '(untitled)'`; description
+  `done <date>` / `done` / `added <date>` / `''`; tooltip `item.raw`; icon
+  `check` / `circle-outline`; click command `vscode.open` with
+  `{ selection: Range(line,0,line,0), preview: false }`.
+- Roots sorted case-insensitively by group key; unassigned bucket appended
+  last.
+- Focus-from-tree handlers: focus **set** repaints dim in *all* visible
+  editors; focus **clear** repaints only todo-file editors. This asymmetry
+  is identical in all three copies and is preserved as-is.
+
+### Intentional divergences (preserved via descriptor fields)
+
+| #   | Axis                      | Users                                           | Tags                             | Projects                                                      | Descriptor field                     |
+| --- | ------------------------- | ----------------------------------------------- | -------------------------------- | ------------------------------------------------------------- | ------------------------------------ |
+| D1  | workspaceState key        | `mdTodo.users.lastTodoFileUri`                  | `mdTodo.tags.lastTodoFileUri`    | `mdTodo.projects.lastTodoFileUri`                             | derived from `id`                    |
+| D2  | Root label                | `fullname`                                      | `#<name>`                        | `<name>`                                                      | `labelOf`                            |
+| D3  | Root description          | `@<shortname>  (n active)` (two spaces)         | `(n active)`                     | `(n active)`                                                  | `rootDescriptionOf` (engine default) |
+| D4  | Root tooltip header       | `<fullname> — <description>`                    | `#<name> — <description>`        | `[<name>] — <description>`                                    | `rootTooltipHeaderOf`                |
+| D5  | Root icon                 | `person`                                        | `tag`                            | `project`; `warning` for synthetic roots (`line === -1`)      | `rootIconOf(def)`                    |
+| D6  | Root contextValue         | `user`                                          | `tag-root`                       | `project-root`                                                | `contextValues.root`                 |
+| D7  | Group membership          | `mentions.includes(shortname)`                  | `tags.includes(name)`            | `getEffectiveProject(item) === name` (children inherit)       | `keysOf(item)`                       |
+| D8  | Unassigned membership     | `mentions.length === 0`                         | `tags.length === 0`              | `getEffectiveProject(item) === undefined`                     | `keysOf(item).length === 0`          |
+| D9  | Unassigned label          | `Unassigned`                                    | `Untagged`                       | `No Project`                                                  | `unassignedLabel`                    |
+| D10 | Unassigned icon           | `person-add`                                    | `circle-slash`                   | `circle-slash`                                                | `unassignedIcon`                     |
+| D11 | Unassigned tooltip header | `Todos with no @mention`                        | `Todos with no #tag`             | `Todos with no [project]`                                     | `unassignedTooltipHeader`            |
+| D12 | Unassigned contextValue   | `unassigned`                                    | `untagged`                       | `no-project`                                                  | `contextValues.unassigned`           |
+| D13 | Section contextValue      | `section`                                       | `tag-section`                    | `project-section`                                             | `contextValues.section`              |
+| D14 | Todo contextValue         | `todo`                                          | `tag-todo`                       | `project-todo`                                                | `contextValues.todo`                 |
+| D15 | Synthetic roots           | —                                               | —                                | used-but-undefined project names appended after defined roots | `syntheticDefinitionsOf`             |
+| D16 | Root sort key vs label    | sorts by `shortname`, labels by `fullname`      | sorts by `name` (= label sans #) | sorts by `name` (= label)                                     | sort by `keyOf(def)`                 |
+| D17 | Tree-specific commands    | `reassignUser`                                  | `editTagsFromTree`               | `setProjectFromTree`, `showProjectViewFromTree`               | stay in feature modules              |
+| D18 | Focus warn message        | "Right-click a user in the MD Todo Users view." | "…a tag…Tags view."              | "…a project…Projects view."                                   | parameter of shared focus handler    |
+
+Command IDs and contextValues are frozen (referenced from `package.json`
+`contributes.menus` `viewItem ==` clauses) — the descriptor carries them
+verbatim.
+
+### Accidental divergences unified (behavior changes)
+
+| #   | Axis                            | Users (old)                                                                           | Tags/Projects (old) | Unified to                                                                                                                                                                                       |
+| --- | ------------------------------- | ------------------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| U1  | mark-done-from-tree target file | `treeProvider.getCurrentUri()` (silently returns if unset; ignores the node's origin) | `node.sourceUri`    | `node.sourceUri` — the Users variant could mark the wrong file's line if the tree's current file changed between node construction and the context-menu click; the Tags/Projects form is correct |
+
+`reassignUserFromTree` also reads `treeProvider.getCurrentUri()`, but it has
+no counterpart in the other trees to unify against; it keeps its existing
+behavior unchanged.
