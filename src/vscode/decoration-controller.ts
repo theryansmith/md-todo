@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { isTodoFile } from './document-cache';
 import { registerUriCache } from './cache-registry';
+import { computeExcludedLines, FENCE_OR_COMMENT_MARKER_RE } from '../core/parse/fences';
 
 /**
  * One decoration lifecycle, five instances (F-03). A DecorationSpec describes
@@ -81,6 +82,13 @@ export class DecorationController implements vscode.Disposable {
     // via the CacheRegistry (see extension.ts wiring).
     private readonly cache = new Map<string, vscode.DecorationOptions[]>();
 
+    // Per-URI count of fence/comment marker lines at the time of the last
+    // full scan (F-17). The incremental path compares it against the current
+    // document's count: a mismatch means fence/comment structure changed
+    // (e.g. a whole ``` line was deleted), so the shifted cache is invalid
+    // and a full scan is required.
+    private readonly markerCounts = new Map<string, number>();
+
     constructor(private readonly spec: DecorationSpec) {
         registerUriCache((uri) => {
             this.clearCache(uri);
@@ -95,8 +103,10 @@ export class DecorationController implements vscode.Disposable {
     clearCache(uri?: vscode.Uri): void {
         if (uri) {
             this.cache.delete(uri.toString());
+            this.markerCounts.delete(uri.toString());
         } else {
             this.cache.clear();
+            this.markerCounts.clear();
         }
     }
 
@@ -126,12 +136,16 @@ export class DecorationController implements vscode.Disposable {
         spec: LineDecorationSpec,
         document: vscode.TextDocument,
         startLine: number,
-        endLine: number
+        endLine: number,
+        excluded: readonly boolean[]
     ): vscode.DecorationOptions[] {
         const options: vscode.DecorationOptions[] = [];
         const lo = Math.max(0, startLine);
         const hi = Math.min(document.lineCount - 1, endLine);
         for (let i = lo; i <= hi; i++) {
+            if (excluded[i]) {
+                continue; // F-17: no tokens inside fences/comments
+            }
             options.push(...spec.scanLine(document.lineAt(i).text, i));
         }
         return options;
@@ -148,9 +162,20 @@ export class DecorationController implements vscode.Disposable {
             return;
         }
 
-        const options = this.spec.incremental
-            ? this.scanLineRange(this.spec, editor.document, 0, editor.document.lineCount - 1)
-            : this.spec.scanDocument(editor.document);
+        let options: vscode.DecorationOptions[];
+        if (this.spec.incremental) {
+            const { excluded, markerLineCount } = computeExcludedLines(editor.document);
+            options = this.scanLineRange(
+                this.spec,
+                editor.document,
+                0,
+                editor.document.lineCount - 1,
+                excluded
+            );
+            this.markerCounts.set(key, markerLineCount);
+        } else {
+            options = this.spec.scanDocument(editor.document);
+        }
         editor.setDecorations(type, options);
         this.cache.set(key, options);
     }
@@ -199,11 +224,27 @@ export class DecorationController implements vscode.Disposable {
             return;
         }
 
+        // F-17: the shifted cache is only valid while the fence/comment
+        // structure is unchanged. Fall back to a full scan when the change
+        // inserts a marker, when the post-edit marker-line count differs
+        // from the last full scan (catches deletions of marker lines, whose
+        // removed text is not observable), or when no count was recorded.
+        const { excluded, markerLineCount } = computeExcludedLines(editor.document);
+        const markersTouched =
+            markerLineCount !== this.markerCounts.get(key) ||
+            changes.some((change) => FENCE_OR_COMMENT_MARKER_RE.test(change.text));
+        if (markersTouched) {
+            this.update(editor);
+            return;
+        }
+
         const shifted = applyChangesToCache(cached, changes);
         const rescanned: vscode.DecorationOptions[] = [];
         for (const change of changes) {
             const { startLine, endLine } = affectedNewLineRange(change);
-            rescanned.push(...this.scanLineRange(this.spec, editor.document, startLine, endLine));
+            rescanned.push(
+                ...this.scanLineRange(this.spec, editor.document, startLine, endLine, excluded)
+            );
         }
         const merged = mergeAndSort(shifted, rescanned);
         editor.setDecorations(type, merged);

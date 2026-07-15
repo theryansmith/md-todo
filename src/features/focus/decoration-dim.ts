@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { TodoItem } from '../../core/model';
 import { isTodoFile, parseDocument } from '../../vscode/document-cache';
 import { DecorationController } from '../../vscode/decoration-controller';
+import { computeExcludedLines } from '../../core/parse/fences';
 import { getItemWithDescendantsEndLine } from '../../core/query/items';
 import { itemMatchesActivity, getEffectiveProject } from '../../core/query/activity';
 import { startOfToday } from '../../core/dates';
@@ -72,13 +73,18 @@ function scanDocument(document: vscode.TextDocument): vscode.DecorationOptions[]
     }
 
     // (b) Span-level dim across the whole document. Already-dimmed spans from
-    //     (a) ride along harmlessly (idempotent).
+    //     (a) ride along harmlessly (idempotent). Lines inside fenced code
+    //     blocks / HTML comments carry no real tokens (F-17) and are skipped.
+    const { excluded } = computeExcludedLines(document);
     const tokenFilters: [string | undefined, RegExp][] = [
         [focusUser, /@([\w-]+)/g],
         [focusTag, /#([\w-]+)/g],
         [focusProject, PROJECT_TOKEN_RE_G],
     ];
     for (let i = 0; i < document.lineCount; i++) {
+        if (excluded[i]) {
+            continue;
+        }
         const lineText = document.lineAt(i).text;
         for (const [focus, pattern] of tokenFilters) {
             if (!focus) {

@@ -7,16 +7,23 @@ import {
 } from '../model';
 import { TextDocumentLike } from '../text-document';
 import { isNoteLine } from '../query/items';
+import { computeExcludedLines } from './fences';
 import { PROJECT_TOKEN_RE, PROJECT_TOKEN_RE_G } from '../tokens';
 
 /**
  * Parse a todo document into items, sections, and definitions. PURE — no
  * caching, no host types; the (uri, version) memo over this lives in
  * vscode/document-cache.ts because URIs and versions are host concepts.
+ *
+ * Lines inside fenced code blocks and HTML comment blocks are skipped
+ * entirely (F-17): they produce no items, no section headers, no notes, and
+ * no definitions, and they do not touch the parent stack — a fence between
+ * an item and its note does not detach the note.
  */
 export function parseDocument(document: TextDocumentLike): ParsedDocument {
     const items: TodoItem[] = [];
     const sections = new Map<string, { start: number; end: number }>();
+    const { excluded } = computeExcludedLines(document);
 
     let currentSection = '';
     let sectionStart = 0;
@@ -24,6 +31,9 @@ export function parseDocument(document: TextDocumentLike): ParsedDocument {
     const parentStack: { item: TodoItem; indent: number }[] = [];
 
     for (let i = 0; i < document.lineCount; i++) {
+        if (excluded[i]) {
+            continue;
+        }
         const line = document.lineAt(i);
         const text = line.text;
 
@@ -119,6 +129,9 @@ export function parseDocument(document: TextDocumentLike): ParsedDocument {
     const tagsSection = sections.get('tags');
     if (tagsSection) {
         for (let i = tagsSection.start + 1; i <= tagsSection.end; i++) {
+            if (excluded[i]) {
+                continue;
+            }
             const line = document.lineAt(i).text;
             const match = /^\*\*([\w-]+)\*\*:\s*(.+)$/.exec(line);
             if (match) {
@@ -133,6 +146,9 @@ export function parseDocument(document: TextDocumentLike): ParsedDocument {
     const usersSection = sections.get('users');
     if (usersSection) {
         for (let i = usersSection.start + 1; i <= usersSection.end; i++) {
+            if (excluded[i]) {
+                continue;
+            }
             const line = document.lineAt(i).text;
             const match = /^\*\*([\w-]+)\*\*\s*(?:\(([^)]+)\))?\s*:\s*(.+)$/.exec(line);
             if (match) {
@@ -153,6 +169,9 @@ export function parseDocument(document: TextDocumentLike): ParsedDocument {
     const projectsSection = sections.get('projects');
     if (projectsSection) {
         for (let i = projectsSection.start + 1; i <= projectsSection.end; i++) {
+            if (excluded[i]) {
+                continue;
+            }
             const line = document.lineAt(i).text;
             const match = /^\*\*([\w-]+)\*\*:\s*(.+)$/.exec(line);
             if (match) {
