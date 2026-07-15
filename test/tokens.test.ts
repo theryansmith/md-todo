@@ -55,6 +55,6 @@ describe('PROJECT_TOKEN_RE_G', () => {
     it('finds both tokens on a two-token line', () => {
         const line = '- [ ] double `[alpha]` and `[beta]` here';
         const matches = [...line.matchAll(PROJECT_TOKEN_RE_G)];
-        expect(matches.map(m => m[1])).toEqual(['alpha', 'beta']);
+        expect(matches.map((m) => m[1])).toEqual(['alpha', 'beta']);
     });
 });

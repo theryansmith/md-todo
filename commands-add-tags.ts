@@ -1,11 +1,6 @@
 import * as vscode from 'vscode';
 import { TodoItem } from './types';
-import {
-    isTodoFile,
-    parseDocument,
-    findItemAtCursor,
-    getEffectiveEditor,
-} from './parser';
+import { isTodoFile, parseDocument, findItemAtCursor, getEffectiveEditor } from './parser';
 import { processTagsWithValidation } from './prompts';
 
 export async function addTags(editor: vscode.TextEditor) {
@@ -14,7 +9,9 @@ export async function addTags(editor: vscode.TextEditor) {
     const effectiveDocument = ctx.document;
 
     if (!isTodoFile(effectiveDocument)) {
-        vscode.window.showWarningMessage('Not a todo file. Add "md-todo: true" to YAML frontmatter.');
+        vscode.window.showWarningMessage(
+            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
+        );
         return;
     }
 
@@ -28,17 +25,19 @@ export async function addTags(editor: vscode.TextEditor) {
             return;
         }
 
-        const picks = parsed.items.map(item => ({
+        const picks = parsed.items.map((item) => ({
             label: `${item.isComplete ? '✓' : '○'} ${item.text}`,
-            description: item.tags.length > 0 ? item.tags.map(t => `#${t}`).join(' ') : '',
-            item
+            description: item.tags.length > 0 ? item.tags.map((t) => `#${t}`).join(' ') : '',
+            item,
         }));
 
         const selected = await vscode.window.showQuickPick(picks, {
-            placeHolder: 'Select item to tag'
+            placeHolder: 'Select item to tag',
         });
 
-        if (!selected) { return; }
+        if (!selected) {
+            return;
+        }
         result = { item: selected.item, lineNum: selected.item.line };
     }
 
@@ -47,22 +46,26 @@ export async function addTags(editor: vscode.TextEditor) {
     const existingTags = result.item.tags;
     const picks = [...parsed.tagDefinitions]
         .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
-        .map(tag => ({
+        .map((tag) => ({
             label: tag.name,
             description: tag.description,
-            picked: existingTags.includes(tag.name)
+            picked: existingTags.includes(tag.name),
         }));
 
     const selected = await vscode.window.showQuickPick(picks, {
         canPickMany: true,
-        placeHolder: 'Select tags for this item'
+        placeHolder: 'Select tags for this item',
     });
 
-    if (!selected) { return; }
-    const selectedTags = selected.map(s => s.label);
+    if (!selected) {
+        return;
+    }
+    const selectedTags = selected.map((s) => s.label);
 
     const finalTags = await processTagsWithValidation(effectiveEditor, selectedTags);
-    if (finalTags === null) { return; }
+    if (finalTags === null) {
+        return;
+    }
 
     await updateItemTags(effectiveEditor, result.item, finalTags);
 }
@@ -75,7 +78,7 @@ export function computeTagsLine(lineText: string, tags: string[]): string {
     let newText = lineText.replace(/#[\w-]+/g, '').replace(/\s+$/, '');
 
     if (tags.length > 0) {
-        const tagString = tags.map(t => `#${t}`).join(' ');
+        const tagString = tags.map((t) => `#${t}`).join(' ');
         newText = newText + ' ' + tagString;
     }
 
@@ -91,5 +94,7 @@ async function updateItemTags(editor: vscode.TextEditor, item: TodoItem, newTags
         editBuilder.replace(line.range, newText);
     });
 
-    vscode.window.showInformationMessage(`Tags updated: ${newTags.length > 0 ? newTags.map(t => `#${t}`).join(' ') : '(none)'}`);
+    vscode.window.showInformationMessage(
+        `Tags updated: ${newTags.length > 0 ? newTags.map((t) => `#${t}`).join(' ') : '(none)'}`
+    );
 }

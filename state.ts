@@ -25,7 +25,9 @@ export function getFocusUser(): string | undefined {
 }
 
 export async function setFocusUserState(shortname: string | undefined): Promise<void> {
-    if (!extensionContext) { return; }
+    if (!extensionContext) {
+        return;
+    }
     await extensionContext.workspaceState.update(FOCUS_USER_STATE_KEY, shortname);
 }
 
@@ -34,7 +36,9 @@ export function getFocusTag(): string | undefined {
 }
 
 export async function setFocusTagState(tagname: string | undefined): Promise<void> {
-    if (!extensionContext) { return; }
+    if (!extensionContext) {
+        return;
+    }
     await extensionContext.workspaceState.update(FOCUS_TAG_STATE_KEY, tagname);
 }
 
@@ -43,7 +47,9 @@ export function getFocusProject(): string | undefined {
 }
 
 export async function setFocusProjectState(name: string | undefined): Promise<void> {
-    if (!extensionContext) { return; }
+    if (!extensionContext) {
+        return;
+    }
     await extensionContext.workspaceState.update(FOCUS_PROJECT_STATE_KEY, name);
 }
 
@@ -52,7 +58,9 @@ export function getActivityFocus(): ActivityFocus | undefined {
 }
 
 export async function setActivityFocusState(focus: ActivityFocus | undefined): Promise<void> {
-    if (!extensionContext) { return; }
+    if (!extensionContext) {
+        return;
+    }
     await extensionContext.workspaceState.update(ACTIVITY_FOCUS_STATE_KEY, focus);
 }
 
@@ -70,8 +78,14 @@ export async function getLastTodoSourceDoc(): Promise<vscode.TextDocument | unde
     let uri = lastTodoUri;
     if (!uri) {
         const stored = extensionContext?.workspaceState.get<string>(LAST_TODO_URI_STATE_KEY);
-        if (!stored) { return undefined; }
-        try { uri = vscode.Uri.parse(stored); } catch { return undefined; }
+        if (!stored) {
+            return undefined;
+        }
+        try {
+            uri = vscode.Uri.parse(stored);
+        } catch {
+            return undefined;
+        }
         lastTodoUri = uri;
     }
     try {

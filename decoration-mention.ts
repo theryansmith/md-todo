@@ -1,10 +1,6 @@
 import * as vscode from 'vscode';
 import { isTodoFile } from './parser';
-import {
-    applyChangesToCache,
-    affectedNewLineRange,
-    mergeAndSort,
-} from './decoration-incremental';
+import { applyChangesToCache, affectedNewLineRange, mergeAndSort } from './decoration-incremental';
 
 let mentionDecorationType: vscode.TextEditorDecorationType | undefined;
 
@@ -25,12 +21,16 @@ export function createMentionDecorationType(): vscode.TextEditorDecorationType {
     // Distinct styling from tag decorations: bold + accent color (charts.blue)
     mentionDecorationType = vscode.window.createTextEditorDecorationType({
         color: new vscode.ThemeColor('charts.blue'),
-        fontWeight: 'bold'
+        fontWeight: 'bold',
     });
     return mentionDecorationType;
 }
 
-function scanLineRange(document: vscode.TextDocument, startLine: number, endLine: number): vscode.DecorationOptions[] {
+function scanLineRange(
+    document: vscode.TextDocument,
+    startLine: number,
+    endLine: number
+): vscode.DecorationOptions[] {
     const decorations: vscode.DecorationOptions[] = [];
     const lo = Math.max(0, startLine);
     const hi = Math.min(document.lineCount - 1, endLine);
@@ -40,7 +40,7 @@ function scanLineRange(document: vscode.TextDocument, startLine: number, endLine
         for (const match of matches) {
             if (match.index !== undefined) {
                 decorations.push({
-                    range: new vscode.Range(i, match.index, i, match.index + match[0].length)
+                    range: new vscode.Range(i, match.index, i, match.index + match[0].length),
                 });
             }
         }
@@ -65,7 +65,7 @@ export function updateMentionDecorations(editor: vscode.TextEditor) {
 
 export function updateMentionDecorationsIncremental(
     editor: vscode.TextEditor,
-    changes: readonly vscode.TextDocumentContentChangeEvent[],
+    changes: readonly vscode.TextDocumentContentChangeEvent[]
 ): void {
     const key = editor.document.uri.toString();
     const cached = mentionDecorationCache.get(key);

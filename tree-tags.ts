@@ -1,15 +1,6 @@
 import * as vscode from 'vscode';
-import {
-    TodoItem,
-    TagDefinition,
-    ParsedDocument,
-    TagsTreeNode,
-} from './types';
-import {
-    isTodoFile,
-    parseDocument,
-    classifyItemSection,
-} from './parser';
+import { TodoItem, TagDefinition, ParsedDocument, TagsTreeNode } from './types';
+import { isTodoFile, parseDocument, classifyItemSection } from './parser';
 import { setFocusTagState } from './state';
 import { updateDimDecorations } from './decoration-dim';
 import { refreshFocusTagStatusBar } from './focus-tag';
@@ -62,11 +53,18 @@ export class MdTodoTagsTreeProvider implements vscode.TreeDataProvider<TagsTreeN
         }, 200);
     }
 
-    private async getCurrentParsed(): Promise<{ doc: vscode.TextDocument; parsed: ParsedDocument } | null> {
-        if (!this.currentUri) { return null; }
+    private async getCurrentParsed(): Promise<{
+        doc: vscode.TextDocument;
+        parsed: ParsedDocument;
+    } | null> {
+        if (!this.currentUri) {
+            return null;
+        }
         try {
             const doc = await vscode.workspace.openTextDocument(this.currentUri);
-            if (!isTodoFile(doc)) { return null; }
+            if (!isTodoFile(doc)) {
+                return null;
+            }
             return { doc, parsed: parseDocument(doc) };
         } catch {
             return null;
@@ -111,20 +109,28 @@ export class MdTodoTagsTreeProvider implements vscode.TreeDataProvider<TagsTreeN
                 vscode.TreeItemCollapsibleState.Expanded
             );
             item.contextValue = 'tag-section';
-            const iconName = node.section === 'active'
-                ? 'list-unordered'
-                : node.section === 'completed'
-                    ? 'check-all'
-                    : 'archive';
+            const iconName =
+                node.section === 'active'
+                    ? 'list-unordered'
+                    : node.section === 'completed'
+                      ? 'check-all'
+                      : 'archive';
             item.iconPath = new vscode.ThemeIcon(iconName);
             return item;
         }
 
         const todo = node.item;
-        const item = new vscode.TreeItem(todo.text || '(untitled)', vscode.TreeItemCollapsibleState.None);
+        const item = new vscode.TreeItem(
+            todo.text || '(untitled)',
+            vscode.TreeItemCollapsibleState.None
+        );
         item.description = todo.isComplete
-            ? (todo.completedDate ? `done ${todo.completedDate}` : 'done')
-            : (todo.addedDate ? `added ${todo.addedDate}` : '');
+            ? todo.completedDate
+                ? `done ${todo.completedDate}`
+                : 'done'
+            : todo.addedDate
+              ? `added ${todo.addedDate}`
+              : '';
         item.tooltip = todo.raw;
         item.contextValue = 'tag-todo';
         item.iconPath = new vscode.ThemeIcon(todo.isComplete ? 'check' : 'circle-outline');
@@ -136,9 +142,9 @@ export class MdTodoTagsTreeProvider implements vscode.TreeDataProvider<TagsTreeN
                 node.sourceUri,
                 {
                     selection: new vscode.Range(todo.line, 0, todo.line, 0),
-                    preview: false
-                }
-            ]
+                    preview: false,
+                },
+            ],
         };
 
         return item;
@@ -146,7 +152,9 @@ export class MdTodoTagsTreeProvider implements vscode.TreeDataProvider<TagsTreeN
 
     async getChildren(element?: TagsTreeNode): Promise<TagsTreeNode[]> {
         const ctx = await this.getCurrentParsed();
-        if (!ctx) { return []; }
+        if (!ctx) {
+            return [];
+        }
         const { parsed } = ctx;
         const sourceUri = this.currentUri!;
 
@@ -175,17 +183,21 @@ export class MdTodoTagsTreeProvider implements vscode.TreeDataProvider<TagsTreeN
         }
 
         if (element.kind === 'tag-section') {
-            return element.items.map(item => ({ kind: 'tag-todo' as const, item, sourceUri }));
+            return element.items.map((item) => ({ kind: 'tag-todo' as const, item, sourceUri }));
         }
 
         return [];
     }
 
-    private buildSectionNodes(parsed: ParsedDocument, tag: TagDefinition | null, sourceUri: vscode.Uri): TagsTreeNode[] {
+    private buildSectionNodes(
+        parsed: ParsedDocument,
+        tag: TagDefinition | null,
+        sourceUri: vscode.Uri
+    ): TagsTreeNode[] {
         const buckets: Record<'active' | 'completed' | 'archive', TodoItem[]> = {
             active: [],
             completed: [],
-            archive: []
+            archive: [],
         };
 
         function visitAll(items: TodoItem[], cb: (it: TodoItem) => void) {
@@ -197,7 +209,9 @@ export class MdTodoTagsTreeProvider implements vscode.TreeDataProvider<TagsTreeN
 
         visitAll(parsed.items, (it) => {
             const sect = classifyItemSection(it, parsed);
-            if (!sect) { return; }
+            if (!sect) {
+                return;
+            }
             if (tag) {
                 if (it.tags.includes(tag.name)) {
                     buckets[sect].push(it);
@@ -212,13 +226,22 @@ export class MdTodoTagsTreeProvider implements vscode.TreeDataProvider<TagsTreeN
         const result: TagsTreeNode[] = [];
         for (const sect of ['active', 'completed', 'archive'] as const) {
             if (buckets[sect].length > 0) {
-                result.push({ kind: 'tag-section', tag, section: sect, items: buckets[sect], sourceUri });
+                result.push({
+                    kind: 'tag-section',
+                    tag,
+                    section: sect,
+                    items: buckets[sect],
+                    sourceUri,
+                });
             }
         }
         return result;
     }
 
-    private countItemsForTag(parsed: ParsedDocument, tagName: string): { active: number; completed: number; archived: number } {
+    private countItemsForTag(
+        parsed: ParsedDocument,
+        tagName: string
+    ): { active: number; completed: number; archived: number } {
         const counts = { active: 0, completed: 0, archived: 0 };
         function visitAll(items: TodoItem[], cb: (it: TodoItem) => void) {
             for (const it of items) {
@@ -227,16 +250,26 @@ export class MdTodoTagsTreeProvider implements vscode.TreeDataProvider<TagsTreeN
             }
         }
         visitAll(parsed.items, (it) => {
-            if (!it.tags.includes(tagName)) { return; }
+            if (!it.tags.includes(tagName)) {
+                return;
+            }
             const sect = classifyItemSection(it, parsed);
-            if (sect === 'active') { counts.active++; }
-            else if (sect === 'completed') { counts.completed++; }
-            else if (sect === 'archive') { counts.archived++; }
+            if (sect === 'active') {
+                counts.active++;
+            } else if (sect === 'completed') {
+                counts.completed++;
+            } else if (sect === 'archive') {
+                counts.archived++;
+            }
         });
         return counts;
     }
 
-    private countUntagged(parsed: ParsedDocument): { active: number; completed: number; archived: number } {
+    private countUntagged(parsed: ParsedDocument): {
+        active: number;
+        completed: number;
+        archived: number;
+    } {
         const counts = { active: 0, completed: 0, archived: 0 };
         function visitAll(items: TodoItem[], cb: (it: TodoItem) => void) {
             for (const it of items) {
@@ -245,11 +278,17 @@ export class MdTodoTagsTreeProvider implements vscode.TreeDataProvider<TagsTreeN
             }
         }
         visitAll(parsed.items, (it) => {
-            if (it.tags.length !== 0) { return; }
+            if (it.tags.length !== 0) {
+                return;
+            }
             const sect = classifyItemSection(it, parsed);
-            if (sect === 'active') { counts.active++; }
-            else if (sect === 'completed') { counts.completed++; }
-            else if (sect === 'archive') { counts.archived++; }
+            if (sect === 'active') {
+                counts.active++;
+            } else if (sect === 'completed') {
+                counts.completed++;
+            } else if (sect === 'archive') {
+                counts.archived++;
+            }
         });
         return counts;
     }
@@ -271,12 +310,19 @@ export async function clearTagFocusFromTree() {
     await setFocusTagState(undefined);
     refreshFocusTagStatusBar(vscode.window.activeTextEditor);
     for (const visible of vscode.window.visibleTextEditors) {
-        if (isTodoFile(visible.document)) { updateDimDecorations(visible); }
+        if (isTodoFile(visible.document)) {
+            updateDimDecorations(visible);
+        }
     }
 }
 
-export async function markDoneFromTagsTree(treeProvider: MdTodoTagsTreeProvider, node?: TagsTreeNode) {
-    if (!node || node.kind !== 'tag-todo') { return; }
+export async function markDoneFromTagsTree(
+    treeProvider: MdTodoTagsTreeProvider,
+    node?: TagsTreeNode
+) {
+    if (!node || node.kind !== 'tag-todo') {
+        return;
+    }
     if (node.item.isComplete) {
         vscode.window.showInformationMessage('Item is already complete');
         return;
@@ -288,7 +334,9 @@ export async function markDoneFromTagsTree(treeProvider: MdTodoTagsTreeProvider,
 }
 
 export async function editTagsFromTree(node?: TagsTreeNode) {
-    if (!node || node.kind !== 'tag-todo') { return; }
+    if (!node || node.kind !== 'tag-todo') {
+        return;
+    }
     const doc = await vscode.workspace.openTextDocument(node.sourceUri);
     const editor = await vscode.window.showTextDocument(doc, { preview: false });
     // Place cursor on the target line so addTags' findItemAtCursor picks it up.

@@ -16,7 +16,9 @@ export async function addNote(editor: vscode.TextEditor) {
     const effectiveDocument = ctx.document;
 
     if (!isTodoFile(effectiveDocument)) {
-        vscode.window.showWarningMessage('Not a todo file. Add "md-todo: true" to YAML frontmatter.');
+        vscode.window.showWarningMessage(
+            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
+        );
         return;
     }
 
@@ -30,17 +32,19 @@ export async function addNote(editor: vscode.TextEditor) {
             return;
         }
 
-        const picks = parsed.items.map(item => ({
+        const picks = parsed.items.map((item) => ({
             label: `${item.isComplete ? '✓' : '○'} ${item.text}`,
             description: item.notes.length > 0 ? `${item.notes.length} notes` : '',
-            item
+            item,
         }));
 
         const selected = await vscode.window.showQuickPick(picks, {
-            placeHolder: 'Select item to add note'
+            placeHolder: 'Select item to add note',
         });
 
-        if (!selected) { return; }
+        if (!selected) {
+            return;
+        }
 
         await addNoteToItem(effectiveEditor, selected.item);
     } else {
@@ -51,10 +55,12 @@ export async function addNote(editor: vscode.TextEditor) {
 async function addNoteToItem(editor: vscode.TextEditor, item: TodoItem) {
     const note = await promptForTodoText(editor.document, {
         prompt: `Add note to: ${item.text}`,
-        placeHolder: 'Progress update... (type @ or # for suggestions)'
+        placeHolder: 'Progress update... (type @ or # for suggestions)',
     });
 
-    if (!note) { return; }
+    if (!note) {
+        return;
+    }
 
     const document = editor.document;
     const today = getToday();

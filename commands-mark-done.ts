@@ -11,13 +11,19 @@ import {
 } from './parser';
 import { getToday } from './dates';
 
-export async function markDone(editor: vscode.TextEditor, _edit?: vscode.TextEditorEdit, targetLine?: number) {
+export async function markDone(
+    editor: vscode.TextEditor,
+    _edit?: vscode.TextEditorEdit,
+    targetLine?: number
+) {
     const ctx = await getEffectiveEditor(editor);
     const effectiveEditor = ctx.editor;
     const effectiveDocument = ctx.document;
 
     if (!isTodoFile(effectiveDocument)) {
-        vscode.window.showWarningMessage('Not a todo file. Add "md-todo: true" to YAML frontmatter.');
+        vscode.window.showWarningMessage(
+            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
+        );
         return;
     }
 
@@ -35,7 +41,7 @@ export async function markDone(editor: vscode.TextEditor, _edit?: vscode.TextEdi
 
     if (!result) {
         const parsed = parseDocument(effectiveDocument);
-        const incompleteItems = parsed.items.filter(item => !item.isComplete);
+        const incompleteItems = parsed.items.filter((item) => !item.isComplete);
 
         if (incompleteItems.length === 0) {
             vscode.window.showInformationMessage('No incomplete items found');
@@ -45,14 +51,16 @@ export async function markDone(editor: vscode.TextEditor, _edit?: vscode.TextEdi
         const picks = incompleteItems.map((item, idx) => ({
             label: item.text,
             description: item.addedDate ? `Added ${item.addedDate}` : '',
-            item
+            item,
         }));
 
         const selected = await vscode.window.showQuickPick(picks, {
-            placeHolder: 'Select item to mark complete'
+            placeHolder: 'Select item to mark complete',
         });
 
-        if (!selected) { return; }
+        if (!selected) {
+            return;
+        }
 
         await markItemDone(effectiveEditor, selected.item);
     } else {
@@ -104,7 +112,12 @@ async function markItemDone(editor: vscode.TextEditor, item: TodoItem) {
     // CASE 1: Nested todo (has parent) - update in place with children, don't move
     if (isNestedItem(item)) {
         await editor.edit((editBuilder: vscode.TextEditorEdit) => {
-            const range = new vscode.Range(item.line, 0, endLine, document.lineAt(endLine).text.length);
+            const range = new vscode.Range(
+                item.line,
+                0,
+                endLine,
+                document.lineAt(endLine).text.length
+            );
             editBuilder.replace(range, itemLines.join('\n'));
         });
         vscode.window.showInformationMessage(`Completed: ${item.text}`);
@@ -114,7 +127,12 @@ async function markItemDone(editor: vscode.TextEditor, item: TodoItem) {
     // CASE 2: No Completed section - just update in place
     if (!completedSection) {
         await editor.edit((editBuilder: vscode.TextEditorEdit) => {
-            const range = new vscode.Range(item.line, 0, endLine, document.lineAt(endLine).text.length);
+            const range = new vscode.Range(
+                item.line,
+                0,
+                endLine,
+                document.lineAt(endLine).text.length
+            );
             editBuilder.replace(range, itemLines.join('\n'));
         });
         vscode.window.showInformationMessage(`Completed: ${item.text}`);
@@ -124,7 +142,12 @@ async function markItemDone(editor: vscode.TextEditor, item: TodoItem) {
     // CASE 3: Already in Completed section - just update in place
     if (item.line >= completedSection.start && item.line <= completedSection.end) {
         await editor.edit((editBuilder: vscode.TextEditorEdit) => {
-            const range = new vscode.Range(item.line, 0, endLine, document.lineAt(endLine).text.length);
+            const range = new vscode.Range(
+                item.line,
+                0,
+                endLine,
+                document.lineAt(endLine).text.length
+            );
             editBuilder.replace(range, itemLines.join('\n'));
         });
         vscode.window.showInformationMessage(`Completed: ${item.text}`);
@@ -150,7 +173,8 @@ async function markItemDone(editor: vscode.TextEditor, item: TodoItem) {
     }
 
     const lineAfterHeader = updatedCompletedSection.start + 1;
-    const hasBlankAfterHeader = lineAfterHeader < updatedDoc.lineCount &&
+    const hasBlankAfterHeader =
+        lineAfterHeader < updatedDoc.lineCount &&
         updatedDoc.lineAt(lineAfterHeader).text.trim() === '';
 
     let insertText = itemLines.join('\n') + '\n';

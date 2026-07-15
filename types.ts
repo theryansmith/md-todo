@@ -151,4 +151,5 @@ export type NoProjectNode = {
     sourceUri: vscode.Uri;
 };
 
-export type ProjectsTreeNode = ProjectRootNode | ProjectSectionNode | ProjectTodoNode | NoProjectNode;
+export type ProjectsTreeNode =
+    ProjectRootNode | ProjectSectionNode | ProjectTodoNode | NoProjectNode;

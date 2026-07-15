@@ -13,11 +13,17 @@ import { parseDate, daysBetween, isDateInRange } from './dates';
 import { PROJECT_TOKEN_RE, PROJECT_TOKEN_RE_G } from './tokens';
 
 export function isTodoFile(document: vscode.TextDocument): boolean {
-    if (document.languageId !== 'markdown') { return false; }
-    if (document.lineCount < 3) { return false; }
+    if (document.languageId !== 'markdown') {
+        return false;
+    }
+    if (document.lineCount < 3) {
+        return false;
+    }
 
     const firstLine = document.lineAt(0).text;
-    if (firstLine !== '---') { return false; }
+    if (firstLine !== '---') {
+        return false;
+    }
 
     for (let i = 1; i < Math.min(document.lineCount, 20); i++) {
         const line = document.lineAt(i).text;
@@ -64,10 +70,10 @@ export function findItemForSourceLine(sourceLine: number, parsed: ParsedDocument
 }
 
 export function validateTags(tags: string[], tagDefinitions: TagDefinition[]): TagValidationResult {
-    const definedNames = new Set(tagDefinitions.map(t => t.name));
+    const definedNames = new Set(tagDefinitions.map((t) => t.name));
     return {
-        validTags: tags.filter(t => definedNames.has(t)),
-        undefinedTags: tags.filter(t => !definedNames.has(t))
+        validTags: tags.filter((t) => definedNames.has(t)),
+        undefinedTags: tags.filter((t) => !definedNames.has(t)),
     };
 }
 
@@ -75,13 +81,20 @@ export function isNestedItem(item: TodoItem): boolean {
     return item.parent !== undefined;
 }
 
-export function getItemWithDescendantsEndLine(document: vscode.TextDocument, item: TodoItem): number {
+export function getItemWithDescendantsEndLine(
+    document: vscode.TextDocument,
+    item: TodoItem
+): number {
     let endLine = item.line;
     for (let i = item.line + 1; i < document.lineCount; i++) {
         const lineText = document.lineAt(i).text;
         const lineIndent = lineText.match(/^(\s*)/)?.[1].length ?? 0;
-        if (lineText.trim() && lineIndent <= item.indent) { break; }
-        if (lineText.startsWith('#')) { break; }
+        if (lineText.trim() && lineIndent <= item.indent) {
+            break;
+        }
+        if (lineText.startsWith('#')) {
+            break;
+        }
         endLine = i;
     }
     return endLine;
@@ -89,14 +102,20 @@ export function getItemWithDescendantsEndLine(document: vscode.TextDocument, ite
 
 export function findItemByLine(items: TodoItem[], lineNum: number): TodoItem | null {
     for (const item of items) {
-        if (item.line === lineNum) { return item; }
+        if (item.line === lineNum) {
+            return item;
+        }
         const found = findItemByLine(item.children, lineNum);
-        if (found) { return found; }
+        if (found) {
+            return found;
+        }
     }
     return null;
 }
 
-export async function getEffectiveEditor(currentEditor: vscode.TextEditor): Promise<EffectiveEditorContext> {
+export async function getEffectiveEditor(
+    currentEditor: vscode.TextEditor
+): Promise<EffectiveEditorContext> {
     return { editor: currentEditor, document: currentEditor.document };
 }
 
@@ -159,10 +178,10 @@ function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
             const completedMatch = content.match(/`✓(\d{4}-\d{2}-\d{2})`/);
 
             const tagMatches = [...content.matchAll(/#([\w-]+)/g)];
-            const tags = tagMatches.map(m => m[1]);
+            const tags = tagMatches.map((m) => m[1]);
 
             const mentionMatches = [...content.matchAll(/@([\w-]+)/g)];
-            const mentions = mentionMatches.map(m => m[1]);
+            const mentions = mentionMatches.map((m) => m[1]);
 
             const projectMatch = content.match(PROJECT_TOKEN_RE);
             const project = projectMatch ? projectMatch[1] : undefined;
@@ -184,7 +203,7 @@ function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
                 mentions,
                 project,
                 children: [],
-                parent: undefined
+                parent: undefined,
             };
 
             while (parentStack.length > 0 && parentStack[parentStack.length - 1].indent >= indent) {
@@ -220,7 +239,10 @@ function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
     }
 
     if (currentSection) {
-        sections.set(currentSection.toLowerCase(), { start: sectionStart, end: document.lineCount - 1 });
+        sections.set(currentSection.toLowerCase(), {
+            start: sectionStart,
+            end: document.lineCount - 1,
+        });
     }
 
     const tagDefinitions: TagDefinition[] = [];
@@ -248,7 +270,7 @@ function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
                     shortname: match[1],
                     fullname: match[2] ?? '',
                     description: match[3],
-                    line: i
+                    line: i,
                 });
             }
         }
@@ -269,12 +291,13 @@ function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
     // Sort definitions once at the source so every consumer (QuickPick
     // suggestion lists in promptForTodoText, completion providers, tree views,
     // status-bar pickers, etc.) sees the same canonical alphabetical order.
-    tagDefinitions.sort((a, b) =>
-        a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+    tagDefinitions.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
     userDefinitions.sort((a, b) =>
-        a.shortname.localeCompare(b.shortname, undefined, { sensitivity: 'base' }));
+        a.shortname.localeCompare(b.shortname, undefined, { sensitivity: 'base' })
+    );
     projectDefinitions.sort((a, b) =>
-        a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+        a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+    );
 
     return { items, sections, tagDefinitions, userDefinitions, projectDefinitions };
 }
@@ -287,17 +310,21 @@ function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
 export function getEffectiveProject(item: TodoItem): string | undefined {
     let cur: TodoItem | undefined = item;
     while (cur) {
-        if (cur.project) { return cur.project; }
+        if (cur.project) {
+            return cur.project;
+        }
         cur = cur.parent;
     }
     return undefined;
 }
 
 export function isDefinedProject(name: string, projectDefinitions: ProjectDefinition[]): boolean {
-    return projectDefinitions.some(p => p.name === name);
+    return projectDefinitions.some((p) => p.name === name);
 }
 
-export function findItemAtCursor(editor: vscode.TextEditor): { item: TodoItem; lineNum: number } | null {
+export function findItemAtCursor(
+    editor: vscode.TextEditor
+): { item: TodoItem; lineNum: number } | null {
     const document = editor.document;
     const cursorLine = editor.selection.active.line;
     const parsed = parseDocument(document);
@@ -324,8 +351,12 @@ export function getItemEndLine(document: vscode.TextDocument, startLine: number)
 
     for (let i = startLine + 1; i < document.lineCount; i++) {
         const line = document.lineAt(i).text;
-        if (!line.trim()) { continue; }
-        if (line.startsWith('#')) { return i - 1; }
+        if (!line.trim()) {
+            continue;
+        }
+        if (line.startsWith('#')) {
+            return i - 1;
+        }
 
         const lineIndent = line.match(/^(\s*)/)?.[1].length ?? 0;
         if (lineIndent <= startIndent && /^\s*-\s*\[[ xX]\]/.test(line)) {
@@ -339,12 +370,21 @@ export function getItemEndLine(document: vscode.TextDocument, startLine: number)
     return document.lineCount - 1;
 }
 
-export function classifyItemSection(item: TodoItem, parsed: ParsedDocument): 'active' | 'completed' | 'archive' | null {
+export function classifyItemSection(
+    item: TodoItem,
+    parsed: ParsedDocument
+): 'active' | 'completed' | 'archive' | null {
     for (const [sectionName, sectionInfo] of parsed.sections) {
         if (item.line >= sectionInfo.start && item.line <= sectionInfo.end) {
-            if (sectionName === 'active') { return 'active'; }
-            if (sectionName === 'completed') { return 'completed'; }
-            if (sectionName === 'archive') { return 'archive'; }
+            if (sectionName === 'active') {
+                return 'active';
+            }
+            if (sectionName === 'completed') {
+                return 'completed';
+            }
+            if (sectionName === 'archive') {
+                return 'archive';
+            }
             return null;
         }
     }
@@ -353,19 +393,31 @@ export function classifyItemSection(item: TodoItem, parsed: ParsedDocument): 'ac
 
 export function itemMatchesActivity(item: TodoItem, activity: ActivityFocus, today: Date): boolean {
     if (activity.kind === 'completed') {
-        if (!item.completedDate) { return false; }
+        if (!item.completedDate) {
+            return false;
+        }
         const d = parseDate(item.completedDate);
-        if (!d) { return false; }
+        if (!d) {
+            return false;
+        }
         return isDateInRange(d, activity.startDate!, activity.endDate!);
     }
     if (activity.kind === 'added') {
-        if (!item.addedDate) { return false; }
+        if (!item.addedDate) {
+            return false;
+        }
         const d = parseDate(item.addedDate);
-        if (!d) { return false; }
+        if (!d) {
+            return false;
+        }
         return isDateInRange(d, activity.startDate!, activity.endDate!);
     }
-    if (item.isComplete || !item.addedDate) { return false; }
+    if (item.isComplete || !item.addedDate) {
+        return false;
+    }
     const d = parseDate(item.addedDate);
-    if (!d) { return false; }
+    if (!d) {
+        return false;
+    }
     return daysBetween(today, d) >= (activity.staleDays ?? 0);
 }

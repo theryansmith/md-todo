@@ -1,10 +1,5 @@
 import * as vscode from 'vscode';
-import {
-    isTodoFile,
-    parseDocument,
-    findItemAtCursor,
-    getEffectiveEditor,
-} from './parser';
+import { isTodoFile, parseDocument, findItemAtCursor, getEffectiveEditor } from './parser';
 import { PROJECT_TOKEN_RE_G, PROJECT_NAME_RE, formatProjectToken } from './tokens';
 import { addProjectDefinition } from './prompts';
 
@@ -27,7 +22,9 @@ export async function setProject(editor: vscode.TextEditor) {
     const effectiveDocument = ctx.document;
 
     if (!isTodoFile(effectiveDocument)) {
-        vscode.window.showWarningMessage('Not a todo file. Add "md-todo: true" to YAML frontmatter.');
+        vscode.window.showWarningMessage(
+            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
+        );
         return;
     }
 
@@ -41,17 +38,19 @@ export async function setProject(editor: vscode.TextEditor) {
             return;
         }
 
-        const picks = parsed.items.map(item => ({
+        const picks = parsed.items.map((item) => ({
             label: `${item.isComplete ? '✓' : '○'} ${item.text}`,
             description: item.project ? `[${item.project}]` : '',
-            item
+            item,
         }));
 
         const selected = await vscode.window.showQuickPick(picks, {
-            placeHolder: 'Select item to set project on'
+            placeHolder: 'Select item to set project on',
         });
 
-        if (!selected) { return; }
+        if (!selected) {
+            return;
+        }
         result = { item: selected.item, lineNum: selected.item.line };
     }
 
@@ -63,24 +62,30 @@ export async function setProject(editor: vscode.TextEditor) {
     }
 
     const picks: ProjectPick[] = [
-        { label: '$(circle-slash) No project', description: 'Remove the project from this item', action: 'none' },
+        {
+            label: '$(circle-slash) No project',
+            description: 'Remove the project from this item',
+            action: 'none',
+        },
         { label: '$(add) Create new project…', action: 'create' },
-        ...parsed.projectDefinitions.map<ProjectPick>(p => ({
+        ...parsed.projectDefinitions.map<ProjectPick>((p) => ({
             label: p.name,
             description: p.description,
             action: 'set',
-            projectName: p.name
-        }))
+            projectName: p.name,
+        })),
     ];
 
     const current = result.item.project;
     const selected = await vscode.window.showQuickPick(picks, {
         placeHolder: current
             ? `Current project: [${current}] — select a project for this item`
-            : 'Select a project for this item'
+            : 'Select a project for this item',
     });
 
-    if (!selected) { return; }
+    if (!selected) {
+        return;
+    }
 
     let chosen: string | undefined;
     if (selected.action === 'none') {
@@ -92,18 +97,22 @@ export async function setProject(editor: vscode.TextEditor) {
                 if (!PROJECT_NAME_RE.test(value)) {
                     return 'Project name must be alphanumeric (hyphens allowed)';
                 }
-                if (parsed.projectDefinitions.some(p => p.name === value)) {
+                if (parsed.projectDefinitions.some((p) => p.name === value)) {
                     return 'Project already exists';
                 }
                 return null;
-            }
+            },
         });
-        if (!name) { return; }
+        if (!name) {
+            return;
+        }
 
         const desc = await vscode.window.showInputBox({
-            prompt: 'Project description'
+            prompt: 'Project description',
         });
-        if (!desc) { return; }
+        if (!desc) {
+            return;
+        }
 
         await addProjectDefinition(effectiveEditor, name, desc);
         chosen = name;

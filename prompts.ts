@@ -3,7 +3,11 @@ import { SuggestionItem } from './types';
 import { parseDocument, validateTags } from './parser';
 import { formatProjectToken } from './tokens';
 
-export async function addTagDefinition(editor: vscode.TextEditor, name: string, description: string) {
+export async function addTagDefinition(
+    editor: vscode.TextEditor,
+    name: string,
+    description: string
+) {
     const document = editor.document;
     const parsed = parseDocument(document);
     const tagsSection = parsed.sections.get('tags');
@@ -31,7 +35,11 @@ export async function addTagDefinition(editor: vscode.TextEditor, name: string, 
     vscode.window.showInformationMessage(`Added tag: #${name}`);
 }
 
-export async function addProjectDefinition(editor: vscode.TextEditor, name: string, description: string) {
+export async function addProjectDefinition(
+    editor: vscode.TextEditor,
+    name: string,
+    description: string
+) {
     const document = editor.document;
     const parsed = parseDocument(document);
     const projectsSection = parsed.sections.get('projects');
@@ -59,7 +67,11 @@ export async function addProjectDefinition(editor: vscode.TextEditor, name: stri
     vscode.window.showInformationMessage(`Added project: [${name}]`);
 }
 
-export async function addUserDefinition(editor: vscode.TextEditor, shortname: string, newLine: string) {
+export async function addUserDefinition(
+    editor: vscode.TextEditor,
+    shortname: string,
+    newLine: string
+) {
     const document = editor.document;
     const parsed = parseDocument(document);
     const usersSection = parsed.sections.get('users');
@@ -83,7 +95,10 @@ export async function addUserDefinition(editor: vscode.TextEditor, shortname: st
     vscode.window.showInformationMessage(`Added user: @${shortname}`);
 }
 
-export async function promptCreateTags(editor: vscode.TextEditor, undefinedTags: string[]): Promise<string[]> {
+export async function promptCreateTags(
+    editor: vscode.TextEditor,
+    undefinedTags: string[]
+): Promise<string[]> {
     const createdTags: string[] = [];
 
     for (const tagName of undefinedTags) {
@@ -92,11 +107,13 @@ export async function promptCreateTags(editor: vscode.TextEditor, undefinedTags:
             { placeHolder: `Tag '${tagName}' doesn't exist. Create it?` }
         );
 
-        if (choice === 'Cancel all') { return []; }
+        if (choice === 'Cancel all') {
+            return [];
+        }
         if (choice === 'Yes, create it') {
             const description = await vscode.window.showInputBox({
                 prompt: `Enter description for #${tagName}`,
-                placeHolder: 'Tag description'
+                placeHolder: 'Tag description',
             });
             if (description !== undefined) {
                 await addTagDefinition(editor, tagName, description || 'No description');
@@ -107,11 +124,16 @@ export async function promptCreateTags(editor: vscode.TextEditor, undefinedTags:
     return createdTags;
 }
 
-export async function processTagsWithValidation(editor: vscode.TextEditor, inputTags: string[]): Promise<string[] | null> {
+export async function processTagsWithValidation(
+    editor: vscode.TextEditor,
+    inputTags: string[]
+): Promise<string[] | null> {
     const parsed = parseDocument(editor.document);
     const validation = validateTags(inputTags, parsed.tagDefinitions);
 
-    if (validation.undefinedTags.length === 0) { return inputTags; }
+    if (validation.undefinedTags.length === 0) {
+        return inputTags;
+    }
 
     const createdTags = await promptCreateTags(editor, validation.undefinedTags);
     return [...validation.validTags, ...createdTags];
@@ -131,10 +153,10 @@ export function sortedSuggestions<T>(
     partial: string,
     searchable: (d: T) => string,
     sortKey: (d: T) => string,
-    toItem: (d: T) => SuggestionItem,
+    toItem: (d: T) => SuggestionItem
 ): SuggestionItem[] {
     return defs
-        .filter(d => searchable(d).toLowerCase().includes(partial))
+        .filter((d) => searchable(d).toLowerCase().includes(partial))
         .slice()
         .sort((a, b) => sortKey(a).localeCompare(sortKey(b), undefined, { sensitivity: 'base' }))
         .map(toItem);
@@ -153,7 +175,7 @@ export function promptForTodoText(
 ): Promise<string | undefined> {
     const parsed = parseDocument(document);
 
-    return new Promise<string | undefined>(resolve => {
+    return new Promise<string | undefined>((resolve) => {
         const qp = vscode.window.createQuickPick<SuggestionItem>();
         qp.title = options.prompt;
         qp.placeholder = options.placeHolder;
@@ -203,7 +225,9 @@ export function promptForTodoText(
 
         let resolved = false;
         const finish = (result: string | undefined) => {
-            if (resolved) { return; }
+            if (resolved) {
+                return;
+            }
             resolved = true;
             resolve(result);
             qp.hide();
@@ -220,38 +244,47 @@ export function promptForTodoText(
             const partial = tokenMatch[2].toLowerCase();
             let items: SuggestionItem[] = [];
             if (trigger === '@') {
-                items = sortedSuggestions(parsed.userDefinitions, partial,
-                    u => `${u.shortname} ${u.fullname} ${u.description}`,
-                    u => u.shortname,
-                    u => ({
+                items = sortedSuggestions(
+                    parsed.userDefinitions,
+                    partial,
+                    (u) => `${u.shortname} ${u.fullname} ${u.description}`,
+                    (u) => u.shortname,
+                    (u) => ({
                         label: `@${u.shortname}`,
                         description: u.fullname,
                         detail: u.description,
                         insertText: `@${u.shortname}`,
                         alwaysShow: true,
-                    }));
+                    })
+                );
             } else if (trigger === '[') {
-                items = sortedSuggestions(parsed.projectDefinitions, partial,
-                    p => `${p.name} ${p.description}`,
-                    p => p.name,
-                    p => ({
+                items = sortedSuggestions(
+                    parsed.projectDefinitions,
+                    partial,
+                    (p) => `${p.name} ${p.description}`,
+                    (p) => p.name,
+                    (p) => ({
                         label: `[${p.name}]`,
                         description: p.description,
                         detail: '',
                         insertText: formatProjectToken(p.name),
                         alwaysShow: true,
-                    }));
+                    })
+                );
             } else {
-                items = sortedSuggestions(parsed.tagDefinitions, partial,
-                    t => `${t.name} ${t.description}`,
-                    t => t.name,
-                    t => ({
+                items = sortedSuggestions(
+                    parsed.tagDefinitions,
+                    partial,
+                    (t) => `${t.name} ${t.description}`,
+                    (t) => t.name,
+                    (t) => ({
                         label: `#${t.name}`,
                         description: t.description,
                         detail: '',
                         insertText: `#${t.name}`,
                         alwaysShow: true,
-                    }));
+                    })
+                );
             }
             qp.items = items;
             qp.activeItems = [];

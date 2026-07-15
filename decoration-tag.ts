@@ -1,10 +1,6 @@
 import * as vscode from 'vscode';
 import { isTodoFile } from './parser';
-import {
-    applyChangesToCache,
-    affectedNewLineRange,
-    mergeAndSort,
-} from './decoration-incremental';
+import { applyChangesToCache, affectedNewLineRange, mergeAndSort } from './decoration-incremental';
 
 let tagDecorationType: vscode.TextEditorDecorationType | undefined;
 
@@ -29,13 +25,17 @@ export function createTagDecorationType(): vscode.TextEditorDecorationType {
     // Distinct, visible color for tags (purple). Less prominent than @mentions
     // (which are bold + charts.blue), but clearly stands out from body text.
     tagDecorationType = vscode.window.createTextEditorDecorationType({
-        color: new vscode.ThemeColor('charts.purple')
+        color: new vscode.ThemeColor('charts.purple'),
     });
 
     return tagDecorationType;
 }
 
-function scanLineRange(document: vscode.TextDocument, startLine: number, endLine: number): vscode.DecorationOptions[] {
+function scanLineRange(
+    document: vscode.TextDocument,
+    startLine: number,
+    endLine: number
+): vscode.DecorationOptions[] {
     const decorations: vscode.DecorationOptions[] = [];
     const lo = Math.max(0, startLine);
     const hi = Math.min(document.lineCount - 1, endLine);
@@ -45,7 +45,7 @@ function scanLineRange(document: vscode.TextDocument, startLine: number, endLine
         for (const match of matches) {
             if (match.index !== undefined) {
                 decorations.push({
-                    range: new vscode.Range(i, match.index, i, match.index + match[0].length)
+                    range: new vscode.Range(i, match.index, i, match.index + match[0].length),
                 });
             }
         }
@@ -70,7 +70,7 @@ export function updateTagDecorations(editor: vscode.TextEditor) {
 
 export function updateTagDecorationsIncremental(
     editor: vscode.TextEditor,
-    changes: readonly vscode.TextDocumentContentChangeEvent[],
+    changes: readonly vscode.TextDocumentContentChangeEvent[]
 ): void {
     const key = editor.document.uri.toString();
     const cached = tagDecorationCache.get(key);

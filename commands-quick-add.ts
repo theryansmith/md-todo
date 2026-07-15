@@ -7,7 +7,9 @@ export async function quickAdd(editor: vscode.TextEditor) {
     const effectiveEditor = ctx.editor;
 
     if (!isTodoFile(ctx.document)) {
-        vscode.window.showWarningMessage('Not a todo file. Add "md-todo: true" to YAML frontmatter.');
+        vscode.window.showWarningMessage(
+            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
+        );
         return;
     }
 

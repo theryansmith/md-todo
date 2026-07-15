@@ -1,10 +1,5 @@
 import * as vscode from 'vscode';
-import {
-    TodoItem,
-    ProjectDefinition,
-    ParsedDocument,
-    ProjectsTreeNode,
-} from './types';
+import { TodoItem, ProjectDefinition, ParsedDocument, ProjectsTreeNode } from './types';
 import {
     isTodoFile,
     parseDocument,
@@ -86,11 +81,18 @@ export class MdTodoProjectsTreeProvider implements vscode.TreeDataProvider<Proje
         }, 200);
     }
 
-    private async getCurrentParsed(): Promise<{ doc: vscode.TextDocument; parsed: ParsedDocument } | null> {
-        if (!this.currentUri) { return null; }
+    private async getCurrentParsed(): Promise<{
+        doc: vscode.TextDocument;
+        parsed: ParsedDocument;
+    } | null> {
+        if (!this.currentUri) {
+            return null;
+        }
         try {
             const doc = await vscode.workspace.openTextDocument(this.currentUri);
-            if (!isTodoFile(doc)) { return null; }
+            if (!isTodoFile(doc)) {
+                return null;
+            }
             return { doc, parsed: parseDocument(doc) };
         } catch {
             return null;
@@ -137,20 +139,28 @@ export class MdTodoProjectsTreeProvider implements vscode.TreeDataProvider<Proje
                 vscode.TreeItemCollapsibleState.Expanded
             );
             item.contextValue = 'project-section';
-            const iconName = node.section === 'active'
-                ? 'list-unordered'
-                : node.section === 'completed'
-                    ? 'check-all'
-                    : 'archive';
+            const iconName =
+                node.section === 'active'
+                    ? 'list-unordered'
+                    : node.section === 'completed'
+                      ? 'check-all'
+                      : 'archive';
             item.iconPath = new vscode.ThemeIcon(iconName);
             return item;
         }
 
         const todo = node.item;
-        const item = new vscode.TreeItem(todo.text || '(untitled)', vscode.TreeItemCollapsibleState.None);
+        const item = new vscode.TreeItem(
+            todo.text || '(untitled)',
+            vscode.TreeItemCollapsibleState.None
+        );
         item.description = todo.isComplete
-            ? (todo.completedDate ? `done ${todo.completedDate}` : 'done')
-            : (todo.addedDate ? `added ${todo.addedDate}` : '');
+            ? todo.completedDate
+                ? `done ${todo.completedDate}`
+                : 'done'
+            : todo.addedDate
+              ? `added ${todo.addedDate}`
+              : '';
         item.tooltip = todo.raw;
         item.contextValue = 'project-todo';
         item.iconPath = new vscode.ThemeIcon(todo.isComplete ? 'check' : 'circle-outline');
@@ -162,9 +172,9 @@ export class MdTodoProjectsTreeProvider implements vscode.TreeDataProvider<Proje
                 node.sourceUri,
                 {
                     selection: new vscode.Range(todo.line, 0, todo.line, 0),
-                    preview: false
-                }
-            ]
+                    preview: false,
+                },
+            ],
         };
 
         return item;
@@ -172,7 +182,9 @@ export class MdTodoProjectsTreeProvider implements vscode.TreeDataProvider<Proje
 
     async getChildren(element?: ProjectsTreeNode): Promise<ProjectsTreeNode[]> {
         const ctx = await this.getCurrentParsed();
-        if (!ctx) { return []; }
+        if (!ctx) {
+            return [];
+        }
         const { parsed } = ctx;
         const sourceUri = this.currentUri!;
 
@@ -184,7 +196,9 @@ export class MdTodoProjectsTreeProvider implements vscode.TreeDataProvider<Proje
             }
             roots.sort((a, b) =>
                 a.kind === 'project-root' && b.kind === 'project-root'
-                    ? a.project.name.localeCompare(b.project.name, undefined, { sensitivity: 'base' })
+                    ? a.project.name.localeCompare(b.project.name, undefined, {
+                          sensitivity: 'base',
+                      })
                     : 0
             );
             // Synthetic roots for project names used on items but missing
@@ -197,7 +211,7 @@ export class MdTodoProjectsTreeProvider implements vscode.TreeDataProvider<Proje
                     kind: 'project-root',
                     project: { name, description: 'Not defined in ## Projects', line: -1 },
                     counts,
-                    sourceUri
+                    sourceUri,
                 });
             }
             const noProjectCounts = this.countNoProject(parsed);
@@ -214,17 +228,25 @@ export class MdTodoProjectsTreeProvider implements vscode.TreeDataProvider<Proje
         }
 
         if (element.kind === 'project-section') {
-            return element.items.map(item => ({ kind: 'project-todo' as const, item, sourceUri }));
+            return element.items.map((item) => ({
+                kind: 'project-todo' as const,
+                item,
+                sourceUri,
+            }));
         }
 
         return [];
     }
 
-    private buildSectionNodes(parsed: ParsedDocument, project: ProjectDefinition | null, sourceUri: vscode.Uri): ProjectsTreeNode[] {
+    private buildSectionNodes(
+        parsed: ParsedDocument,
+        project: ProjectDefinition | null,
+        sourceUri: vscode.Uri
+    ): ProjectsTreeNode[] {
         const buckets: Record<'active' | 'completed' | 'archive', TodoItem[]> = {
             active: [],
             completed: [],
-            archive: []
+            archive: [],
         };
 
         function visitAll(items: TodoItem[], cb: (it: TodoItem) => void) {
@@ -236,7 +258,9 @@ export class MdTodoProjectsTreeProvider implements vscode.TreeDataProvider<Proje
 
         visitAll(parsed.items, (it) => {
             const sect = classifyItemSection(it, parsed);
-            if (!sect) { return; }
+            if (!sect) {
+                return;
+            }
             if (project) {
                 if (getEffectiveProject(it) === project.name) {
                     buckets[sect].push(it);
@@ -251,13 +275,22 @@ export class MdTodoProjectsTreeProvider implements vscode.TreeDataProvider<Proje
         const result: ProjectsTreeNode[] = [];
         for (const sect of ['active', 'completed', 'archive'] as const) {
             if (buckets[sect].length > 0) {
-                result.push({ kind: 'project-section', project, section: sect, items: buckets[sect], sourceUri });
+                result.push({
+                    kind: 'project-section',
+                    project,
+                    section: sect,
+                    items: buckets[sect],
+                    sourceUri,
+                });
             }
         }
         return result;
     }
 
-    private countItemsForProject(parsed: ParsedDocument, projectName: string): { active: number; completed: number; archived: number } {
+    private countItemsForProject(
+        parsed: ParsedDocument,
+        projectName: string
+    ): { active: number; completed: number; archived: number } {
         const counts = { active: 0, completed: 0, archived: 0 };
         function visitAll(items: TodoItem[], cb: (it: TodoItem) => void) {
             for (const it of items) {
@@ -266,16 +299,26 @@ export class MdTodoProjectsTreeProvider implements vscode.TreeDataProvider<Proje
             }
         }
         visitAll(parsed.items, (it) => {
-            if (getEffectiveProject(it) !== projectName) { return; }
+            if (getEffectiveProject(it) !== projectName) {
+                return;
+            }
             const sect = classifyItemSection(it, parsed);
-            if (sect === 'active') { counts.active++; }
-            else if (sect === 'completed') { counts.completed++; }
-            else if (sect === 'archive') { counts.archived++; }
+            if (sect === 'active') {
+                counts.active++;
+            } else if (sect === 'completed') {
+                counts.completed++;
+            } else if (sect === 'archive') {
+                counts.archived++;
+            }
         });
         return counts;
     }
 
-    private countNoProject(parsed: ParsedDocument): { active: number; completed: number; archived: number } {
+    private countNoProject(parsed: ParsedDocument): {
+        active: number;
+        completed: number;
+        archived: number;
+    } {
         const counts = { active: 0, completed: 0, archived: 0 };
         function visitAll(items: TodoItem[], cb: (it: TodoItem) => void) {
             for (const it of items) {
@@ -284,11 +327,17 @@ export class MdTodoProjectsTreeProvider implements vscode.TreeDataProvider<Proje
             }
         }
         visitAll(parsed.items, (it) => {
-            if (getEffectiveProject(it) !== undefined) { return; }
+            if (getEffectiveProject(it) !== undefined) {
+                return;
+            }
             const sect = classifyItemSection(it, parsed);
-            if (sect === 'active') { counts.active++; }
-            else if (sect === 'completed') { counts.completed++; }
-            else if (sect === 'archive') { counts.archived++; }
+            if (sect === 'active') {
+                counts.active++;
+            } else if (sect === 'completed') {
+                counts.completed++;
+            } else if (sect === 'archive') {
+                counts.archived++;
+            }
         });
         return counts;
     }
@@ -310,12 +359,19 @@ export async function clearProjectFocusFromTree() {
     await setFocusProjectState(undefined);
     refreshFocusProjectStatusBar(vscode.window.activeTextEditor);
     for (const visible of vscode.window.visibleTextEditors) {
-        if (isTodoFile(visible.document)) { updateDimDecorations(visible); }
+        if (isTodoFile(visible.document)) {
+            updateDimDecorations(visible);
+        }
     }
 }
 
-export async function markDoneFromProjectsTree(treeProvider: MdTodoProjectsTreeProvider, node?: ProjectsTreeNode) {
-    if (!node || node.kind !== 'project-todo') { return; }
+export async function markDoneFromProjectsTree(
+    treeProvider: MdTodoProjectsTreeProvider,
+    node?: ProjectsTreeNode
+) {
+    if (!node || node.kind !== 'project-todo') {
+        return;
+    }
     if (node.item.isComplete) {
         vscode.window.showInformationMessage('Item is already complete');
         return;
@@ -335,7 +391,9 @@ export async function showProjectViewFromTree(node?: ProjectsTreeNode) {
 }
 
 export async function setProjectFromTree(node?: ProjectsTreeNode) {
-    if (!node || node.kind !== 'project-todo') { return; }
+    if (!node || node.kind !== 'project-todo') {
+        return;
+    }
     const doc = await vscode.workspace.openTextDocument(node.sourceUri);
     const editor = await vscode.window.showTextDocument(doc, { preview: false });
     // Place cursor on the target line so setProject's findItemAtCursor picks it up.

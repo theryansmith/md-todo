@@ -13,17 +13,27 @@ export function registerAutoDateHandler(context: vscode.ExtensionContext): void 
 
     context.subscriptions.push(
         vscode.workspace.onDidChangeTextDocument(async (event) => {
-            if (isAutoAddingDate) { return; }
+            if (isAutoAddingDate) {
+                return;
+            }
 
             const editor = vscode.window.activeTextEditor;
-            if (!editor || event.document !== editor.document) { return; }
-            if (!isTodoFile(event.document)) { return; }
+            if (!editor || event.document !== editor.document) {
+                return;
+            }
+            if (!isTodoFile(event.document)) {
+                return;
+            }
 
             for (const change of event.contentChanges) {
-                if (!change.text.includes('\n')) { continue; }
+                if (!change.text.includes('\n')) {
+                    continue;
+                }
 
                 const lineBeforeNum = change.range.start.line;
-                if (lineBeforeNum < 0 || lineBeforeNum >= event.document.lineCount) { continue; }
+                if (lineBeforeNum < 0 || lineBeforeNum >= event.document.lineCount) {
+                    continue;
+                }
 
                 const lineBefore = event.document.lineAt(lineBeforeNum).text;
                 const today = getToday();
@@ -38,9 +48,12 @@ export function registerAutoDateHandler(context: vscode.ExtensionContext): void 
                             const lineRange = event.document.lineAt(lineBeforeNum).range;
                             const indent = noteMatch[1];
                             const newText = `${indent}- ${existingText} \`+${today}\``;
-                            await editor.edit((editBuilder) => {
-                                editBuilder.replace(lineRange, newText);
-                            }, { undoStopBefore: false, undoStopAfter: false });
+                            await editor.edit(
+                                (editBuilder) => {
+                                    editBuilder.replace(lineRange, newText);
+                                },
+                                { undoStopBefore: false, undoStopAfter: false }
+                            );
                         } finally {
                             isAutoAddingDate = false;
                         }
@@ -58,9 +71,12 @@ export function registerAutoDateHandler(context: vscode.ExtensionContext): void 
                             const indent = todoMatch[1];
                             const checkbox = todoMatch[2];
                             const newText = `${indent}- [${checkbox}] ${existingText} \`+${today}\``;
-                            await editor.edit((editBuilder) => {
-                                editBuilder.replace(lineRange, newText);
-                            }, { undoStopBefore: false, undoStopAfter: false });
+                            await editor.edit(
+                                (editBuilder) => {
+                                    editBuilder.replace(lineRange, newText);
+                                },
+                                { undoStopBefore: false, undoStopAfter: false }
+                            );
                         } finally {
                             isAutoAddingDate = false;
                         }

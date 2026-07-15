@@ -6,20 +6,20 @@ import { makeDoc } from './helpers';
 // Todo-file fixture (frontmatter makes isTodoFile pass) with one defined
 // project and three trigger lines exercising the `[`-consume range logic.
 const FIXTURE = [
-    '---',           // 0
+    '---', // 0
     'md-todo: true', // 1
-    '---',           // 2
-    '',              // 3
-    '# TODO',        // 4
-    '',              // 5
-    '## Active',     // 6
-    '',              // 7
-    '- [ ] task [',  // 8  — bare trigger at end of line
+    '---', // 2
+    '', // 3
+    '# TODO', // 4
+    '', // 5
+    '## Active', // 6
+    '', // 7
+    '- [ ] task [', // 8  — bare trigger at end of line
     '- [ ] task []', // 9  — editor auto-closed the bracket
     '- [ ] task [x', // 10 — non-bracket char follows the trigger
-    '',              // 11
-    '## Projects',   // 12
-    '',              // 13
+    '', // 11
+    '## Projects', // 12
+    '', // 13
     '**game-x**: The big title', // 14
 ].join('\n');
 
@@ -29,7 +29,7 @@ async function complete(line: number, character: number): Promise<vscode.Complet
         doc,
         new vscode.Position(line, character),
         undefined as unknown as vscode.CancellationToken,
-        undefined as unknown as vscode.CompletionContext,
+        undefined as unknown as vscode.CompletionContext
     );
     return items as vscode.CompletionItem[];
 }

@@ -1,6 +1,11 @@
 import * as vscode from 'vscode';
 import { setExtensionContext } from './state';
-import { userHoverProvider, userCompletionProvider, tagCompletionProvider, projectCompletionProvider } from './completions';
+import {
+    userHoverProvider,
+    userCompletionProvider,
+    tagCompletionProvider,
+    projectCompletionProvider,
+} from './completions';
 import { addItem } from './commands-add-item';
 import { markDone } from './commands-mark-done';
 import { addNote } from './commands-add-note';
@@ -60,7 +65,10 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('mdTodo.setFocusTag', setFocusTag),
         vscode.commands.registerCommand('mdTodo.setFocusProject', setFocusProject),
         vscode.commands.registerTextEditorCommand('mdTodo.assignFocusedUser', assignFocusedUser),
-        vscode.commands.registerTextEditorCommand('mdTodo.showRecentlyCompleted', showRecentlyCompleted),
+        vscode.commands.registerTextEditorCommand(
+            'mdTodo.showRecentlyCompleted',
+            showRecentlyCompleted
+        ),
         vscode.commands.registerTextEditorCommand('mdTodo.showRecentlyAdded', showRecentlyAdded),
         vscode.commands.registerTextEditorCommand('mdTodo.showStaleItems', showStaleItems),
         vscode.commands.registerCommand('mdTodo.clearActivityFocus', clearActivityFocus),
@@ -71,7 +79,7 @@ export function activate(context: vscode.ExtensionContext) {
             await clearFocusTag();
             await clearFocusProject();
             await clearActivityFocus();
-        }),
+        })
     );
 
     initFocusUserStatusBar(context);
@@ -88,7 +96,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.languages.registerCompletionItemProvider('*', tagCompletionProvider, '#'),
         vscode.languages.registerCompletionItemProvider('*', userCompletionProvider, '@'),
         vscode.languages.registerCompletionItemProvider('*', projectCompletionProvider, '['),
-        vscode.languages.registerHoverProvider({ language: 'markdown' }, userHoverProvider),
+        vscode.languages.registerHoverProvider({ language: 'markdown' }, userHoverProvider)
     );
 
     registerTreeViews(context);
@@ -96,14 +104,14 @@ export function activate(context: vscode.ExtensionContext) {
     registerEditorUiEvents(context);
 
     context.subscriptions.push(
-        vscode.workspace.onDidCloseTextDocument(doc => {
+        vscode.workspace.onDidCloseTextDocument((doc) => {
             clearParseCache(doc.uri);
             clearTagDecorationCache(doc.uri);
             clearDateDecorationCache(doc.uri);
             clearMentionDecorationCache(doc.uri);
             clearProjectDecorationCache(doc.uri);
             clearDimDecorationCache(doc.uri);
-        }),
+        })
     );
 }
 

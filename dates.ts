@@ -33,9 +33,13 @@ export function isDateInRange(d: Date, startIso: string, endIso: string): boolea
     return dIso >= startIso && dIso <= endIso;
 }
 
-export function parseNaturalDateRange(input: string): { start: string; end: string; label: string } | null {
+export function parseNaturalDateRange(
+    input: string
+): { start: string; end: string; label: string } | null {
     const s = input.trim().toLowerCase();
-    if (!s) { return null; }
+    if (!s) {
+        return null;
+    }
     const today = startOfToday();
     const todayIso = formatIsoDate(today);
 
@@ -43,21 +47,25 @@ export function parseNaturalDateRange(input: string): { start: string; end: stri
         return { start: todayIso, end: todayIso, label: 'today' };
     }
     if (s === 'yesterday') {
-        const y = new Date(today); y.setDate(y.getDate() - 1);
+        const y = new Date(today);
+        y.setDate(y.getDate() - 1);
         const yIso = formatIsoDate(y);
         return { start: yIso, end: yIso, label: 'yesterday' };
     }
     if (s === 'last week') {
-        const start = new Date(today); start.setDate(start.getDate() - 7);
+        const start = new Date(today);
+        start.setDate(start.getDate() - 7);
         return { start: formatIsoDate(start), end: todayIso, label: 'last week' };
     }
     if (s === 'last month') {
-        const start = new Date(today); start.setDate(start.getDate() - 30);
+        const start = new Date(today);
+        start.setDate(start.getDate() - 30);
         return { start: formatIsoDate(start), end: todayIso, label: 'last month' };
     }
     if (s === 'this week') {
         const day = today.getDay() || 7;
-        const monday = new Date(today); monday.setDate(monday.getDate() - (day - 1));
+        const monday = new Date(today);
+        monday.setDate(monday.getDate() - (day - 1));
         return { start: formatIsoDate(monday), end: todayIso, label: 'this week' };
     }
     if (s === 'this month') {
@@ -70,14 +78,20 @@ export function parseNaturalDateRange(input: string): { start: string; end: stri
         const n = parseInt(m[1], 10);
         const unit = m[2];
         let daysBack = n;
-        if (unit.startsWith('week')) { daysBack = n * 7; }
-        else if (unit.startsWith('month')) { daysBack = n * 30; }
-        const start = new Date(today); start.setDate(start.getDate() - daysBack);
+        if (unit.startsWith('week')) {
+            daysBack = n * 7;
+        } else if (unit.startsWith('month')) {
+            daysBack = n * 30;
+        }
+        const start = new Date(today);
+        start.setDate(start.getDate() - daysBack);
         return { start: formatIsoDate(start), end: todayIso, label: `last ${n} ${unit}` };
     }
 
     m = s.match(/^(\d{4}-\d{2}-\d{2})$/);
-    if (m) { return { start: m[1], end: m[1], label: m[1] }; }
+    if (m) {
+        return { start: m[1], end: m[1], label: m[1] };
+    }
 
     m = s.match(/^(\d{4}-\d{2}-\d{2})\s+to\s+(\d{4}-\d{2}-\d{2})$/);
     if (m) {

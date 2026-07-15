@@ -1,10 +1,5 @@
 import * as vscode from 'vscode';
-import {
-    isTodoFile,
-    parseDocument,
-    getEffectiveEditor,
-    getItemEndLine,
-} from './parser';
+import { isTodoFile, parseDocument, getEffectiveEditor, getItemEndLine } from './parser';
 import { parseDate, daysBetween } from './dates';
 
 export async function archiveItems(editor: vscode.TextEditor) {
@@ -13,7 +8,9 @@ export async function archiveItems(editor: vscode.TextEditor) {
     const effectiveDocument = ctx.document;
 
     if (!isTodoFile(effectiveDocument)) {
-        vscode.window.showWarningMessage('Not a todo file. Add "md-todo: true" to YAML frontmatter.');
+        vscode.window.showWarningMessage(
+            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
+        );
         return;
     }
 
@@ -24,15 +21,21 @@ export async function archiveItems(editor: vscode.TextEditor) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const toArchive = parsed.items.filter(item => {
-        if (!item.isComplete || !item.completedDate) { return false; }
+    const toArchive = parsed.items.filter((item) => {
+        if (!item.isComplete || !item.completedDate) {
+            return false;
+        }
         const completed = parseDate(item.completedDate);
-        if (!completed) { return false; }
+        if (!completed) {
+            return false;
+        }
         return daysBetween(today, completed) >= archiveAfterDays;
     });
 
     if (toArchive.length === 0) {
-        vscode.window.showInformationMessage(`No items completed more than ${archiveAfterDays} days ago`);
+        vscode.window.showInformationMessage(
+            `No items completed more than ${archiveAfterDays} days ago`
+        );
         return;
     }
 
@@ -56,7 +59,9 @@ export async function archiveItems(editor: vscode.TextEditor) {
     await effectiveEditor.edit((editBuilder: vscode.TextEditorEdit) => {
         const processed = new Set<number>();
         for (const lineNum of linesToDelete) {
-            if (processed.has(lineNum)) { continue; }
+            if (processed.has(lineNum)) {
+                continue;
+            }
             processed.add(lineNum);
             const range = new vscode.Range(lineNum, 0, lineNum + 1, 0);
             editBuilder.delete(range);

@@ -1,10 +1,6 @@
 import * as vscode from 'vscode';
 import { isTodoFile } from './parser';
-import {
-    applyChangesToCache,
-    affectedNewLineRange,
-    mergeAndSort,
-} from './decoration-incremental';
+import { applyChangesToCache, affectedNewLineRange, mergeAndSort } from './decoration-incremental';
 
 let dateDecorationType: vscode.TextEditorDecorationType | undefined;
 
@@ -27,7 +23,7 @@ export function createDateDecorationType(): vscode.TextEditorDecorationType {
     }
 
     dateDecorationType = vscode.window.createTextEditorDecorationType({
-        opacity: String(opacity)
+        opacity: String(opacity),
     });
 
     return dateDecorationType;
@@ -35,7 +31,11 @@ export function createDateDecorationType(): vscode.TextEditorDecorationType {
 
 const datePattern = /`[+✓]\d{4}-\d{2}-\d{2}`/g;
 
-function scanLineRange(document: vscode.TextDocument, startLine: number, endLine: number): vscode.DecorationOptions[] {
+function scanLineRange(
+    document: vscode.TextDocument,
+    startLine: number,
+    endLine: number
+): vscode.DecorationOptions[] {
     const decorations: vscode.DecorationOptions[] = [];
     const lo = Math.max(0, startLine);
     const hi = Math.min(document.lineCount - 1, endLine);
@@ -45,7 +45,7 @@ function scanLineRange(document: vscode.TextDocument, startLine: number, endLine
         for (const match of matches) {
             if (match.index !== undefined) {
                 decorations.push({
-                    range: new vscode.Range(i, match.index, i, match.index + match[0].length)
+                    range: new vscode.Range(i, match.index, i, match.index + match[0].length),
                 });
             }
         }
@@ -70,7 +70,7 @@ export function updateDateDecorations(editor: vscode.TextEditor) {
 
 export function updateDateDecorationsIncremental(
     editor: vscode.TextEditor,
-    changes: readonly vscode.TextDocumentContentChangeEvent[],
+    changes: readonly vscode.TextDocumentContentChangeEvent[]
 ): void {
     const key = editor.document.uri.toString();
     const cached = dateDecorationCache.get(key);

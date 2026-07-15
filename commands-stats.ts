@@ -7,20 +7,24 @@ export async function showStats(editor: vscode.TextEditor) {
     const effectiveDocument = ctx.document;
 
     if (!isTodoFile(effectiveDocument)) {
-        vscode.window.showWarningMessage('Not a todo file. Add "md-todo: true" to YAML frontmatter.');
+        vscode.window.showWarningMessage(
+            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
+        );
         return;
     }
 
     const parsed = parseDocument(effectiveDocument);
     const today = new Date();
 
-    const completed = parsed.items.filter(i => i.isComplete);
-    const incomplete = parsed.items.filter(i => !i.isComplete);
+    const completed = parsed.items.filter((i) => i.isComplete);
+    const incomplete = parsed.items.filter((i) => !i.isComplete);
 
     const weekAgo = new Date(today);
     weekAgo.setDate(weekAgo.getDate() - 7);
-    const completedThisWeek = completed.filter(item => {
-        if (!item.completedDate) { return false; }
+    const completedThisWeek = completed.filter((item) => {
+        if (!item.completedDate) {
+            return false;
+        }
         const d = parseDate(item.completedDate);
         return d && d >= weekAgo;
     });
@@ -35,16 +39,19 @@ export async function showStats(editor: vscode.TextEditor) {
             }
         }
     }
-    const avgCompletion = completionTimes.length > 0
-        ? (completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length).toFixed(1)
-        : 'N/A';
+    const avgCompletion =
+        completionTimes.length > 0
+            ? (completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length).toFixed(1)
+            : 'N/A';
 
     const oldestIncomplete = incomplete
-        .filter(i => i.addedDate)
+        .filter((i) => i.addedDate)
         .sort((a, b) => {
             const da = parseDate(a.addedDate!);
             const db = parseDate(b.addedDate!);
-            if (!da || !db) { return 0; }
+            if (!da || !db) {
+                return 0;
+            }
             return da.getTime() - db.getTime();
         })
         .slice(0, 5);
@@ -77,11 +84,11 @@ export async function showStats(editor: vscode.TextEditor) {
 
     const doc = await vscode.workspace.openTextDocument({
         content: statsLines.join('\n'),
-        language: 'markdown'
+        language: 'markdown',
     });
 
     await vscode.window.showTextDocument(doc, {
         preview: true,
-        viewColumn: vscode.ViewColumn.Beside
+        viewColumn: vscode.ViewColumn.Beside,
     });
 }

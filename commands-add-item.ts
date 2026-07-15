@@ -9,16 +9,20 @@ export async function addItem(editor: vscode.TextEditor) {
     const effectiveDocument = ctx.document;
 
     if (!isTodoFile(effectiveDocument)) {
-        vscode.window.showWarningMessage('Not a todo file. Add "md-todo: true" to YAML frontmatter.');
+        vscode.window.showWarningMessage(
+            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
+        );
         return;
     }
 
     const text = await promptForTodoText(effectiveDocument, {
         prompt: 'Enter todo item',
-        placeHolder: 'What needs to be done? (type @ or # for suggestions)'
+        placeHolder: 'What needs to be done? (type @ or # for suggestions)',
     });
 
-    if (!text) { return; }
+    if (!text) {
+        return;
+    }
 
     const today = getToday();
     const newLine = `- [ ] ${text} \`+${today}\``;
@@ -40,7 +44,10 @@ export async function addItem(editor: vscode.TextEditor) {
         insertLine = insertLine! ?? 0;
     }
 
-    while (insertLine < effectiveDocument.lineCount && effectiveDocument.lineAt(insertLine).text.trim() === '') {
+    while (
+        insertLine < effectiveDocument.lineCount &&
+        effectiveDocument.lineAt(insertLine).text.trim() === ''
+    ) {
         insertLine++;
     }
 

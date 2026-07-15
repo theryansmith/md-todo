@@ -6,7 +6,7 @@ import * as vscode from 'vscode';
 // N+1 lines into 1, -N. Replacement of M lines with text containing K
 // newlines is K - M.
 export function computeLineDelta(change: vscode.TextDocumentContentChangeEvent): number {
-    const newlinesInText = (change.text.match(/\n/g)?.length ?? 0);
+    const newlinesInText = change.text.match(/\n/g)?.length ?? 0;
     const oldLineSpan = change.range.end.line - change.range.start.line;
     return newlinesInText - oldLineSpan;
 }
@@ -31,7 +31,7 @@ export function dropAndShift(
     options: vscode.DecorationOptions[],
     dropStartLine: number,
     dropEndLine: number,
-    delta: number,
+    delta: number
 ): vscode.DecorationOptions[] {
     const result: vscode.DecorationOptions[] = [];
     for (const opt of options) {
@@ -44,8 +44,14 @@ export function dropAndShift(
             if (delta === 0) {
                 result.push(opt);
             } else {
-                const newStart = new vscode.Position(opt.range.start.line + delta, opt.range.start.character);
-                const newEnd = new vscode.Position(opt.range.end.line + delta, opt.range.end.character);
+                const newStart = new vscode.Position(
+                    opt.range.start.line + delta,
+                    opt.range.start.character
+                );
+                const newEnd = new vscode.Position(
+                    opt.range.end.line + delta,
+                    opt.range.end.character
+                );
                 result.push({ ...opt, range: new vscode.Range(newStart, newEnd) });
             }
         }
@@ -67,7 +73,7 @@ export function dropAndShift(
  */
 export function applyChangesToCache(
     cached: vscode.DecorationOptions[],
-    changes: readonly vscode.TextDocumentContentChangeEvent[],
+    changes: readonly vscode.TextDocumentContentChangeEvent[]
 ): vscode.DecorationOptions[] {
     const sorted = [...changes].sort((a, b) => {
         if (b.range.start.line !== a.range.start.line) {
@@ -90,8 +96,11 @@ export function applyChangesToCache(
  * of the change: `change.range.start.line` to `change.range.start.line +
  * newlinesInText`. Always at least one line.
  */
-export function affectedNewLineRange(change: vscode.TextDocumentContentChangeEvent): { startLine: number; endLine: number } {
-    const newlinesInText = (change.text.match(/\n/g)?.length ?? 0);
+export function affectedNewLineRange(change: vscode.TextDocumentContentChangeEvent): {
+    startLine: number;
+    endLine: number;
+} {
+    const newlinesInText = change.text.match(/\n/g)?.length ?? 0;
     const startLine = change.range.start.line;
     return { startLine, endLine: startLine + newlinesInText };
 }
@@ -104,7 +113,7 @@ export function affectedNewLineRange(change: vscode.TextDocumentContentChangeEve
  */
 export function mergeAndSort(
     shifted: vscode.DecorationOptions[],
-    rescanned: vscode.DecorationOptions[],
+    rescanned: vscode.DecorationOptions[]
 ): vscode.DecorationOptions[] {
     const merged = shifted.concat(rescanned);
     merged.sort((a, b) => {

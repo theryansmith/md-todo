@@ -1,11 +1,7 @@
 import * as vscode from 'vscode';
 import { isTodoFile } from './parser';
 import { PROJECT_TOKEN_RE_G } from './tokens';
-import {
-    applyChangesToCache,
-    affectedNewLineRange,
-    mergeAndSort,
-} from './decoration-incremental';
+import { applyChangesToCache, affectedNewLineRange, mergeAndSort } from './decoration-incremental';
 
 let projectDecorationType: vscode.TextEditorDecorationType | undefined;
 
@@ -30,13 +26,17 @@ export function createProjectDecorationType(): vscode.TextEditorDecorationType {
     // Distinct, visible color for `[project]` tokens (orange) — clearly
     // separate from #tags (purple) and @mentions (bold blue).
     projectDecorationType = vscode.window.createTextEditorDecorationType({
-        color: new vscode.ThemeColor('charts.orange')
+        color: new vscode.ThemeColor('charts.orange'),
     });
 
     return projectDecorationType;
 }
 
-function scanLineRange(document: vscode.TextDocument, startLine: number, endLine: number): vscode.DecorationOptions[] {
+function scanLineRange(
+    document: vscode.TextDocument,
+    startLine: number,
+    endLine: number
+): vscode.DecorationOptions[] {
     const decorations: vscode.DecorationOptions[] = [];
     const lo = Math.max(0, startLine);
     const hi = Math.min(document.lineCount - 1, endLine);
@@ -46,7 +46,7 @@ function scanLineRange(document: vscode.TextDocument, startLine: number, endLine
         for (const match of matches) {
             if (match.index !== undefined) {
                 decorations.push({
-                    range: new vscode.Range(i, match.index, i, match.index + match[0].length)
+                    range: new vscode.Range(i, match.index, i, match.index + match[0].length),
                 });
             }
         }
@@ -71,7 +71,7 @@ export function updateProjectDecorations(editor: vscode.TextEditor) {
 
 export function updateProjectDecorationsIncremental(
     editor: vscode.TextEditor,
-    changes: readonly vscode.TextDocumentContentChangeEvent[],
+    changes: readonly vscode.TextDocumentContentChangeEvent[]
 ): void {
     const key = editor.document.uri.toString();
     const cached = projectDecorationCache.get(key);

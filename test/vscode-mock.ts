@@ -6,13 +6,21 @@
  */
 
 export class Position {
-    constructor(public readonly line: number, public readonly character: number) {}
+    constructor(
+        public readonly line: number,
+        public readonly character: number
+    ) {}
 }
 
 export class Range {
     public readonly start: Position;
     public readonly end: Position;
-    constructor(startLine: number | Position, startChar: number | Position, endLine?: number, endChar?: number) {
+    constructor(
+        startLine: number | Position,
+        startChar: number | Position,
+        endLine?: number,
+        endChar?: number
+    ) {
         if (typeof startLine === 'number') {
             this.start = new Position(startLine, startChar as number);
             this.end = new Position(endLine as number, endChar as number);
@@ -48,7 +56,9 @@ export class EventEmitter<T> {
         return { dispose: () => undefined };
     };
     fire(data?: T): void {
-        for (const l of this.listeners) { l(data as T); }
+        for (const l of this.listeners) {
+            l(data as T);
+        }
     }
     dispose(): void {
         this.listeners = [];
@@ -61,7 +71,10 @@ export class TreeItem {
     contextValue?: string;
     iconPath?: ThemeIcon;
     command?: unknown;
-    constructor(public label: string, public collapsibleState?: number) {}
+    constructor(
+        public label: string,
+        public collapsibleState?: number
+    ) {}
 }
 
 export enum TreeItemCollapsibleState {
@@ -82,7 +95,10 @@ export class CompletionItem {
     range?: Range;
     filterText?: string;
     sortText?: string;
-    constructor(public label: string, public kind?: number) {}
+    constructor(
+        public label: string,
+        public kind?: number
+    ) {}
 }
 
 export enum CompletionItemKind {
@@ -97,7 +113,10 @@ export enum QuickPickItemKind {
 }
 
 export class Hover {
-    constructor(public contents: unknown, public range?: Range) {}
+    constructor(
+        public contents: unknown,
+        public range?: Range
+    ) {}
 }
 
 export const Uri = {

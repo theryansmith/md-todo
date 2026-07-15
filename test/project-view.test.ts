@@ -30,7 +30,11 @@ describe('filterItemsForProject', () => {
         const parsed = parseDocument(makeDoc(SAMPLE));
         const roots = filterItemsForProject(parsed.items, 'game-x');
 
-        expect(roots.map(r => r.item.text)).toEqual(['Ship feature', 'Nested under other', 'Old finished']);
+        expect(roots.map((r) => r.item.text)).toEqual([
+            'Ship feature',
+            'Nested under other',
+            'Old finished',
+        ]);
 
         const shipFeature = roots[0];
         expect(shipFeature.matchesProject).toBe(true);
@@ -56,7 +60,7 @@ describe('filterItemsForProject', () => {
 describe('renderProjectView', () => {
     it('renders hierarchy, section headers, counts, notes, and a context marker for non-matching ancestors', () => {
         const parsed = parseDocument(makeDoc(SAMPLE));
-        const project = parsed.projectDefinitions.find(p => p.name === 'game-x')!;
+        const project = parsed.projectDefinitions.find((p) => p.name === 'game-x')!;
         const output = renderProjectView(parsed, project);
 
         expect(output).toContain('# 📁 Project View — game-x');
@@ -76,7 +80,11 @@ describe('renderProjectView', () => {
 
     it('reports zero items for a project with no matches', () => {
         const parsed = parseDocument(makeDoc(SAMPLE));
-        const output = renderProjectView(parsed, { name: 'ghost', description: 'not used', line: -1 });
+        const output = renderProjectView(parsed, {
+            name: 'ghost',
+            description: 'not used',
+            line: -1,
+        });
         expect(output).toContain('**Total:** 0 items in [ghost]');
         expect(output).toContain('_(no items in this project)_');
     });

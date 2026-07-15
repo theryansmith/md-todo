@@ -5,49 +5,34 @@ import { makeDoc } from './helpers';
 
 describe('getEffectiveProject', () => {
     it('child inherits the parent project', () => {
-        const doc = makeDoc([
-            '## Active',
-            '',
-            '- [ ] parent `[game-x]`',
-            '  - [ ] child without token',
-        ].join('\n'));
+        const doc = makeDoc(
+            ['## Active', '', '- [ ] parent `[game-x]`', '  - [ ] child without token'].join('\n')
+        );
         const parent = parseDocument(doc).items[0];
         expect(parent.children).toHaveLength(1);
         expect(getEffectiveProject(parent.children[0])).toBe('game-x');
     });
 
     it('grandchild inherits through two levels', () => {
-        const doc = makeDoc([
-            '## Active',
-            '',
-            '- [ ] top `[game-x]`',
-            '  - [ ] middle',
-            '    - [ ] leaf',
-        ].join('\n'));
+        const doc = makeDoc(
+            ['## Active', '', '- [ ] top `[game-x]`', '  - [ ] middle', '    - [ ] leaf'].join('\n')
+        );
         const top = parseDocument(doc).items[0];
         const leaf = top.children[0].children[0];
         expect(getEffectiveProject(leaf)).toBe('game-x');
     });
 
     it('own token overrides the inherited one', () => {
-        const doc = makeDoc([
-            '## Active',
-            '',
-            '- [ ] top `[game-x]`',
-            '  - [ ] child `[side-quest]`',
-        ].join('\n'));
+        const doc = makeDoc(
+            ['## Active', '', '- [ ] top `[game-x]`', '  - [ ] child `[side-quest]`'].join('\n')
+        );
         const top = parseDocument(doc).items[0];
         expect(getEffectiveProject(top.children[0])).toBe('side-quest');
         expect(getEffectiveProject(top)).toBe('game-x');
     });
 
     it('returns undefined when no token anywhere in the ancestry', () => {
-        const doc = makeDoc([
-            '## Active',
-            '',
-            '- [ ] top',
-            '  - [ ] child',
-        ].join('\n'));
+        const doc = makeDoc(['## Active', '', '- [ ] top', '  - [ ] child'].join('\n'));
         const top = parseDocument(doc).items[0];
         expect(getEffectiveProject(top.children[0])).toBeUndefined();
     });

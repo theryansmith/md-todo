@@ -35,7 +35,7 @@ md-todo: true
 `;
 
     if (document.getText().trim() === '') {
-        await editor.edit(editBuilder => {
+        await editor.edit((editBuilder) => {
             editBuilder.insert(new vscode.Position(0, 0), template);
         });
         vscode.window.showInformationMessage('Todo file initialized');
@@ -46,7 +46,7 @@ md-todo: true
         );
 
         if (choice === 'Prepend frontmatter only') {
-            await editor.edit(editBuilder => {
+            await editor.edit((editBuilder) => {
                 editBuilder.insert(new vscode.Position(0, 0), '---\nmd-todo: true\n---\n\n');
             });
             vscode.window.showInformationMessage('Todo frontmatter added');
@@ -62,7 +62,7 @@ md-todo: true
                     new vscode.Position(0, 0),
                     new vscode.Position(document.lineCount, 0)
                 );
-                await editor.edit(editBuilder => {
+                await editor.edit((editBuilder) => {
                     editBuilder.replace(fullRange, template);
                 });
                 vscode.window.showInformationMessage('Todo file initialized');

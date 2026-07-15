@@ -8,7 +8,9 @@ export async function addUser(editor: vscode.TextEditor) {
     const effectiveDocument = ctx.document;
 
     if (!isTodoFile(effectiveDocument)) {
-        vscode.window.showWarningMessage('Not a todo file. Add "md-todo: true" to YAML frontmatter.');
+        vscode.window.showWarningMessage(
+            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
+        );
         return;
     }
 
@@ -18,26 +20,38 @@ export async function addUser(editor: vscode.TextEditor) {
         prompt: 'User shortname (used as @shortname)',
         placeHolder: 'e.g. asmith',
         validateInput: (value) => {
-            if (!value) { return 'Required'; }
-            if (!value.match(/^[\w-]+$/)) { return 'Letters, digits, _ and - only'; }
-            if (parsed.userDefinitions.some(u => u.shortname === value)) { return `User @${value} already defined`; }
+            if (!value) {
+                return 'Required';
+            }
+            if (!value.match(/^[\w-]+$/)) {
+                return 'Letters, digits, _ and - only';
+            }
+            if (parsed.userDefinitions.some((u) => u.shortname === value)) {
+                return `User @${value} already defined`;
+            }
             return null;
-        }
+        },
     });
-    if (!shortname) { return; }
+    if (!shortname) {
+        return;
+    }
 
     const fullname = await vscode.window.showInputBox({
         prompt: 'Full name (optional)',
-        placeHolder: 'e.g. Alice Smith'
+        placeHolder: 'e.g. Alice Smith',
     });
-    if (fullname === undefined) { return; }
+    if (fullname === undefined) {
+        return;
+    }
 
     const description = await vscode.window.showInputBox({
         prompt: 'Description',
         placeHolder: 'e.g. frontend lead',
-        validateInput: (value) => (value ? null : 'Required')
+        validateInput: (value) => (value ? null : 'Required'),
     });
-    if (!description) { return; }
+    if (!description) {
+        return;
+    }
 
     const fullnamePart = fullname.trim() ? ` (${fullname.trim()})` : '';
     const newLine = `**${shortname}**${fullnamePart}: ${description}`;

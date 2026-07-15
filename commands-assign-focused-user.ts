@@ -15,7 +15,9 @@ export async function assignFocusedUser(editor: vscode.TextEditor): Promise<void
     const targetEditor = ctx.editor;
 
     if (!isTodoFile(document)) {
-        vscode.window.showWarningMessage('Not a todo file. Add "md-todo: true" to YAML frontmatter.');
+        vscode.window.showWarningMessage(
+            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
+        );
         return;
     }
 
@@ -32,24 +34,30 @@ export async function assignFocusedUser(editor: vscode.TextEditor): Promise<void
     if (!shortname) {
         const parsed = parseDocument(document);
         if (parsed.userDefinitions.length === 0) {
-            vscode.window.showInformationMessage('No users defined. Add a "## Users" section first.');
+            vscode.window.showInformationMessage(
+                'No users defined. Add a "## Users" section first.'
+            );
             return;
         }
         type UserPick = vscode.QuickPickItem & { shortname: string };
         const picks: UserPick[] = [...parsed.userDefinitions]
-            .sort((a, b) => a.shortname.localeCompare(b.shortname, undefined, { sensitivity: 'base' }))
-            .map(u => ({
+            .sort((a, b) =>
+                a.shortname.localeCompare(b.shortname, undefined, { sensitivity: 'base' })
+            )
+            .map((u) => ({
                 label: `$(person) @${u.shortname}`,
                 description: u.fullname,
                 detail: u.description,
-                shortname: u.shortname
+                shortname: u.shortname,
             }));
         const picked = await vscode.window.showQuickPick(picks, {
             placeHolder: 'Select user to assign',
             matchOnDescription: true,
             matchOnDetail: true,
         });
-        if (!picked) { return; }
+        if (!picked) {
+            return;
+        }
         shortname = picked.shortname;
     }
 
@@ -59,9 +67,10 @@ export async function assignFocusedUser(editor: vscode.TextEditor): Promise<void
     if (wholeWordRe.test(lineText)) {
         let newText = lineText.replace(wholeWordRe, '');
         const leading = newText.match(/^\s*/)?.[0] ?? '';
-        newText = leading + newText.slice(leading.length).replace(/ {2,}/g, ' ').replace(/\s+$/, '');
+        newText =
+            leading + newText.slice(leading.length).replace(/ {2,}/g, ' ').replace(/\s+$/, '');
         const lineRange = document.lineAt(cursorLine).range;
-        await targetEditor.edit(eb => {
+        await targetEditor.edit((eb) => {
             eb.replace(lineRange, newText);
         });
         return;
@@ -77,7 +86,7 @@ export async function assignFocusedUser(editor: vscode.TextEditor): Promise<void
     if (nextChar && !/\s/.test(nextChar)) {
         insertText = insertText + ' ';
     }
-    await targetEditor.edit(eb => {
+    await targetEditor.edit((eb) => {
         eb.insert(new vscode.Position(cursorLine, insertCol), insertText);
     });
 }

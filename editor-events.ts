@@ -1,8 +1,18 @@
 import * as vscode from 'vscode';
 import { updateTagDecorations, updateTagDecorationsIncremental } from './decoration-tag';
-import { createDateDecorationType, updateDateDecorations, updateDateDecorationsIncremental } from './decoration-date';
-import { updateMentionDecorations, updateMentionDecorationsIncremental } from './decoration-mention';
-import { updateProjectDecorations, updateProjectDecorationsIncremental } from './decoration-project';
+import {
+    createDateDecorationType,
+    updateDateDecorations,
+    updateDateDecorationsIncremental,
+} from './decoration-date';
+import {
+    updateMentionDecorations,
+    updateMentionDecorationsIncremental,
+} from './decoration-mention';
+import {
+    updateProjectDecorations,
+    updateProjectDecorationsIncremental,
+} from './decoration-project';
 import { updateDimDecorations, updateDimDecorationsIncremental } from './decoration-dim';
 import { refreshFocusStatusBar } from './focus-user';
 import { refreshFocusTagStatusBar } from './focus-tag';
@@ -18,8 +28,10 @@ import { refreshActivityFocusStatusBar } from './focus-activity';
  * common keystroke pattern (typing spaces / newlines) without false positives.
  */
 export function isWhitespaceOnlyChange(event: vscode.TextDocumentChangeEvent): boolean {
-    if (event.contentChanges.length === 0) { return false; }
-    return event.contentChanges.every(c => c.rangeLength === 0 && /^\s*$/.test(c.text));
+    if (event.contentChanges.length === 0) {
+        return false;
+    }
+    return event.contentChanges.every((c) => c.rangeLength === 0 && /^\s*$/.test(c.text));
 }
 
 /**
@@ -43,7 +55,7 @@ export function registerEditorUiEvents(context: vscode.ExtensionContext): void {
     }
 
     context.subscriptions.push(
-        vscode.window.onDidChangeActiveTextEditor(editor => {
+        vscode.window.onDidChangeActiveTextEditor((editor) => {
             if (editor) {
                 updateTagDecorations(editor);
                 updateDateDecorations(editor);
@@ -56,13 +68,17 @@ export function registerEditorUiEvents(context: vscode.ExtensionContext): void {
             refreshFocusProjectStatusBar(editor);
             refreshActivityFocusStatusBar(editor);
         }),
-        vscode.workspace.onDidChangeTextDocument(event => {
+        vscode.workspace.onDidChangeTextDocument((event) => {
             const editor = vscode.window.activeTextEditor;
-            if (!editor || event.document !== editor.document) { return; }
+            if (!editor || event.document !== editor.document) {
+                return;
+            }
             // Whitespace-only insertions cannot change parsed tags, mentions,
             // dates, user defs, or section structure — skip the decoration and
             // status-bar work entirely.
-            if (isWhitespaceOnlyChange(event)) { return; }
+            if (isWhitespaceOnlyChange(event)) {
+                return;
+            }
             // Document edit: route through the incremental decoration path so
             // each updater shifts its cached options past the edit and re-scans
             // only the affected line range instead of the whole document.
@@ -79,7 +95,7 @@ export function registerEditorUiEvents(context: vscode.ExtensionContext): void {
             refreshFocusProjectStatusBar(editor);
             refreshActivityFocusStatusBar(editor);
         }),
-        vscode.workspace.onDidChangeConfiguration(event => {
+        vscode.workspace.onDidChangeConfiguration((event) => {
             if (event.affectsConfiguration('mdTodo.dateOpacity')) {
                 createDateDecorationType();
                 const editor = vscode.window.activeTextEditor;

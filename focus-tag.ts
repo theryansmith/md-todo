@@ -6,7 +6,9 @@ import { updateDimDecorations } from './decoration-dim';
 export async function clearFocusTag(): Promise<void> {
     await setFocusTagState(undefined);
     for (const visible of vscode.window.visibleTextEditors) {
-        if (isTodoFile(visible.document)) { updateDimDecorations(visible); }
+        if (isTodoFile(visible.document)) {
+            updateDimDecorations(visible);
+        }
     }
     refreshFocusTagStatusBar(vscode.window.activeTextEditor);
 }
@@ -21,7 +23,9 @@ export function initFocusTagStatusBar(context: vscode.ExtensionContext): void {
 }
 
 export function refreshFocusTagStatusBar(editor: vscode.TextEditor | undefined) {
-    if (!tagFocusStatusBarItem) { return; }
+    if (!tagFocusStatusBarItem) {
+        return;
+    }
     if (!editor || !isTodoFile(editor.document)) {
         tagFocusStatusBarItem.hide();
         return;
@@ -45,7 +49,9 @@ export async function setFocusTag(): Promise<void> {
     }
     const ctx = await getEffectiveEditor(editor);
     if (!isTodoFile(ctx.document)) {
-        vscode.window.showWarningMessage('Not a todo file. Add "md-todo: true" to YAML frontmatter.');
+        vscode.window.showWarningMessage(
+            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
+        );
         return;
     }
     const parsed = parseDocument(ctx.document);
@@ -55,11 +61,11 @@ export async function setFocusTag(): Promise<void> {
         { label: '$(circle-slash) Clear focus', description: 'Show all tags', tagname: undefined },
         ...[...parsed.tagDefinitions]
             .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
-            .map<TagPick>(t => ({
+            .map<TagPick>((t) => ({
                 label: `$(tag) #${t.name}`,
                 detail: t.description,
-                tagname: t.name
-            }))
+                tagname: t.name,
+            })),
     ];
 
     if (parsed.tagDefinitions.length === 0) {
@@ -67,17 +73,23 @@ export async function setFocusTag(): Promise<void> {
     }
 
     const current = getFocusTag();
-    const placeHolder = current ? `Currently focused on #${current}` : 'Select a tag to focus on (or clear)';
+    const placeHolder = current
+        ? `Currently focused on #${current}`
+        : 'Select a tag to focus on (or clear)';
     const picked = await vscode.window.showQuickPick(picks, {
         placeHolder,
         matchOnDescription: true,
         matchOnDetail: true,
     });
-    if (!picked) { return; }
+    if (!picked) {
+        return;
+    }
 
     await setFocusTagState(picked.tagname);
     for (const visible of vscode.window.visibleTextEditors) {
-        if (isTodoFile(visible.document)) { updateDimDecorations(visible); }
+        if (isTodoFile(visible.document)) {
+            updateDimDecorations(visible);
+        }
     }
     refreshFocusTagStatusBar(vscode.window.activeTextEditor);
 }

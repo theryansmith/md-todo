@@ -33,7 +33,7 @@ export function createDimmedDecorationType(): vscode.TextEditorDecorationType {
         dimmedDecorationType.dispose();
     }
     dimmedDecorationType = vscode.window.createTextEditorDecorationType({
-        opacity: '0.25'
+        opacity: '0.25',
     });
     return dimmedDecorationType;
 }
@@ -75,9 +75,13 @@ export function updateDimDecorations(editor: vscode.TextEditor) {
         const tagOk = !focusTag || item.tags.includes(focusTag);
         const projectOk = !focusProject || getEffectiveProject(item) === focusProject;
         const activityOk = !activity || itemMatchesActivity(item, activity, today);
-        if (userOk && tagOk && projectOk && activityOk) { return true; }
+        if (userOk && tagOk && projectOk && activityOk) {
+            return true;
+        }
         for (const child of item.children) {
-            if (subtreeMatches(child)) { return true; }
+            if (subtreeMatches(child)) {
+                return true;
+            }
         }
         return false;
     }
@@ -86,7 +90,9 @@ export function updateDimDecorations(editor: vscode.TextEditor) {
 
     // (a) Subtree-level dim for non-matching top-level subtrees.
     for (const top of parsed.items) {
-        if (subtreeMatches(top)) { continue; }
+        if (subtreeMatches(top)) {
+            continue;
+        }
         const endLine = getItemWithDescendantsEndLine(editor.document, top);
         const endLineLength = editor.document.lineAt(endLine).text.length;
         ranges.push(new vscode.Range(top.line, 0, endLine, endLineLength));
@@ -148,14 +154,16 @@ export function updateDimDecorations(editor: vscode.TextEditor) {
  */
 export function updateDimDecorationsIncremental(
     editor: vscode.TextEditor,
-    _changes: readonly vscode.TextDocumentContentChangeEvent[],
+    _changes: readonly vscode.TextDocumentContentChangeEvent[]
 ): void {
     const decorationType = dimmedDecorationType ?? createDimmedDecorationType();
     const key = editor.document.uri.toString();
 
     if (!isTodoFile(editor.document)) {
         const cached = dimDecorationCache.get(key);
-        if (cached && cached.length === 0) { return; }
+        if (cached && cached.length === 0) {
+            return;
+        }
         editor.setDecorations(decorationType, []);
         dimDecorationCache.set(key, []);
         return;
@@ -167,7 +175,9 @@ export function updateDimDecorationsIncremental(
     const activity = getActivityFocus();
     if (!focusUser && !focusTag && !focusProject && !activity) {
         const cached = dimDecorationCache.get(key);
-        if (cached && cached.length === 0) { return; }
+        if (cached && cached.length === 0) {
+            return;
+        }
         editor.setDecorations(decorationType, []);
         dimDecorationCache.set(key, []);
         return;

@@ -9,7 +9,9 @@ export async function manageTags(editor: vscode.TextEditor) {
     const effectiveDocument = ctx.document;
 
     if (!isTodoFile(effectiveDocument)) {
-        vscode.window.showWarningMessage('Not a todo file. Add "md-todo: true" to YAML frontmatter.');
+        vscode.window.showWarningMessage(
+            'Not a todo file. Add "md-todo: true" to YAML frontmatter.'
+        );
         return;
     }
 
@@ -25,19 +27,21 @@ export async function manageTags(editor: vscode.TextEditor) {
         { label: '', kind: vscode.QuickPickItemKind.Separator, action: '' },
         ...[...parsed.tagDefinitions]
             .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
-            .map(t => ({
+            .map((t) => ({
                 label: t.name,
                 description: t.description,
                 action: 'edit',
-                tagDef: t
-            }))
+                tagDef: t,
+            })),
     ];
 
     const selected = await vscode.window.showQuickPick(picks, {
-        placeHolder: 'Manage tag definitions'
+        placeHolder: 'Manage tag definitions',
     });
 
-    if (!selected || !selected.action) { return; }
+    if (!selected || !selected.action) {
+        return;
+    }
 
     if (selected.action === 'add') {
         const name = await vscode.window.showInputBox({
@@ -46,26 +50,32 @@ export async function manageTags(editor: vscode.TextEditor) {
                 if (!value.match(/^[\w-]+$/)) {
                     return 'Tag name must be alphanumeric (hyphens allowed)';
                 }
-                if (parsed.tagDefinitions.some(t => t.name === value)) {
+                if (parsed.tagDefinitions.some((t) => t.name === value)) {
                     return 'Tag already exists';
                 }
                 return null;
-            }
+            },
         });
-        if (!name) { return; }
+        if (!name) {
+            return;
+        }
 
         const desc = await vscode.window.showInputBox({
-            prompt: 'Tag description'
+            prompt: 'Tag description',
         });
-        if (!desc) { return; }
+        if (!desc) {
+            return;
+        }
 
         await addTagDefinition(effectiveEditor, name, desc);
     } else if (selected.action === 'edit' && selected.tagDef) {
         const newDesc = await vscode.window.showInputBox({
             prompt: `Edit description for #${selected.tagDef.name}`,
-            value: selected.tagDef.description
+            value: selected.tagDef.description,
         });
-        if (newDesc === undefined) { return; }
+        if (newDesc === undefined) {
+            return;
+        }
 
         const line = effectiveDocument.lineAt(selected.tagDef.line);
         const newText = `**${selected.tagDef.name}**: ${newDesc}`;

@@ -1,15 +1,6 @@
 import * as vscode from 'vscode';
-import {
-    TodoItem,
-    UserDefinition,
-    ParsedDocument,
-    TreeNode,
-} from './types';
-import {
-    isTodoFile,
-    parseDocument,
-    classifyItemSection,
-} from './parser';
+import { TodoItem, UserDefinition, ParsedDocument, TreeNode } from './types';
+import { isTodoFile, parseDocument, classifyItemSection } from './parser';
 import { setFocusUserState } from './state';
 import { updateDimDecorations } from './decoration-dim';
 import { refreshFocusStatusBar } from './focus-user';
@@ -62,11 +53,18 @@ export class MdTodoUsersTreeProvider implements vscode.TreeDataProvider<TreeNode
         }, 200);
     }
 
-    private async getCurrentParsed(): Promise<{ doc: vscode.TextDocument; parsed: ParsedDocument } | null> {
-        if (!this.currentUri) { return null; }
+    private async getCurrentParsed(): Promise<{
+        doc: vscode.TextDocument;
+        parsed: ParsedDocument;
+    } | null> {
+        if (!this.currentUri) {
+            return null;
+        }
         try {
             const doc = await vscode.workspace.openTextDocument(this.currentUri);
-            if (!isTodoFile(doc)) { return null; }
+            if (!isTodoFile(doc)) {
+                return null;
+            }
             return { doc, parsed: parseDocument(doc) };
         } catch {
             return null;
@@ -111,20 +109,28 @@ export class MdTodoUsersTreeProvider implements vscode.TreeDataProvider<TreeNode
                 vscode.TreeItemCollapsibleState.Expanded
             );
             item.contextValue = 'section';
-            const iconName = node.section === 'active'
-                ? 'list-unordered'
-                : node.section === 'completed'
-                    ? 'check-all'
-                    : 'archive';
+            const iconName =
+                node.section === 'active'
+                    ? 'list-unordered'
+                    : node.section === 'completed'
+                      ? 'check-all'
+                      : 'archive';
             item.iconPath = new vscode.ThemeIcon(iconName);
             return item;
         }
 
         const todo = node.item;
-        const item = new vscode.TreeItem(todo.text || '(untitled)', vscode.TreeItemCollapsibleState.None);
+        const item = new vscode.TreeItem(
+            todo.text || '(untitled)',
+            vscode.TreeItemCollapsibleState.None
+        );
         item.description = todo.isComplete
-            ? (todo.completedDate ? `done ${todo.completedDate}` : 'done')
-            : (todo.addedDate ? `added ${todo.addedDate}` : '');
+            ? todo.completedDate
+                ? `done ${todo.completedDate}`
+                : 'done'
+            : todo.addedDate
+              ? `added ${todo.addedDate}`
+              : '';
         item.tooltip = todo.raw;
         item.contextValue = 'todo';
         item.iconPath = new vscode.ThemeIcon(todo.isComplete ? 'check' : 'circle-outline');
@@ -136,9 +142,9 @@ export class MdTodoUsersTreeProvider implements vscode.TreeDataProvider<TreeNode
                 node.sourceUri,
                 {
                     selection: new vscode.Range(todo.line, 0, todo.line, 0),
-                    preview: false
-                }
-            ]
+                    preview: false,
+                },
+            ],
         };
 
         return item;
@@ -146,7 +152,9 @@ export class MdTodoUsersTreeProvider implements vscode.TreeDataProvider<TreeNode
 
     async getChildren(element?: TreeNode): Promise<TreeNode[]> {
         const ctx = await this.getCurrentParsed();
-        if (!ctx) { return []; }
+        if (!ctx) {
+            return [];
+        }
         const { parsed } = ctx;
         const sourceUri = this.currentUri!;
 
@@ -158,7 +166,9 @@ export class MdTodoUsersTreeProvider implements vscode.TreeDataProvider<TreeNode
             }
             userNodes.sort((a, b) =>
                 a.kind === 'user' && b.kind === 'user'
-                    ? a.user.shortname.localeCompare(b.user.shortname, undefined, { sensitivity: 'base' })
+                    ? a.user.shortname.localeCompare(b.user.shortname, undefined, {
+                          sensitivity: 'base',
+                      })
                     : 0
             );
 
@@ -177,17 +187,21 @@ export class MdTodoUsersTreeProvider implements vscode.TreeDataProvider<TreeNode
         }
 
         if (element.kind === 'section') {
-            return element.items.map(item => ({ kind: 'todo' as const, item, sourceUri }));
+            return element.items.map((item) => ({ kind: 'todo' as const, item, sourceUri }));
         }
 
         return [];
     }
 
-    private buildSectionNodes(parsed: ParsedDocument, user: UserDefinition | null, sourceUri: vscode.Uri): TreeNode[] {
+    private buildSectionNodes(
+        parsed: ParsedDocument,
+        user: UserDefinition | null,
+        sourceUri: vscode.Uri
+    ): TreeNode[] {
         const buckets: Record<'active' | 'completed' | 'archive', TodoItem[]> = {
             active: [],
             completed: [],
-            archive: []
+            archive: [],
         };
 
         function visitAll(items: TodoItem[], cb: (it: TodoItem) => void) {
@@ -199,7 +213,9 @@ export class MdTodoUsersTreeProvider implements vscode.TreeDataProvider<TreeNode
 
         visitAll(parsed.items, (it) => {
             const sect = classifyItemSection(it, parsed);
-            if (!sect) { return; }
+            if (!sect) {
+                return;
+            }
             if (user) {
                 if (it.mentions.includes(user.shortname)) {
                     buckets[sect].push(it);
@@ -214,13 +230,22 @@ export class MdTodoUsersTreeProvider implements vscode.TreeDataProvider<TreeNode
         const result: TreeNode[] = [];
         for (const sect of ['active', 'completed', 'archive'] as const) {
             if (buckets[sect].length > 0) {
-                result.push({ kind: 'section', user, section: sect, items: buckets[sect], sourceUri });
+                result.push({
+                    kind: 'section',
+                    user,
+                    section: sect,
+                    items: buckets[sect],
+                    sourceUri,
+                });
             }
         }
         return result;
     }
 
-    private countItemsForMention(parsed: ParsedDocument, shortname: string): { active: number; completed: number; archived: number } {
+    private countItemsForMention(
+        parsed: ParsedDocument,
+        shortname: string
+    ): { active: number; completed: number; archived: number } {
         const counts = { active: 0, completed: 0, archived: 0 };
         function visitAll(items: TodoItem[], cb: (it: TodoItem) => void) {
             for (const it of items) {
@@ -229,16 +254,26 @@ export class MdTodoUsersTreeProvider implements vscode.TreeDataProvider<TreeNode
             }
         }
         visitAll(parsed.items, (it) => {
-            if (!it.mentions.includes(shortname)) { return; }
+            if (!it.mentions.includes(shortname)) {
+                return;
+            }
             const sect = classifyItemSection(it, parsed);
-            if (sect === 'active') { counts.active++; }
-            else if (sect === 'completed') { counts.completed++; }
-            else if (sect === 'archive') { counts.archived++; }
+            if (sect === 'active') {
+                counts.active++;
+            } else if (sect === 'completed') {
+                counts.completed++;
+            } else if (sect === 'archive') {
+                counts.archived++;
+            }
         });
         return counts;
     }
 
-    private countUnassigned(parsed: ParsedDocument): { active: number; completed: number; archived: number } {
+    private countUnassigned(parsed: ParsedDocument): {
+        active: number;
+        completed: number;
+        archived: number;
+    } {
         const counts = { active: 0, completed: 0, archived: 0 };
         function visitAll(items: TodoItem[], cb: (it: TodoItem) => void) {
             for (const it of items) {
@@ -247,11 +282,17 @@ export class MdTodoUsersTreeProvider implements vscode.TreeDataProvider<TreeNode
             }
         }
         visitAll(parsed.items, (it) => {
-            if (it.mentions.length !== 0) { return; }
+            if (it.mentions.length !== 0) {
+                return;
+            }
             const sect = classifyItemSection(it, parsed);
-            if (sect === 'active') { counts.active++; }
-            else if (sect === 'completed') { counts.completed++; }
-            else if (sect === 'archive') { counts.archived++; }
+            if (sect === 'active') {
+                counts.active++;
+            } else if (sect === 'completed') {
+                counts.completed++;
+            } else if (sect === 'archive') {
+                counts.archived++;
+            }
         });
         return counts;
     }
@@ -273,15 +314,21 @@ export async function clearUserFocusFromTree() {
     await setFocusUserState(undefined);
     refreshFocusStatusBar(vscode.window.activeTextEditor);
     for (const visible of vscode.window.visibleTextEditors) {
-        if (isTodoFile(visible.document)) { updateDimDecorations(visible); }
+        if (isTodoFile(visible.document)) {
+            updateDimDecorations(visible);
+        }
     }
 }
 
 export async function reassignUserFromTree(treeProvider: MdTodoUsersTreeProvider, node?: TreeNode) {
-    if (!node || node.kind !== 'todo') { return; }
+    if (!node || node.kind !== 'todo') {
+        return;
+    }
 
     const uri = treeProvider.getCurrentUri();
-    if (!uri) { return; }
+    if (!uri) {
+        return;
+    }
 
     const doc = await vscode.workspace.openTextDocument(uri);
     const parsed = parseDocument(doc);
@@ -291,11 +338,11 @@ export async function reassignUserFromTree(treeProvider: MdTodoUsersTreeProvider
         return;
     }
 
-    const picks = parsed.userDefinitions.map(u => ({
+    const picks = parsed.userDefinitions.map((u) => ({
         label: `@${u.shortname}`,
         description: u.fullname,
         detail: u.description,
-        user: u
+        user: u,
     }));
 
     const selected = await vscode.window.showQuickPick(picks, {
@@ -303,7 +350,9 @@ export async function reassignUserFromTree(treeProvider: MdTodoUsersTreeProvider
         matchOnDescription: true,
         matchOnDetail: true,
     });
-    if (!selected) { return; }
+    if (!selected) {
+        return;
+    }
 
     // Design choice: if the line already has any @mention, replace the FIRST mention.
     // If none, append the @mention to the end of the line (before any trailing whitespace).
@@ -318,18 +367,22 @@ export async function reassignUserFromTree(treeProvider: MdTodoUsersTreeProvider
         newText = newText.replace(/\s*$/, '') + ` @${selected.user.shortname}`;
     }
 
-    await editor.edit(eb => eb.replace(line.range, newText));
+    await editor.edit((eb) => eb.replace(line.range, newText));
     treeProvider.refresh();
 }
 
 export async function markDoneFromTree(treeProvider: MdTodoUsersTreeProvider, node?: TreeNode) {
-    if (!node || node.kind !== 'todo') { return; }
+    if (!node || node.kind !== 'todo') {
+        return;
+    }
     if (node.item.isComplete) {
         vscode.window.showInformationMessage('Item is already complete');
         return;
     }
     const uri = treeProvider.getCurrentUri();
-    if (!uri) { return; }
+    if (!uri) {
+        return;
+    }
     const doc = await vscode.workspace.openTextDocument(uri);
     const editor = await vscode.window.showTextDocument(doc, { preview: false });
     await markDone(editor, undefined, node.item.line);
