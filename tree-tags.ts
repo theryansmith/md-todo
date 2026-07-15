@@ -7,7 +7,7 @@ import { refreshFocusTagStatusBar } from './focus-tag';
 import { markDone } from './commands-mark-done';
 
 export class MdTodoTagsTreeProvider implements vscode.TreeDataProvider<TagsTreeNode> {
-    private _onDidChangeTreeData = new vscode.EventEmitter<TagsTreeNode | undefined | void>();
+    private _onDidChangeTreeData = new vscode.EventEmitter<TagsTreeNode | undefined>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
     private currentUri: vscode.Uri | undefined;
@@ -25,14 +25,14 @@ export class MdTodoTagsTreeProvider implements vscode.TreeDataProvider<TagsTreeN
     }
 
     setCurrentTodoFile(uri: vscode.Uri | undefined) {
-        if (uri && this.currentUri && uri.toString() === this.currentUri.toString()) {
+        if (uri && uri.toString() === this.currentUri?.toString()) {
             return;
         }
         this.currentUri = uri;
         if (uri) {
             this.workspaceState.update('mdTodo.tags.lastTodoFileUri', uri.toString());
         }
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(undefined);
     }
 
     getCurrentUri(): vscode.Uri | undefined {
@@ -40,7 +40,7 @@ export class MdTodoTagsTreeProvider implements vscode.TreeDataProvider<TagsTreeN
     }
 
     refresh() {
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(undefined);
     }
 
     refreshDebounced() {
@@ -48,7 +48,7 @@ export class MdTodoTagsTreeProvider implements vscode.TreeDataProvider<TagsTreeN
             clearTimeout(this.refreshTimer);
         }
         this.refreshTimer = setTimeout(() => {
-            this._onDidChangeTreeData.fire();
+            this._onDidChangeTreeData.fire(undefined);
             this.refreshTimer = undefined;
         }, 200);
     }
@@ -295,7 +295,7 @@ export class MdTodoTagsTreeProvider implements vscode.TreeDataProvider<TagsTreeN
 }
 
 export async function focusOnTagFromTree(node?: TagsTreeNode) {
-    if (!node || node.kind !== 'tag-root') {
+    if (node?.kind !== 'tag-root') {
         vscode.window.showWarningMessage('Right-click a tag in the MD Todo Tags view.');
         return;
     }
@@ -320,7 +320,7 @@ export async function markDoneFromTagsTree(
     treeProvider: MdTodoTagsTreeProvider,
     node?: TagsTreeNode
 ) {
-    if (!node || node.kind !== 'tag-todo') {
+    if (node?.kind !== 'tag-todo') {
         return;
     }
     if (node.item.isComplete) {
@@ -334,7 +334,7 @@ export async function markDoneFromTagsTree(
 }
 
 export async function editTagsFromTree(node?: TagsTreeNode) {
-    if (!node || node.kind !== 'tag-todo') {
+    if (node?.kind !== 'tag-todo') {
         return;
     }
     const doc = await vscode.workspace.openTextDocument(node.sourceUri);

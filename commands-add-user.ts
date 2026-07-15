@@ -23,7 +23,7 @@ export async function addUser(editor: vscode.TextEditor) {
             if (!value) {
                 return 'Required';
             }
-            if (!value.match(/^[\w-]+$/)) {
+            if (!/^[\w-]+$/.exec(value)) {
                 return 'Letters, digits, _ and - only';
             }
             if (parsed.userDefinitions.some((u) => u.shortname === value)) {

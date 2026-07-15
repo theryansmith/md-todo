@@ -74,6 +74,8 @@ export async function showHistory(editor: vscode.TextEditor) {
 
         await vscode.window.showTextDocument(doc, { preview: true });
     } catch (error) {
-        vscode.window.showErrorMessage(`Git error: ${error}`);
+        vscode.window.showErrorMessage(
+            `Git error: ${error instanceof Error ? error.message : String(error)}`
+        );
     }
 }

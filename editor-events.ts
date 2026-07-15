@@ -70,7 +70,7 @@ export function registerEditorUiEvents(context: vscode.ExtensionContext): void {
         }),
         vscode.workspace.onDidChangeTextDocument((event) => {
             const editor = vscode.window.activeTextEditor;
-            if (!editor || event.document !== editor.document) {
+            if (event.document !== editor?.document) {
                 return;
             }
             // Whitespace-only insertions cannot change parsed tags, mentions,

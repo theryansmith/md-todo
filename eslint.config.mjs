@@ -35,6 +35,32 @@ export default tseslint.config(
             '@typescript-eslint/no-non-null-assertion': 'off',
             // Extension entry points log activation breadcrumbs to the developer console on purpose.
             'no-console': 'off',
+            // Numbers in template literals (counts, line numbers, day deltas) stringify
+            // deterministically; banning them is pure noise in this codebase.
+            '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
+            // VS Code APIs (registerCommand, event handlers) accept thenable-returning
+            // callbacks by design; async handlers passed as void-returning arguments are
+            // the idiomatic extension pattern.
+            '@typescript-eslint/no-misused-promises': [
+                'error',
+                { checksVoidReturn: { arguments: false } },
+            ],
+            // `label || fallback` on strings is deliberate here: empty-string labels
+            // (e.g. a user with no fullname) must fall back exactly like undefined.
+            '@typescript-eslint/prefer-nullish-coalescing': [
+                'error',
+                { ignorePrimitives: { string: true } },
+            ],
+            // Underscore prefix is the conventional "intentionally unused" marker
+            // (e.g. required-but-ignored callback parameters).
+            '@typescript-eslint/no-unused-vars': [
+                'error',
+                {
+                    argsIgnorePattern: '^_',
+                    varsIgnorePattern: '^_',
+                    caughtErrorsIgnorePattern: '^_',
+                },
+            ],
         },
     },
     {

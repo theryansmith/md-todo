@@ -48,7 +48,7 @@ export async function markDone(
             return;
         }
 
-        const picks = incompleteItems.map((item, idx) => ({
+        const picks = incompleteItems.map((item) => ({
             label: item.text,
             description: item.addedDate ? `Added ${item.addedDate}` : '',
             item,

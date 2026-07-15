@@ -66,7 +66,7 @@ export async function assignFocusedUser(editor: vscode.TextEditor): Promise<void
     const wholeWordRe = new RegExp(`@${shortname}(?![\\w-])`, 'g');
     if (wholeWordRe.test(lineText)) {
         let newText = lineText.replace(wholeWordRe, '');
-        const leading = newText.match(/^\s*/)?.[0] ?? '';
+        const leading = /^\s*/.exec(newText)?.[0] ?? '';
         newText =
             leading + newText.slice(leading.length).replace(/ {2,}/g, ' ').replace(/\s+$/, '');
         const lineRange = document.lineAt(cursorLine).range;

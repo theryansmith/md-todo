@@ -3,7 +3,7 @@ export function getToday(): string {
 }
 
 export function parseDate(dateStr: string): Date | null {
-    const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+    const match = /(\d{4})-(\d{2})-(\d{2})/.exec(dateStr);
     if (match) {
         return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
     }
@@ -73,7 +73,7 @@ export function parseNaturalDateRange(
         return { start: formatIsoDate(first), end: todayIso, label: 'this month' };
     }
 
-    let m = s.match(/^last\s+(\d+)\s+(day|days|week|weeks|month|months)$/);
+    let m = /^last\s+(\d+)\s+(day|days|week|weeks|month|months)$/.exec(s);
     if (m) {
         const n = parseInt(m[1], 10);
         const unit = m[2];
@@ -88,12 +88,12 @@ export function parseNaturalDateRange(
         return { start: formatIsoDate(start), end: todayIso, label: `last ${n} ${unit}` };
     }
 
-    m = s.match(/^(\d{4}-\d{2}-\d{2})$/);
+    m = /^(\d{4}-\d{2}-\d{2})$/.exec(s);
     if (m) {
         return { start: m[1], end: m[1], label: m[1] };
     }
 
-    m = s.match(/^(\d{4}-\d{2}-\d{2})\s+to\s+(\d{4}-\d{2}-\d{2})$/);
+    m = /^(\d{4}-\d{2}-\d{2})\s+to\s+(\d{4}-\d{2}-\d{2})$/.exec(s);
     if (m) {
         const [s1, s2] = m[1] <= m[2] ? [m[1], m[2]] : [m[2], m[1]];
         return { start: s1, end: s2, label: `${s1} → ${s2}` };

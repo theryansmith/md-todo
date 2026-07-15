@@ -43,11 +43,10 @@ function scanLineRange(
         const line = document.lineAt(i);
         const matches = [...line.text.matchAll(datePattern)];
         for (const match of matches) {
-            if (match.index !== undefined) {
-                decorations.push({
-                    range: new vscode.Range(i, match.index, i, match.index + match[0].length),
-                });
-            }
+            // matchAll results always carry a numeric .index
+            decorations.push({
+                range: new vscode.Range(i, match.index, i, match.index + match[0].length),
+            });
         }
     }
     return decorations;

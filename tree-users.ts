@@ -7,7 +7,7 @@ import { refreshFocusStatusBar } from './focus-user';
 import { markDone } from './commands-mark-done';
 
 export class MdTodoUsersTreeProvider implements vscode.TreeDataProvider<TreeNode> {
-    private _onDidChangeTreeData = new vscode.EventEmitter<TreeNode | undefined | void>();
+    private _onDidChangeTreeData = new vscode.EventEmitter<TreeNode | undefined>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
     private currentUri: vscode.Uri | undefined;
@@ -25,14 +25,14 @@ export class MdTodoUsersTreeProvider implements vscode.TreeDataProvider<TreeNode
     }
 
     setCurrentTodoFile(uri: vscode.Uri | undefined) {
-        if (uri && this.currentUri && uri.toString() === this.currentUri.toString()) {
+        if (uri && uri.toString() === this.currentUri?.toString()) {
             return;
         }
         this.currentUri = uri;
         if (uri) {
             this.workspaceState.update('mdTodo.users.lastTodoFileUri', uri.toString());
         }
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(undefined);
     }
 
     getCurrentUri(): vscode.Uri | undefined {
@@ -40,7 +40,7 @@ export class MdTodoUsersTreeProvider implements vscode.TreeDataProvider<TreeNode
     }
 
     refresh() {
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(undefined);
     }
 
     refreshDebounced() {
@@ -48,7 +48,7 @@ export class MdTodoUsersTreeProvider implements vscode.TreeDataProvider<TreeNode
             clearTimeout(this.refreshTimer);
         }
         this.refreshTimer = setTimeout(() => {
-            this._onDidChangeTreeData.fire();
+            this._onDidChangeTreeData.fire(undefined);
             this.refreshTimer = undefined;
         }, 200);
     }
@@ -299,7 +299,7 @@ export class MdTodoUsersTreeProvider implements vscode.TreeDataProvider<TreeNode
 }
 
 export async function focusOnUserFromTree(node?: TreeNode) {
-    if (!node || node.kind !== 'user') {
+    if (node?.kind !== 'user') {
         vscode.window.showWarningMessage('Right-click a user in the MD Todo Users view.');
         return;
     }
@@ -321,7 +321,7 @@ export async function clearUserFocusFromTree() {
 }
 
 export async function reassignUserFromTree(treeProvider: MdTodoUsersTreeProvider, node?: TreeNode) {
-    if (!node || node.kind !== 'todo') {
+    if (node?.kind !== 'todo') {
         return;
     }
 
@@ -367,12 +367,14 @@ export async function reassignUserFromTree(treeProvider: MdTodoUsersTreeProvider
         newText = newText.replace(/\s*$/, '') + ` @${selected.user.shortname}`;
     }
 
-    await editor.edit((eb) => eb.replace(line.range, newText));
+    await editor.edit((eb) => {
+        eb.replace(line.range, newText);
+    });
     treeProvider.refresh();
 }
 
 export async function markDoneFromTree(treeProvider: MdTodoUsersTreeProvider, node?: TreeNode) {
-    if (!node || node.kind !== 'todo') {
+    if (node?.kind !== 'todo') {
         return;
     }
     if (node.item.isComplete) {

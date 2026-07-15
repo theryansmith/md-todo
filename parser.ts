@@ -29,7 +29,7 @@ export function isTodoFile(document: vscode.TextDocument): boolean {
         const line = document.lineAt(i).text;
         if (line === '---') {
             for (let j = 1; j < i; j++) {
-                if (document.lineAt(j).text.match(/^md-todo:\s*true/i)) {
+                if (/^md-todo:\s*true/i.exec(document.lineAt(j).text)) {
                     return true;
                 }
             }
@@ -88,7 +88,7 @@ export function getItemWithDescendantsEndLine(
     let endLine = item.line;
     for (let i = item.line + 1; i < document.lineCount; i++) {
         const lineText = document.lineAt(i).text;
-        const lineIndent = lineText.match(/^(\s*)/)?.[1].length ?? 0;
+        const lineIndent = /^(\s*)/.exec(lineText)?.[1].length ?? 0;
         if (lineText.trim() && lineIndent <= item.indent) {
             break;
         }
@@ -113,10 +113,10 @@ export function findItemByLine(items: TodoItem[], lineNum: number): TodoItem | n
     return null;
 }
 
-export async function getEffectiveEditor(
+export function getEffectiveEditor(
     currentEditor: vscode.TextEditor
 ): Promise<EffectiveEditorContext> {
-    return { editor: currentEditor, document: currentEditor.document };
+    return Promise.resolve({ editor: currentEditor, document: currentEditor.document });
 }
 
 // Memoizes the most recent parse per document URI. Keyed by URI string with
@@ -136,7 +136,7 @@ export function clearParseCache(uri?: vscode.Uri): void {
 export function parseDocument(document: vscode.TextDocument): ParsedDocument {
     const key = document.uri.toString();
     const cached = parseCache.get(key);
-    if (cached && cached.version === document.version) {
+    if (cached?.version === document.version) {
         return cached.parsed;
     }
     const parsed = parseDocumentUncached(document);
@@ -157,7 +157,7 @@ function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
         const line = document.lineAt(i);
         const text = line.text;
 
-        const sectionMatch = text.match(/^##\s+(.+)$/);
+        const sectionMatch = /^##\s+(.+)$/.exec(text);
         if (sectionMatch) {
             if (currentSection) {
                 sections.set(currentSection.toLowerCase(), { start: sectionStart, end: i - 1 });
@@ -168,14 +168,14 @@ function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
             continue;
         }
 
-        const todoMatch = text.match(/^(\s*)-\s*\[([ xX])\]\s*(.+)$/);
+        const todoMatch = /^(\s*)-\s*\[([ xX])\]\s*(.+)$/.exec(text);
         if (todoMatch) {
             const indent = todoMatch[1].length;
             const isComplete = todoMatch[2].toLowerCase() === 'x';
             const content = todoMatch[3];
 
-            const addedMatch = content.match(/`\+(\d{4}-\d{2}-\d{2})`/);
-            const completedMatch = content.match(/`✓(\d{4}-\d{2}-\d{2})`/);
+            const addedMatch = /`\+(\d{4}-\d{2}-\d{2})`/.exec(content);
+            const completedMatch = /`✓(\d{4}-\d{2}-\d{2})`/.exec(content);
 
             const tagMatches = [...content.matchAll(/#([\w-]+)/g)];
             const tags = tagMatches.map((m) => m[1]);
@@ -223,7 +223,7 @@ function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
         }
 
         if (isNoteLine(text) && parentStack.length > 0) {
-            const noteIndent = text.match(/^(\s*)/)?.[1].length ?? 0;
+            const noteIndent = /^(\s*)/.exec(text)?.[1].length ?? 0;
             for (let j = parentStack.length - 1; j >= 0; j--) {
                 if (parentStack[j].indent < noteIndent) {
                     parentStack[j].item.notes.push(text.trim());
@@ -250,7 +250,7 @@ function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
     if (tagsSection) {
         for (let i = tagsSection.start + 1; i <= tagsSection.end; i++) {
             const line = document.lineAt(i).text;
-            const match = line.match(/^\*\*([\w-]+)\*\*:\s*(.+)$/);
+            const match = /^\*\*([\w-]+)\*\*:\s*(.+)$/.exec(line);
             if (match) {
                 tagDefinitions.push({ name: match[1], description: match[2], line: i });
             }
@@ -264,11 +264,14 @@ function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
     if (usersSection) {
         for (let i = usersSection.start + 1; i <= usersSection.end; i++) {
             const line = document.lineAt(i).text;
-            const match = line.match(/^\*\*([\w-]+)\*\*\s*(?:\(([^)]+)\))?\s*:\s*(.+)$/);
+            const match = /^\*\*([\w-]+)\*\*\s*(?:\(([^)]+)\))?\s*:\s*(.+)$/.exec(line);
             if (match) {
+                // Capture group 2 is optional; without noUncheckedIndexedAccess TS types
+                // the indexed access as `string`, so widen explicitly to keep the fallback.
+                const fullname = match[2] as string | undefined;
                 userDefinitions.push({
                     shortname: match[1],
-                    fullname: match[2] ?? '',
+                    fullname: fullname ?? '',
                     description: match[3],
                     line: i,
                 });
@@ -281,7 +284,7 @@ function parseDocumentUncached(document: vscode.TextDocument): ParsedDocument {
     if (projectsSection) {
         for (let i = projectsSection.start + 1; i <= projectsSection.end; i++) {
             const line = document.lineAt(i).text;
-            const match = line.match(/^\*\*([\w-]+)\*\*:\s*(.+)$/);
+            const match = /^\*\*([\w-]+)\*\*:\s*(.+)$/.exec(line);
             if (match) {
                 projectDefinitions.push({ name: match[1], description: match[2], line: i });
             }
@@ -331,7 +334,7 @@ export function findItemAtCursor(
 
     for (let i = cursorLine; i >= 0; i--) {
         const line = document.lineAt(i);
-        const match = line.text.match(/^(\s*)-\s*\[([ xX])\]\s*(.+)$/);
+        const match = /^(\s*)-\s*\[([ xX])\]\s*(.+)$/.exec(line.text);
         if (match) {
             const item = findItemByLine(parsed.items, i);
             if (item) {
@@ -347,7 +350,7 @@ export function findItemAtCursor(
 
 export function getItemEndLine(document: vscode.TextDocument, startLine: number): number {
     const startText = document.lineAt(startLine).text;
-    const startIndent = startText.match(/^(\s*)/)?.[1].length ?? 0;
+    const startIndent = /^(\s*)/.exec(startText)?.[1].length ?? 0;
 
     for (let i = startLine + 1; i < document.lineCount; i++) {
         const line = document.lineAt(i).text;
@@ -358,7 +361,7 @@ export function getItemEndLine(document: vscode.TextDocument, startLine: number)
             return i - 1;
         }
 
-        const lineIndent = line.match(/^(\s*)/)?.[1].length ?? 0;
+        const lineIndent = /^(\s*)/.exec(line)?.[1].length ?? 0;
         if (lineIndent <= startIndent && /^\s*-\s*\[[ xX]\]/.test(line)) {
             return i - 1;
         }

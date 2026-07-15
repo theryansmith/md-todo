@@ -234,7 +234,7 @@ export function promptForTodoText(
         };
 
         const refreshSuggestions = (value: string) => {
-            const tokenMatch = value.match(/([@#[])([\w-]*)$/);
+            const tokenMatch = /([@#[])([\w-]*)$/.exec(value);
             if (!tokenMatch) {
                 qp.items = [];
                 qp.activeItems = [];
@@ -242,7 +242,7 @@ export function promptForTodoText(
             }
             const trigger = tokenMatch[1];
             const partial = tokenMatch[2].toLowerCase();
-            let items: SuggestionItem[] = [];
+            let items: SuggestionItem[];
             if (trigger === '@') {
                 items = sortedSuggestions(
                     parsed.userDefinitions,
@@ -293,7 +293,9 @@ export function promptForTodoText(
         qp.onDidChangeValue(refreshSuggestions);
 
         qp.onDidAccept(() => {
-            const active = qp.activeItems[0];
+            // activeItems may be empty; without noUncheckedIndexedAccess TS types the
+            // indexed access as always-present, so widen explicitly to keep the guard.
+            const active = qp.activeItems[0] as SuggestionItem | undefined;
             if (active) {
                 const newValue = qp.value.replace(/([@#[])([\w-]*)$/, `${active.insertText} `);
                 qp.value = newValue;

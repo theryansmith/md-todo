@@ -71,29 +71,29 @@ export function registerTreeViews(context: vscode.ExtensionContext): void {
                 return;
             }
             const userUri = treeProvider.getCurrentUri();
-            if (userUri && event.document.uri.toString() === userUri.toString()) {
+            if (event.document.uri.toString() === userUri?.toString()) {
                 treeProvider.refreshDebounced();
             }
             const tagUri = tagsTreeProvider.getCurrentUri();
-            if (tagUri && event.document.uri.toString() === tagUri.toString()) {
+            if (event.document.uri.toString() === tagUri?.toString()) {
                 tagsTreeProvider.refreshDebounced();
             }
             const projectUri = projectsTreeProvider.getCurrentUri();
-            if (projectUri && event.document.uri.toString() === projectUri.toString()) {
+            if (event.document.uri.toString() === projectUri?.toString()) {
                 projectsTreeProvider.refreshDebounced();
             }
         }),
         vscode.workspace.onDidSaveTextDocument((doc) => {
             const userUri = treeProvider.getCurrentUri();
-            if (userUri && doc.uri.toString() === userUri.toString()) {
+            if (doc.uri.toString() === userUri?.toString()) {
                 treeProvider.refresh();
             }
             const tagUri = tagsTreeProvider.getCurrentUri();
-            if (tagUri && doc.uri.toString() === tagUri.toString()) {
+            if (doc.uri.toString() === tagUri?.toString()) {
                 tagsTreeProvider.refresh();
             }
             const projectUri = projectsTreeProvider.getCurrentUri();
-            if (projectUri && doc.uri.toString() === projectUri.toString()) {
+            if (doc.uri.toString() === projectUri?.toString()) {
                 projectsTreeProvider.refresh();
             }
         })

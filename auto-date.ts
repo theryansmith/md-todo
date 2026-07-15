@@ -18,7 +18,7 @@ export function registerAutoDateHandler(context: vscode.ExtensionContext): void 
             }
 
             const editor = vscode.window.activeTextEditor;
-            if (!editor || event.document !== editor.document) {
+            if (event.document !== editor?.document) {
                 return;
             }
             if (!isTodoFile(event.document)) {
@@ -39,7 +39,7 @@ export function registerAutoDateHandler(context: vscode.ExtensionContext): void 
                 const today = getToday();
                 const datePattern = /`\+\d{4}-\d{2}-\d{2}`/;
 
-                const noteMatch = lineBefore.match(/^(\s+)-\s+(?!\[[ xX]\])(.+)$/);
+                const noteMatch = /^(\s+)-\s+(?!\[[ xX]\])(.+)$/.exec(lineBefore);
                 if (noteMatch && !datePattern.test(lineBefore)) {
                     const existingText = noteMatch[2].trim();
                     if (existingText && existingText.length > 0) {
@@ -61,7 +61,7 @@ export function registerAutoDateHandler(context: vscode.ExtensionContext): void 
                     continue;
                 }
 
-                const todoMatch = lineBefore.match(/^(\s*)-\s*\[([ xX])\]\s*(.+)$/);
+                const todoMatch = /^(\s*)-\s*\[([ xX])\]\s*(.+)$/.exec(lineBefore);
                 if (todoMatch && !datePattern.test(lineBefore)) {
                     const existingText = todoMatch[3].trim();
                     if (existingText && existingText.length > 0) {

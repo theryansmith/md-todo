@@ -39,7 +39,7 @@ export async function manageTags(editor: vscode.TextEditor) {
         placeHolder: 'Manage tag definitions',
     });
 
-    if (!selected || !selected.action) {
+    if (!selected?.action) {
         return;
     }
 
@@ -47,7 +47,7 @@ export async function manageTags(editor: vscode.TextEditor) {
         const name = await vscode.window.showInputBox({
             prompt: 'Tag name (alphanumeric and hyphens)',
             validateInput: (value) => {
-                if (!value.match(/^[\w-]+$/)) {
+                if (!/^[\w-]+$/.exec(value)) {
                     return 'Tag name must be alphanumeric (hyphens allowed)';
                 }
                 if (parsed.tagDefinitions.some((t) => t.name === value)) {

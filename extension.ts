@@ -115,4 +115,7 @@ export function activate(context: vscode.ExtensionContext) {
     );
 }
 
+// Intentionally empty: disposal is centralized in Phase 3 (F-12); VS Code
+// requires the export to exist.
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 export function deactivate() {}

@@ -23,7 +23,7 @@ export class Range {
     ) {
         if (typeof startLine === 'number') {
             this.start = new Position(startLine, startChar as number);
-            this.end = new Position(endLine as number, endChar as number);
+            this.end = new Position(endLine!, endChar!);
         } else {
             this.start = startLine;
             this.end = startChar as Position;
@@ -43,14 +43,14 @@ export class ThemeColor {
 
 export class MarkdownString {
     value = '';
-    appendMarkdown(text: string): MarkdownString {
+    appendMarkdown(text: string): this {
         this.value += text;
         return this;
     }
 }
 
 export class EventEmitter<T> {
-    private listeners: Array<(e: T) => unknown> = [];
+    private listeners: ((e: T) => unknown)[] = [];
     event = (listener: (e: T) => unknown) => {
         this.listeners.push(listener);
         return { dispose: () => undefined };

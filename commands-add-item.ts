@@ -35,13 +35,13 @@ export async function addItem(editor: vscode.TextEditor) {
     if (activeSection) {
         insertLine = activeSection.start + 1;
     } else {
+        insertLine = 0;
         for (let i = 0; i < effectiveDocument.lineCount; i++) {
             if (effectiveDocument.lineAt(i).text.startsWith('## ')) {
                 insertLine = i + 1;
                 break;
             }
         }
-        insertLine = insertLine! ?? 0;
     }
 
     while (

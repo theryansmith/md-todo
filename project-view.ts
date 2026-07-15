@@ -60,7 +60,7 @@ function renderNode(node: ProjectViewNode, depth: number, lines: string[]): void
     }
 }
 
-const SECTIONS: Array<{ key: 'active' | 'completed' | 'archive'; label: string }> = [
+const SECTIONS: { key: 'active' | 'completed' | 'archive'; label: string }[] = [
     { key: 'active', label: 'Active' },
     { key: 'completed', label: 'Completed' },
     { key: 'archive', label: 'Archive' },

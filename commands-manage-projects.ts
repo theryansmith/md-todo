@@ -40,7 +40,7 @@ export async function manageProjects(editor: vscode.TextEditor) {
         placeHolder: 'Manage project definitions',
     });
 
-    if (!selected || !selected.action) {
+    if (!selected?.action) {
         return;
     }
 

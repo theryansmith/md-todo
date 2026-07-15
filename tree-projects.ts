@@ -35,7 +35,7 @@ export function collectUndefinedProjectNames(parsed: ParsedDocument): string[] {
 }
 
 export class MdTodoProjectsTreeProvider implements vscode.TreeDataProvider<ProjectsTreeNode> {
-    private _onDidChangeTreeData = new vscode.EventEmitter<ProjectsTreeNode | undefined | void>();
+    private _onDidChangeTreeData = new vscode.EventEmitter<ProjectsTreeNode | undefined>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
     private currentUri: vscode.Uri | undefined;
@@ -53,14 +53,14 @@ export class MdTodoProjectsTreeProvider implements vscode.TreeDataProvider<Proje
     }
 
     setCurrentTodoFile(uri: vscode.Uri | undefined) {
-        if (uri && this.currentUri && uri.toString() === this.currentUri.toString()) {
+        if (uri && uri.toString() === this.currentUri?.toString()) {
             return;
         }
         this.currentUri = uri;
         if (uri) {
             this.workspaceState.update('mdTodo.projects.lastTodoFileUri', uri.toString());
         }
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(undefined);
     }
 
     getCurrentUri(): vscode.Uri | undefined {
@@ -68,7 +68,7 @@ export class MdTodoProjectsTreeProvider implements vscode.TreeDataProvider<Proje
     }
 
     refresh() {
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(undefined);
     }
 
     refreshDebounced() {
@@ -76,7 +76,7 @@ export class MdTodoProjectsTreeProvider implements vscode.TreeDataProvider<Proje
             clearTimeout(this.refreshTimer);
         }
         this.refreshTimer = setTimeout(() => {
-            this._onDidChangeTreeData.fire();
+            this._onDidChangeTreeData.fire(undefined);
             this.refreshTimer = undefined;
         }, 200);
     }
@@ -344,7 +344,7 @@ export class MdTodoProjectsTreeProvider implements vscode.TreeDataProvider<Proje
 }
 
 export async function focusOnProjectFromTree(node?: ProjectsTreeNode) {
-    if (!node || node.kind !== 'project-root') {
+    if (node?.kind !== 'project-root') {
         vscode.window.showWarningMessage('Right-click a project in the MD Todo Projects view.');
         return;
     }
@@ -369,7 +369,7 @@ export async function markDoneFromProjectsTree(
     treeProvider: MdTodoProjectsTreeProvider,
     node?: ProjectsTreeNode
 ) {
-    if (!node || node.kind !== 'project-todo') {
+    if (node?.kind !== 'project-todo') {
         return;
     }
     if (node.item.isComplete) {
@@ -383,7 +383,7 @@ export async function markDoneFromProjectsTree(
 }
 
 export async function showProjectViewFromTree(node?: ProjectsTreeNode) {
-    if (!node || node.kind !== 'project-root') {
+    if (node?.kind !== 'project-root') {
         vscode.window.showWarningMessage('Right-click a project in the MD Todo Projects view.');
         return;
     }
@@ -391,7 +391,7 @@ export async function showProjectViewFromTree(node?: ProjectsTreeNode) {
 }
 
 export async function setProjectFromTree(node?: ProjectsTreeNode) {
-    if (!node || node.kind !== 'project-todo') {
+    if (node?.kind !== 'project-todo') {
         return;
     }
     const doc = await vscode.workspace.openTextDocument(node.sourceUri);

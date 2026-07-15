@@ -66,90 +66,90 @@ export interface ActivityFocus {
 
 export type SuggestionItem = vscode.QuickPickItem & { insertText: string };
 
-export type UserNode = {
+export interface UserNode {
     kind: 'user';
     user: UserDefinition;
     counts: { active: number; completed: number; archived: number };
     sourceUri: vscode.Uri;
-};
+}
 
-export type SectionNode = {
+export interface SectionNode {
     kind: 'section';
     user: UserDefinition | null;
     section: 'active' | 'completed' | 'archive';
     items: TodoItem[];
     sourceUri: vscode.Uri;
-};
+}
 
-export type TodoNode = {
+export interface TodoNode {
     kind: 'todo';
     item: TodoItem;
     sourceUri: vscode.Uri;
-};
+}
 
-export type UnassignedNode = {
+export interface UnassignedNode {
     kind: 'unassigned';
     counts: { active: number; completed: number; archived: number };
     sourceUri: vscode.Uri;
-};
+}
 
 export type TreeNode = UserNode | SectionNode | TodoNode | UnassignedNode;
 
-export type TagRootNode = {
+export interface TagRootNode {
     kind: 'tag-root';
     tag: TagDefinition;
     counts: { active: number; completed: number; archived: number };
     sourceUri: vscode.Uri;
-};
+}
 
-export type TagSectionNode = {
+export interface TagSectionNode {
     kind: 'tag-section';
     tag: TagDefinition | null;
     section: 'active' | 'completed' | 'archive';
     items: TodoItem[];
     sourceUri: vscode.Uri;
-};
+}
 
-export type TagTodoNode = {
+export interface TagTodoNode {
     kind: 'tag-todo';
     item: TodoItem;
     sourceUri: vscode.Uri;
-};
+}
 
-export type UntaggedNode = {
+export interface UntaggedNode {
     kind: 'untagged';
     counts: { active: number; completed: number; archived: number };
     sourceUri: vscode.Uri;
-};
+}
 
 export type TagsTreeNode = TagRootNode | TagSectionNode | TagTodoNode | UntaggedNode;
 
-export type ProjectRootNode = {
+export interface ProjectRootNode {
     kind: 'project-root';
     project: ProjectDefinition;
     counts: { active: number; completed: number; archived: number };
     sourceUri: vscode.Uri;
-};
+}
 
-export type ProjectSectionNode = {
+export interface ProjectSectionNode {
     kind: 'project-section';
     project: ProjectDefinition | null;
     section: 'active' | 'completed' | 'archive';
     items: TodoItem[];
     sourceUri: vscode.Uri;
-};
+}
 
-export type ProjectTodoNode = {
+export interface ProjectTodoNode {
     kind: 'project-todo';
     item: TodoItem;
     sourceUri: vscode.Uri;
-};
+}
 
-export type NoProjectNode = {
+export interface NoProjectNode {
     kind: 'no-project';
     counts: { active: number; completed: number; archived: number };
     sourceUri: vscode.Uri;
-};
+}
 
 export type ProjectsTreeNode =
     ProjectRootNode | ProjectSectionNode | ProjectTodoNode | NoProjectNode;

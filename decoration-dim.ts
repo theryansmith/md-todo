@@ -104,21 +104,21 @@ export function updateDimDecorations(editor: vscode.TextEditor) {
         const lineText = editor.document.lineAt(i).text;
         if (focusUser) {
             for (const m of lineText.matchAll(/@([\w-]+)/g)) {
-                if (m.index !== undefined && m[1] !== focusUser) {
+                if (m[1] !== focusUser) {
                     ranges.push(new vscode.Range(i, m.index, i, m.index + m[0].length));
                 }
             }
         }
         if (focusTag) {
             for (const m of lineText.matchAll(/#([\w-]+)/g)) {
-                if (m.index !== undefined && m[1] !== focusTag) {
+                if (m[1] !== focusTag) {
                     ranges.push(new vscode.Range(i, m.index, i, m.index + m[0].length));
                 }
             }
         }
         if (focusProject) {
             for (const m of lineText.matchAll(PROJECT_TOKEN_RE_G)) {
-                if (m.index !== undefined && m[1] !== focusProject) {
+                if (m[1] !== focusProject) {
                     ranges.push(new vscode.Range(i, m.index, i, m.index + m[0].length));
                 }
             }
@@ -161,7 +161,7 @@ export function updateDimDecorationsIncremental(
 
     if (!isTodoFile(editor.document)) {
         const cached = dimDecorationCache.get(key);
-        if (cached && cached.length === 0) {
+        if (cached?.length === 0) {
             return;
         }
         editor.setDecorations(decorationType, []);
@@ -175,7 +175,7 @@ export function updateDimDecorationsIncremental(
     const activity = getActivityFocus();
     if (!focusUser && !focusTag && !focusProject && !activity) {
         const cached = dimDecorationCache.get(key);
-        if (cached && cached.length === 0) {
+        if (cached?.length === 0) {
             return;
         }
         editor.setDecorations(decorationType, []);
