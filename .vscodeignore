@@ -1,14 +1,10 @@
-.git/
-.gitignore
-.github/
-.vscode/
-.npm/
-node_modules/
-out/**/*.map
-*.ts
-test/
-vitest.config.ts
-tsconfig.json
-package-lock.json
-example-todo.md
-*.vsix
+# The VSIX ships ONLY: dist/ (bundle, no sourcemaps), media/, README.md,
+# CHANGELOG.md, LICENSE, example-todo.md — plus package.json, which vsce
+# always includes. Everything else is ignored wholesale.
+**
+!dist/extension.js
+!media/**
+!README.md
+!CHANGELOG.md
+!LICENSE
+!example-todo.md

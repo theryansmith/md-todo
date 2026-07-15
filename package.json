@@ -25,7 +25,7 @@
   "activationEvents": [
     "onLanguage:markdown"
   ],
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
@@ -412,12 +412,14 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run build",
+    "build": "node esbuild.mjs --production",
+    "build:dev": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "smoke": "node scripts/smoke-bundle.mjs",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
-    "typecheck": "tsc -p ./ --noEmit",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:md": "markdownlint-cli2 \"*.md\" \"Docs/**/*.md\"",
     "format": "prettier --write .",
@@ -431,6 +433,7 @@
     "@types/vscode": "^1.74.0",
     "@vitest/coverage-v8": "^3.2.7",
     "@vscode/vsce": "^3.0.0",
+    "esbuild": "^0.28.1",
     "eslint": "^10.7.0",
     "eslint-plugin-import-x": "^4.17.1",
     "markdownlint-cli2": "^0.23.0",

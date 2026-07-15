@@ -1,4 +1,5 @@
 # Build output and dependencies
+dist/
 out/
 node_modules/
 coverage/

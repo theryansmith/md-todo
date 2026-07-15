@@ -5,13 +5,13 @@ import importX from 'eslint-plugin-import-x';
 
 export default tseslint.config(
     {
-        ignores: ['out/', 'node_modules/', 'coverage/', '*.vsix'],
+        ignores: ['dist/', 'out/', 'node_modules/', 'coverage/', '*.vsix'],
     },
     eslint.configs.recommended,
     tseslint.configs.strictTypeChecked,
     tseslint.configs.stylisticTypeChecked,
     {
-        files: ['*.ts', 'test/**/*.ts'],
+        files: ['**/*.ts'],
         languageOptions: {
             parserOptions: {
                 projectService: {
@@ -64,8 +64,14 @@ export default tseslint.config(
         },
     },
     {
-        // Config files are not part of the typed project graph.
-        files: ['eslint.config.mjs'],
+        // Config and build scripts are not part of the typed project graph.
+        files: ['**/*.mjs'],
         extends: [tseslint.configs.disableTypeChecked],
+        languageOptions: {
+            globals: {
+                console: 'readonly',
+                process: 'readonly',
+            },
+        },
     }
 );
