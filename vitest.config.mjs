@@ -10,8 +10,21 @@ export default defineConfig({
         coverage: {
             provider: 'v8',
             reporter: ['text', 'lcov'],
-            // Measure production sources only; thresholds are added in Phase 5.
+            // Measure production sources only.
             include: ['src/**/*.ts'],
+            // Phase 5 ratchet (F-15): overall src/ >= 60% lines, core/ >= 80%
+            // lines AND branches. Enforcement verified by temporarily setting
+            // impossible values (vitest exits 1 with a threshold error; the
+            // global gate is computed over ALL included files, the glob gate
+            // over the aggregate of src/core/**). Raising these numbers is
+            // welcome; lowering them is a TDD Decision Log event.
+            thresholds: {
+                lines: 60,
+                'src/core/**': {
+                    lines: 80,
+                    branches: 80,
+                },
+            },
         },
     },
     resolve: {
