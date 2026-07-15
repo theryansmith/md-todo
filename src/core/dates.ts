@@ -1,5 +1,17 @@
-export function getToday(): string {
-    return new Date().toISOString().split('T')[0];
+/**
+ * All date logic is LOCAL-time based and clock-injectable (F-06). The old
+ * getToday() derived the date from toISOString() — the UTC calendar date —
+ * while parseDate()/startOfToday() were local, so users west of UTC got
+ * tomorrow's date written into their files in the evening. Every "now"
+ * derivation below goes through a Clock so tests can pin the instant.
+ */
+export type Clock = () => Date;
+
+const systemClock: Clock = () => new Date();
+
+/** Today's ISO date (YYYY-MM-DD) in LOCAL time — consistent with parseDate/startOfToday. */
+export function getToday(clock: Clock = systemClock): string {
+    return formatIsoDate(clock());
 }
 
 export function parseDate(dateStr: string): Date | null {
@@ -22,10 +34,10 @@ export function formatIsoDate(d: Date): string {
     return `${y}-${m}-${day}`;
 }
 
-export function startOfToday(): Date {
-    const t = new Date();
-    t.setHours(0, 0, 0, 0);
-    return t;
+/** Local midnight of the clock's current day. Does not mutate the clock's Date. */
+export function startOfToday(clock: Clock = systemClock): Date {
+    const now = clock();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
 export function isDateInRange(d: Date, startIso: string, endIso: string): boolean {
@@ -34,13 +46,14 @@ export function isDateInRange(d: Date, startIso: string, endIso: string): boolea
 }
 
 export function parseNaturalDateRange(
-    input: string
+    input: string,
+    clock: Clock = systemClock
 ): { start: string; end: string; label: string } | null {
     const s = input.trim().toLowerCase();
     if (!s) {
         return null;
     }
-    const today = startOfToday();
+    const today = startOfToday(clock);
     const todayIso = formatIsoDate(today);
 
     if (s === 'today') {

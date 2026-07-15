@@ -5,6 +5,11 @@ All notable user-facing changes to MD Todo are documented here. Newest first. Wh
 ## [Unreleased]
 
 - Internal: sources restructured into a layered `src/` tree (enterprise-restructure TDD, Phases 0–1) and packaging switched from per-file `tsc` output to a single esbuild bundle — the installed extension shrinks from 102 files / 314 KB to 11 files / 47 KB and loads from one `dist/extension.js`. No user-facing behavior changes.
+- Internal: the parsing/query core is now fully host-independent (Phase 2) — `src/core/` imports no VS Code API (lint-enforced), and the parser, date logic, and token grammar are unit-tested without any editor mock.
+
+### Fixed
+
+- Timezone off-by-one: `getToday()` derived "today" from the **UTC** clock while every other date function used **local** time, so users west of UTC who added or completed items in the evening got tomorrow's date stamped into their files (`` `+date` ``/`` `✓date` ``), and activity ranges like "today" could miss items just written. All "today" derivations now agree on local time.
 
 ## [1.6.0] — 2026-07-14
 
