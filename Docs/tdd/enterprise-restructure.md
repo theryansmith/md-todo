@@ -459,18 +459,18 @@ concession — documented there).
 > Update this table in every PR that touches the migration. Statuses:
 > `Not started` / `In progress (PR #n)` / `Done (PR #n, date)` / `Dropped (reason)`.
 
-| Phase | Scope                                                                                           | Status      | PR  | Notes                      |
-| ----- | ----------------------------------------------------------------------------------------------- | ----------- | --- | -------------------------- |
-| 0     | TDD + tooling baseline (lint, format, coverage, markdownlint, Dependabot, CI gates)             | Not started | —   | TDD drafted 2026-07-15     |
-| 1     | `src/` layout + esbuild bundling                                                                | Not started | —   | Pure moves; no logic edits |
-| 2     | Pure `core/` + timezone fix (F-06)                                                              | Not started | —   |                            |
-| 3a    | `requireTodoEditor` guard (F-09/F-10)                                                           | Not started | —   |                            |
-| 3b    | `DecorationController` + `CacheRegistry` (F-03/F-11/F-12)                                       | Not started | —   |                            |
-| 3c    | Generic grouping tree (F-02)                                                                    | Not started | —   |                            |
-| 3d    | `FocusDimension` (F-04)                                                                         | Not started | —   |                            |
-| 4     | `EditPlan` atomicity (F-07), `execFile` git (F-08), checkbox normalize (F-16), command registry | Not started | —   |                            |
-| 5     | Test depth + coverage ratchet (F-15), token-scan fences decision (F-17)                         | Not started | —   |                            |
-| 6     | Docs closure (F-19), TDD → Complete                                                             | Not started | —   |                            |
+| Phase | Scope                                                                                           | Status                         | PR  | Notes                                                                                                                              |
+| ----- | ----------------------------------------------------------------------------------------------- | ------------------------------ | --- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | TDD + tooling baseline (lint, format, coverage, markdownlint, Dependabot, CI gates)             | Done (this branch, 2026-07-15) | —   | ESLint strict + prettier + markdownlint + coverage (baseline 10.65% lines / 72.97% branches) + Dependabot + CI gates on Node 20/24 |
+| 1     | `src/` layout + esbuild bundling                                                                | Not started                    | —   | Pure moves; no logic edits                                                                                                         |
+| 2     | Pure `core/` + timezone fix (F-06)                                                              | Not started                    | —   |                                                                                                                                    |
+| 3a    | `requireTodoEditor` guard (F-09/F-10)                                                           | Not started                    | —   |                                                                                                                                    |
+| 3b    | `DecorationController` + `CacheRegistry` (F-03/F-11/F-12)                                       | Not started                    | —   |                                                                                                                                    |
+| 3c    | Generic grouping tree (F-02)                                                                    | Not started                    | —   |                                                                                                                                    |
+| 3d    | `FocusDimension` (F-04)                                                                         | Not started                    | —   |                                                                                                                                    |
+| 4     | `EditPlan` atomicity (F-07), `execFile` git (F-08), checkbox normalize (F-16), command registry | Not started                    | —   |                                                                                                                                    |
+| 5     | Test depth + coverage ratchet (F-15), token-scan fences decision (F-17)                         | Not started                    | —   |                                                                                                                                    |
+| 6     | Docs closure (F-19), TDD → Complete                                                             | Not started                    | —   |                                                                                                                                    |
 
 ### Decision log (LIVING)
 
