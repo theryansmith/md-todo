@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { collectUndefinedProjectNames } from '../src/features/projects/tree-projects';
-import { parseDocument } from '../src/core/parser';
+import { parseDocument } from '../src/core/parse/parser';
 import { makeDoc } from './helpers';
 
 describe('collectUndefinedProjectNames', () => {

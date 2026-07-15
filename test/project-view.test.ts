@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { filterItemsForProject, renderProjectView } from '../src/features/projects/project-view';
-import { parseDocument } from '../src/core/parser';
+import { parseDocument } from '../src/core/parse/parser';
 import { makeDoc } from './helpers';
 
 const SAMPLE = [

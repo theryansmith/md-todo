@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isTodoFile } from '../../core/parser';
+import { isTodoFile } from '../../core/parse/parser';
 import { getToday } from '../../core/dates';
 
 /**

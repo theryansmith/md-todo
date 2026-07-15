@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { TodoItem, TagDefinition, ParsedDocument } from '../../core/model';
 import { TagsTreeNode } from '../tree-nodes';
-import { isTodoFile, parseDocument, classifyItemSection } from '../../core/parser';
+import { isTodoFile, parseDocument, classifyItemSection } from '../../core/parse/parser';
 import { setFocusTagState } from '../../vscode/state';
 import { updateDimDecorations } from '../focus/decoration-dim';
 import { refreshFocusTagStatusBar } from '../focus/focus-tag';

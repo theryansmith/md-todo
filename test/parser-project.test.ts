@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDocument } from '../src/core/parser';
+import { parseDocument } from '../src/core/parse/parser';
 import { makeDoc } from './helpers';
 
 describe('parseDocument — project token extraction', () => {

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { TodoItem } from '../../core/model';
-import { isTodoFile, parseDocument, findItemAtCursor, getEffectiveEditor } from '../../core/parser';
+import { isTodoFile, parseDocument, findItemAtCursor, getEffectiveEditor } from '../../core/parse/parser';
 import { processTagsWithValidation } from '../../vscode/prompts';
 
 export async function addTags(editor: vscode.TextEditor) {

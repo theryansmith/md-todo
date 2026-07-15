@@ -7,9 +7,9 @@ import {
     ParsedDocument,
     TagValidationResult,
     ActivityFocus,
-} from './model';
-import { parseDate, daysBetween, isDateInRange } from './dates';
-import { PROJECT_TOKEN_RE, PROJECT_TOKEN_RE_G } from './tokens';
+} from '../model';
+import { parseDate, daysBetween, isDateInRange } from '../dates';
+import { PROJECT_TOKEN_RE, PROJECT_TOKEN_RE_G } from '../tokens';
 
 export function isTodoFile(document: vscode.TextDocument): boolean {
     if (document.languageId !== 'markdown') {

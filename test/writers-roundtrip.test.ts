@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { markLineComplete } from '../src/features/items/commands-mark-done';
 import { computeTagsLine } from '../src/features/tags/commands-add-tags';
 import { computeProjectLine } from '../src/features/projects/commands-set-project';
-import { parseDocument } from '../src/core/parser';
+import { parseDocument } from '../src/core/parse/parser';
 import { makeDoc } from './helpers';
 
 const TODAY = '2026-07-10';

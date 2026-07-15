@@ -5,7 +5,7 @@ import {
     parseDocument,
     getEffectiveEditor,
     itemMatchesActivity,
-} from '../../core/parser';
+} from '../../core/parse/parser';
 import { parseDate, daysBetween, startOfToday, parseNaturalDateRange } from '../../core/dates';
 import { getActivityFocus, setActivityFocusState } from '../../vscode/state';
 import { updateDimDecorations } from './decoration-dim';

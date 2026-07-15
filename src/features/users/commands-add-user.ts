@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isTodoFile, parseDocument, getEffectiveEditor } from '../../core/parser';
+import { isTodoFile, parseDocument, getEffectiveEditor } from '../../core/parse/parser';
 import { addUserDefinition } from '../../vscode/prompts';
 
 export async function addUser(editor: vscode.TextEditor) {

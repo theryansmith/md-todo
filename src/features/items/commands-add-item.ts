@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isTodoFile, parseDocument, getEffectiveEditor } from '../../core/parser';
+import { isTodoFile, parseDocument, getEffectiveEditor } from '../../core/parse/parser';
 import { getToday } from '../../core/dates';
 import { promptForTodoText } from '../../vscode/prompts';
 

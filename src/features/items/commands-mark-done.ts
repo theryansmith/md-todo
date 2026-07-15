@@ -8,7 +8,7 @@ import {
     getEffectiveEditor,
     getItemWithDescendantsEndLine,
     isNestedItem,
-} from '../../core/parser';
+} from '../../core/parse/parser';
 import { getToday } from '../../core/dates';
 
 export async function markDone(

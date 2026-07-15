@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isTodoFile, parseDocument, getEffectiveEditor } from '../../core/parser';
+import { isTodoFile, parseDocument, getEffectiveEditor } from '../../core/parse/parser';
 import { parseDate, daysBetween } from '../../core/dates';
 
 export async function showStats(editor: vscode.TextEditor) {

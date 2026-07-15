@@ -7,7 +7,7 @@ import {
     classifyItemSection,
     getEffectiveProject,
     isDefinedProject,
-} from '../../core/parser';
+} from '../../core/parse/parser';
 import { setFocusProjectState } from '../../vscode/state';
 import { updateDimDecorations } from '../focus/decoration-dim';
 import { refreshFocusProjectStatusBar } from '../focus/focus-project';

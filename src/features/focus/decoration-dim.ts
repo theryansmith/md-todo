@@ -6,7 +6,7 @@ import {
     getItemWithDescendantsEndLine,
     itemMatchesActivity,
     getEffectiveProject,
-} from '../../core/parser';
+} from '../../core/parse/parser';
 import { startOfToday } from '../../core/dates';
 import { getFocusUser, getFocusTag, getFocusProject, getActivityFocus } from '../../vscode/state';
 import { PROJECT_TOKEN_RE_G } from '../../core/tokens';

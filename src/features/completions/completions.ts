@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isTodoFile, parseDocument } from '../../core/parser';
+import { isTodoFile, parseDocument } from '../../core/parse/parser';
 import { formatProjectToken } from '../../core/tokens';
 import { getLastTodoSourceDoc } from '../../vscode/state';
 

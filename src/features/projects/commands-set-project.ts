@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isTodoFile, parseDocument, findItemAtCursor, getEffectiveEditor } from '../../core/parser';
+import { isTodoFile, parseDocument, findItemAtCursor, getEffectiveEditor } from '../../core/parse/parser';
 import { PROJECT_TOKEN_RE_G, PROJECT_NAME_RE, formatProjectToken } from '../../core/tokens';
 import { addProjectDefinition } from '../../vscode/prompts';
 

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isTodoFile } from '../../core/parser';
+import { isTodoFile } from '../../core/parse/parser';
 
 export async function initializeTodoFile(editor: vscode.TextEditor) {
     const document = editor.document;

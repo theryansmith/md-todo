@@ -6,7 +6,7 @@ import {
     findItemAtCursor,
     getEffectiveEditor,
     getItemEndLine,
-} from '../../core/parser';
+} from '../../core/parse/parser';
 import { getToday } from '../../core/dates';
 import { promptForTodoText } from '../../vscode/prompts';
 

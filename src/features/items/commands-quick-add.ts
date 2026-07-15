@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isTodoFile, getEffectiveEditor } from '../../core/parser';
+import { isTodoFile, getEffectiveEditor } from '../../core/parse/parser';
 import { getToday } from '../../core/dates';
 
 export async function quickAdd(editor: vscode.TextEditor) {

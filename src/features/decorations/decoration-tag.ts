@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { isTodoFile } from '../../core/parser';
+import { isTodoFile } from '../../core/parse/parser';
 import { applyChangesToCache, affectedNewLineRange, mergeAndSort } from './decoration-incremental';
 
 let tagDecorationType: vscode.TextEditorDecorationType | undefined;

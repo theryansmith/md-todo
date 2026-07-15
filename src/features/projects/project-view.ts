@@ -6,7 +6,7 @@ import {
     getEffectiveEditor,
     getEffectiveProject,
     classifyItemSection,
-} from '../../core/parser';
+} from '../../core/parse/parser';
 
 export interface ProjectViewNode {
     item: TodoItem;
