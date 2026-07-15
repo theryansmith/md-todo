@@ -135,6 +135,30 @@ export const Uri = {
     },
 };
 
+/** One recorded WorkspaceEdit operation, in call order. */
+export type RecordedWorkspaceEditOp =
+    | { kind: 'replace'; uri: unknown; range: Range; newText: string }
+    | { kind: 'delete'; uri: unknown; range: Range }
+    | { kind: 'insert'; uri: unknown; position: Position; newText: string };
+
+/**
+ * Records its operations so tests can assert exactly what the edit-executor
+ * put into ONE atomic edit. Applied edits are collected on
+ * `workspace.appliedEdits` by the `workspace.applyEdit` stub.
+ */
+export class WorkspaceEdit {
+    readonly ops: RecordedWorkspaceEditOp[] = [];
+    replace(uri: unknown, range: Range, newText: string): void {
+        this.ops.push({ kind: 'replace', uri, range, newText });
+    }
+    delete(uri: unknown, range: Range): void {
+        this.ops.push({ kind: 'delete', uri, range });
+    }
+    insert(uri: unknown, position: Position, newText: string): void {
+        this.ops.push({ kind: 'insert', uri, position, newText });
+    }
+}
+
 const inertDisposable = { dispose: () => undefined };
 
 export const window = {
@@ -173,6 +197,12 @@ export const workspace = {
     onDidChangeTextDocument: () => inertDisposable,
     onDidSaveTextDocument: () => inertDisposable,
     onDidCloseTextDocument: () => inertDisposable,
+    /** Every WorkspaceEdit passed to applyEdit, in order. Reset per test. */
+    appliedEdits: [] as WorkspaceEdit[],
+    applyEdit(edit: WorkspaceEdit): Promise<boolean> {
+        workspace.appliedEdits.push(edit);
+        return Promise.resolve(true);
+    },
 };
 
 export const commands = {

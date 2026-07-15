@@ -12,6 +12,7 @@ All notable user-facing changes to MD Todo are documented here. Newest first. Wh
 
 ### Fixed
 
+- Marking a top-level item done (which moves it to `## Completed`) and archiving old items now apply as a single atomic edit, so **one undo restores the document completely**. Previously the move was two separate edits (delete, then insert) — a single undo left the item deleted but not re-inserted, and anything watching the file could observe the half-applied state.
 - "Mark Done" from a tree view's right-click menu now always edits the file the clicked item came from. The Users tree previously targeted the view's *current* file, so if the tree had switched to a different todo file between rendering and the click, the wrong file's line could be marked. (The Tags and Projects trees already behaved correctly.)
 - Timezone off-by-one: `getToday()` derived "today" from the **UTC** clock while every other date function used **local** time, so users west of UTC who added or completed items in the evening got tomorrow's date stamped into their files (`` `+date` ``/`` `✓date` ``), and activity ranges like "today" could miss items just written. All "today" derivations now agree on local time.
 

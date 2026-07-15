@@ -3,13 +3,10 @@ import { TodoItem } from '../../core/model';
 import { parseDocument } from '../../vscode/document-cache';
 import { requireTodoEditor } from '../../vscode/guards';
 import { findItemAtCursor } from '../../vscode/editor-queries';
-import {
-    findItemForSourceLine,
-    getItemWithDescendantsEndLine,
-    isNestedItem,
-} from '../../core/query/items';
+import { findItemForSourceLine } from '../../core/query/items';
 import { getToday } from '../../core/dates';
-import { markLineComplete } from '../../core/edit/line-transforms';
+import { buildMarkDonePlan } from '../../core/edit/plans';
+import { applyPlan } from '../../vscode/edit-executor';
 
 export async function markDone(
     editor: vscode.TextEditor,
@@ -68,105 +65,16 @@ export async function markDone(
     }
 }
 
+/**
+ * Build the four-case mark-done plan from one document snapshot and apply it
+ * as a single WorkspaceEdit (F-07): the move-to-Completed case used to be a
+ * delete → re-parse → insert two-step, so one undo restored only half of it.
+ * The plan builder carries the whole case matrix; golden tests pin it in
+ * test/unit/edit-plans.test.ts.
+ */
 async function markItemDone(editor: vscode.TextEditor, item: TodoItem) {
     const document = editor.document;
-    const today = getToday();
-
     const parsed = parseDocument(document);
-    const completedSection = parsed.sections.get('completed');
-
-    const endLine = getItemWithDescendantsEndLine(document, item);
-    const itemLines: string[] = [];
-
-    for (let i = item.line; i <= endLine; i++) {
-        const lineText = document.lineAt(i).text;
-        if (/^\s*-\s*\[[ xX]\]/.test(lineText)) {
-            itemLines.push(markLineComplete(lineText, today));
-        } else {
-            itemLines.push(lineText);
-        }
-    }
-
-    // CASE 1: Nested todo (has parent) - update in place with children, don't move
-    if (isNestedItem(item)) {
-        await editor.edit((editBuilder: vscode.TextEditorEdit) => {
-            const range = new vscode.Range(
-                item.line,
-                0,
-                endLine,
-                document.lineAt(endLine).text.length
-            );
-            editBuilder.replace(range, itemLines.join('\n'));
-        });
-        vscode.window.showInformationMessage(`Completed: ${item.text}`);
-        return;
-    }
-
-    // CASE 2: No Completed section - just update in place
-    if (!completedSection) {
-        await editor.edit((editBuilder: vscode.TextEditorEdit) => {
-            const range = new vscode.Range(
-                item.line,
-                0,
-                endLine,
-                document.lineAt(endLine).text.length
-            );
-            editBuilder.replace(range, itemLines.join('\n'));
-        });
-        vscode.window.showInformationMessage(`Completed: ${item.text}`);
-        return;
-    }
-
-    // CASE 3: Already in Completed section - just update in place
-    if (item.line >= completedSection.start && item.line <= completedSection.end) {
-        await editor.edit((editBuilder: vscode.TextEditorEdit) => {
-            const range = new vscode.Range(
-                item.line,
-                0,
-                endLine,
-                document.lineAt(endLine).text.length
-            );
-            editBuilder.replace(range, itemLines.join('\n'));
-        });
-        vscode.window.showInformationMessage(`Completed: ${item.text}`);
-        return;
-    }
-
-    // CASE 4: Top-level todo - move entire tree (with all children marked complete) to Completed
-    const deleteStart = item.line;
-    const deleteEnd = endLine + 1;
-
-    await editor.edit((editBuilder: vscode.TextEditorEdit) => {
-        const deleteRange = new vscode.Range(deleteStart, 0, deleteEnd, 0);
-        editBuilder.delete(deleteRange);
-    });
-
-    const updatedDoc = editor.document;
-    const updatedParsed = parseDocument(updatedDoc);
-    const updatedCompletedSection = updatedParsed.sections.get('completed');
-
-    if (!updatedCompletedSection) {
-        vscode.window.showInformationMessage(`Completed: ${item.text}`);
-        return;
-    }
-
-    const lineAfterHeader = updatedCompletedSection.start + 1;
-    const hasBlankAfterHeader =
-        lineAfterHeader < updatedDoc.lineCount &&
-        updatedDoc.lineAt(lineAfterHeader).text.trim() === '';
-
-    let insertText = itemLines.join('\n') + '\n';
-    const insertLine = hasBlankAfterHeader
-        ? updatedCompletedSection.start + 2
-        : updatedCompletedSection.start + 1;
-
-    if (!hasBlankAfterHeader) {
-        insertText = '\n' + insertText;
-    }
-
-    await editor.edit((editBuilder: vscode.TextEditorEdit) => {
-        editBuilder.insert(new vscode.Position(insertLine, 0), insertText);
-    });
-
-    vscode.window.showInformationMessage(`Completed: ${item.text}`);
+    const plan = buildMarkDonePlan(document, parsed, item, getToday());
+    await applyPlan(document, plan);
 }
