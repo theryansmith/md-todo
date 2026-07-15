@@ -6,6 +6,7 @@ All notable user-facing changes to MD Todo are documented here. Newest first. Wh
 
 - Internal: sources restructured into a layered `src/` tree (enterprise-restructure TDD, Phases 0–1) and packaging switched from per-file `tsc` output to a single esbuild bundle — the installed extension shrinks from 102 files / 314 KB to 11 files / 47 KB and loads from one `dist/extension.js`. No user-facing behavior changes.
 - Internal: the parsing/query core is now fully host-independent (Phase 2) — `src/core/` imports no VS Code API (lint-enforced), and the parser, date logic, and token grammar are unit-tested without any editor mock.
+- Internal: consolidation of the copy-paste axes began (Phases 3a/3b) — a single `requireTodoEditor` guard replaces the 20 duplicated "Not a todo file" checks, one `DecorationController` with five small descriptors replaces the five hand-cloned decoration modules, per-URI caches now invalidate through one `CacheRegistry` on document close, and every decoration type, status-bar item, and cache is disposed with the extension. Decoration output is pinned by new characterization tests; no user-facing behavior changes.
 
 ### Fixed
 
