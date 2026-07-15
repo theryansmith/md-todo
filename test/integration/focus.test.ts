@@ -24,42 +24,16 @@ import { parseNaturalDateRange } from '../../src/core/dates';
 import { ActivityFocus } from '../../src/core/model';
 
 // ── Wiring: bind the four focus surfaces under test. ───────────────────────
-// This table is written against the pre-3d per-dimension modules and will be
-// swapped to FocusDimension instances when the generic engine lands; the
-// pinned expectations below must not change.
+// This table was written against the pre-3d per-dimension modules and swapped
+// to FocusDimension instances when the generic engine landed; the pinned
+// expectations below are unchanged from the pre-refactor originals.
+import { setExtensionContext } from '../../src/vscode/state';
+import { FocusDimension } from '../../src/vscode/focus-dimension';
+import { userFocus } from '../../src/features/focus/focus-user';
+import { tagFocus } from '../../src/features/focus/focus-tag';
+import { projectFocus } from '../../src/features/focus/focus-project';
+import { activityFocus } from '../../src/features/focus/focus-activity';
 import {
-    setExtensionContext,
-    getFocusUser,
-    setFocusUserState,
-    getFocusTag,
-    setFocusTagState,
-    getFocusProject,
-    setFocusProjectState,
-    getActivityFocus,
-    setActivityFocusState,
-} from '../../src/vscode/state';
-import {
-    initFocusUserStatusBar,
-    refreshFocusStatusBar,
-    setFocusUser,
-    clearFocusUser,
-} from '../../src/features/focus/focus-user';
-import {
-    initFocusTagStatusBar,
-    refreshFocusTagStatusBar,
-    setFocusTag,
-    clearFocusTag,
-} from '../../src/features/focus/focus-tag';
-import {
-    initFocusProjectStatusBar,
-    refreshFocusProjectStatusBar,
-    setFocusProject,
-    clearFocusProject,
-} from '../../src/features/focus/focus-project';
-import {
-    initActivityFocusStatusBar,
-    refreshActivityFocusStatusBar,
-    clearActivityFocus,
     activityFocusMenu,
     showRecentlyCompleted,
 } from '../../src/features/reports/activity-reports';
@@ -74,40 +48,28 @@ interface FocusSurface {
     write(value: unknown): Promise<void>;
 }
 
+function bind<T>(dimension: FocusDimension<T>, hasPick: boolean): FocusSurface {
+    return {
+        init: (context) => {
+            dimension.register(context);
+        },
+        refresh: (editor) => {
+            dimension.refreshStatusBar(editor);
+        },
+        pickAndSet: hasPick ? () => dimension.pickAndSet() : undefined,
+        clear: () => dimension.clear(),
+        read: () => dimension.get(),
+        write: (v) => dimension.setState(v as T | undefined),
+    };
+}
+
 // Insertion order mirrors the activation registration order in extension.ts
 // (user, tag, project, activity) — tests index created status-bar items by it.
 const surfaces: Record<'user' | 'tag' | 'project' | 'activity', FocusSurface> = {
-    user: {
-        init: initFocusUserStatusBar,
-        refresh: refreshFocusStatusBar,
-        pickAndSet: setFocusUser,
-        clear: clearFocusUser,
-        read: getFocusUser,
-        write: (v) => setFocusUserState(v as string | undefined),
-    },
-    tag: {
-        init: initFocusTagStatusBar,
-        refresh: refreshFocusTagStatusBar,
-        pickAndSet: setFocusTag,
-        clear: clearFocusTag,
-        read: getFocusTag,
-        write: (v) => setFocusTagState(v as string | undefined),
-    },
-    project: {
-        init: initFocusProjectStatusBar,
-        refresh: refreshFocusProjectStatusBar,
-        pickAndSet: setFocusProject,
-        clear: clearFocusProject,
-        read: getFocusProject,
-        write: (v) => setFocusProjectState(v as string | undefined),
-    },
-    activity: {
-        init: initActivityFocusStatusBar,
-        refresh: refreshActivityFocusStatusBar,
-        clear: clearActivityFocus,
-        read: getActivityFocus,
-        write: (v) => setActivityFocusState(v as ActivityFocus | undefined),
-    },
+    user: bind(userFocus, true),
+    tag: bind(tagFocus, true),
+    project: bind(projectFocus, true),
+    activity: bind(activityFocus, false),
 };
 
 /** Mirrors the mdTodo.clearAllFocus handler body in extension.ts. */

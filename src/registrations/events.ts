@@ -5,10 +5,7 @@ import { dateDecoration } from '../features/decorations/decoration-date';
 import { mentionDecoration } from '../features/decorations/decoration-mention';
 import { projectDecoration } from '../features/decorations/decoration-project';
 import { dimDecoration } from '../features/focus/decoration-dim';
-import { refreshFocusStatusBar } from '../features/focus/focus-user';
-import { refreshFocusTagStatusBar } from '../features/focus/focus-tag';
-import { refreshFocusProjectStatusBar } from '../features/focus/focus-project';
-import { refreshActivityFocusStatusBar } from '../features/reports/activity-reports';
+import { focusDimensions } from '../features/focus';
 
 // Each decoration type is layered additively — the historical tag → date →
 // mention → project → dim order is preserved for clarity; VS Code applies
@@ -20,13 +17,6 @@ const decorationControllers: readonly DecorationController[] = [
     mentionDecoration,
     projectDecoration,
     dimDecoration,
-];
-
-const statusBarRefreshers: readonly ((editor: vscode.TextEditor | undefined) => void)[] = [
-    refreshFocusStatusBar,
-    refreshFocusTagStatusBar,
-    refreshFocusProjectStatusBar,
-    refreshActivityFocusStatusBar,
 ];
 
 /**
@@ -59,8 +49,8 @@ export function registerEditorUiEvents(context: vscode.ExtensionContext): void {
         for (const controller of decorationControllers) {
             controller.update(initialEditor);
         }
-        for (const refresh of statusBarRefreshers) {
-            refresh(initialEditor);
+        for (const dimension of focusDimensions) {
+            dimension.refreshStatusBar(initialEditor);
         }
     }
 
@@ -71,8 +61,8 @@ export function registerEditorUiEvents(context: vscode.ExtensionContext): void {
                     controller.update(editor);
                 }
             }
-            for (const refresh of statusBarRefreshers) {
-                refresh(editor);
+            for (const dimension of focusDimensions) {
+                dimension.refreshStatusBar(editor);
             }
         }),
         vscode.workspace.onDidChangeTextDocument((event) => {
@@ -95,8 +85,8 @@ export function registerEditorUiEvents(context: vscode.ExtensionContext): void {
                 controller.updateIncremental(editor, event.contentChanges);
             }
             // Status bar tooltip depends on parsed user defs — refresh too.
-            for (const refresh of statusBarRefreshers) {
-                refresh(editor);
+            for (const dimension of focusDimensions) {
+                dimension.refreshStatusBar(editor);
             }
         }),
         vscode.workspace.onDidChangeConfiguration((event) => {

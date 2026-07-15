@@ -1,7 +1,6 @@
 import { TagDefinition } from '../../core/model';
 import { GroupingDescriptor, GroupingTreeNode } from '../../vscode/grouping-tree';
-import { setFocusTagState } from '../../vscode/state';
-import { refreshFocusTagStatusBar } from '../focus/focus-tag';
+import { tagFocus } from '../focus/focus-tag';
 import { clearFocusFromTree, focusFromTreeRoot, runCommandAtTreeTodo } from '../tree-commands';
 
 /**
@@ -35,13 +34,20 @@ export async function focusOnTagFromTree(node?: TagsTreeNode): Promise<void> {
         node,
         tagsGrouping.keyOf,
         'Right-click a tag in the MD Todo Tags view.',
-        setFocusTagState,
-        refreshFocusTagStatusBar
+        (value) => tagFocus.setState(value),
+        (editor) => {
+            tagFocus.refreshStatusBar(editor);
+        }
     );
 }
 
 export async function clearTagFocusFromTree(): Promise<void> {
-    await clearFocusFromTree(setFocusTagState, refreshFocusTagStatusBar);
+    await clearFocusFromTree(
+        (value) => tagFocus.setState(value),
+        (editor) => {
+            tagFocus.refreshStatusBar(editor);
+        }
+    );
 }
 
 export async function editTagsFromTree(node?: TagsTreeNode): Promise<void> {

@@ -1,53 +1,19 @@
 import * as vscode from 'vscode';
 import { TodoItem, ActivityFocus } from '../../core/model';
-import { isTodoFile, parseDocument } from '../../vscode/document-cache';
+import { parseDocument } from '../../vscode/document-cache';
 import { requireTodoEditor } from '../../vscode/guards';
 import { itemMatchesActivity } from '../../core/query/activity';
 import { parseDate, daysBetween, startOfToday, parseNaturalDateRange } from '../../core/dates';
-import { getActivityFocus, setActivityFocusState } from '../../vscode/state';
-import { dimDecoration } from '../focus/decoration-dim';
+import { activityFocus } from '../focus/focus-activity';
 
-let activityFocusStatusBarItem: vscode.StatusBarItem | undefined;
-
-export function initActivityFocusStatusBar(context: vscode.ExtensionContext): void {
-    // Activity-focus status bar (priority 98, sits to the right of tag-focus).
-    activityFocusStatusBarItem = vscode.window.createStatusBarItem(
-        vscode.StatusBarAlignment.Right,
-        98
-    );
-    activityFocusStatusBarItem.command = 'mdTodo.activityFocusMenu';
-    context.subscriptions.push(activityFocusStatusBarItem);
-}
-
-export function refreshActivityFocusStatusBar(editor: vscode.TextEditor | undefined) {
-    if (!activityFocusStatusBarItem) {
-        return;
-    }
-    if (!editor || !isTodoFile(editor.document)) {
-        activityFocusStatusBarItem.hide();
-        return;
-    }
-    const focus = getActivityFocus();
-    if (!focus) {
-        activityFocusStatusBarItem.text = '$(calendar) All time';
-        activityFocusStatusBarItem.tooltip = 'No activity focus — click to filter by date';
-    } else {
-        const prefix =
-            focus.kind === 'completed' ? 'Completed' : focus.kind === 'added' ? 'Added' : 'Stale';
-        activityFocusStatusBarItem.text = `$(calendar) ${prefix}: ${focus.label}`;
-        activityFocusStatusBarItem.tooltip = `Activity focus: ${prefix} (${focus.label}) — click to change`;
-    }
-    activityFocusStatusBarItem.show();
-}
-
-export function refreshAllActivityUI() {
-    for (const v of vscode.window.visibleTextEditors) {
-        if (isTodoFile(v.document)) {
-            dimDecoration.update(v);
-        }
-    }
-    refreshActivityFocusStatusBar(vscode.window.activeTextEditor);
-}
+/**
+ * The activity REPORTS: Recently Completed / Recently Added / Stale Items,
+ * plus the activity command menu the status-bar item opens. These are report
+ * generators, not focus mechanics — the activity focus dimension itself
+ * (state, status bar, clear command) lives in features/focus/
+ * focus-activity.ts, and each report command sets it via activityFocus.set()
+ * so the dim overlay and status bar track the last-shown report.
+ */
 
 async function pickDateRange(
     kind: 'completed' | 'added'
@@ -294,8 +260,7 @@ export async function showRecentlyCompleted(editor: vscode.TextEditor) {
         endDate: range.end,
         label: range.label,
     };
-    await setActivityFocusState(focus);
-    refreshAllActivityUI();
+    await activityFocus.set(focus);
     await openActivityReport(ctx.document, focus);
 }
 
@@ -314,8 +279,7 @@ export async function showRecentlyAdded(editor: vscode.TextEditor) {
         endDate: range.end,
         label: range.label,
     };
-    await setActivityFocusState(focus);
-    refreshAllActivityUI();
+    await activityFocus.set(focus);
     await openActivityReport(ctx.document, focus);
 }
 
@@ -333,14 +297,8 @@ export async function showStaleItems(editor: vscode.TextEditor) {
         staleDays: threshold.days,
         label: threshold.label,
     };
-    await setActivityFocusState(focus);
-    refreshAllActivityUI();
+    await activityFocus.set(focus);
     await openActivityReport(ctx.document, focus);
-}
-
-export async function clearActivityFocus(): Promise<void> {
-    await setActivityFocusState(undefined);
-    refreshAllActivityUI();
 }
 
 export async function activityFocusMenu(): Promise<void> {

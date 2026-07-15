@@ -21,19 +21,15 @@ import { manageProjects } from './features/projects/commands-manage-projects';
 import { showProjectView } from './features/projects/project-view';
 import { addUser } from './features/users/commands-add-user';
 import { assignFocusedUser } from './features/users/commands-assign-focused-user';
-import { initFocusUserStatusBar, setFocusUser, clearFocusUser } from './features/focus/focus-user';
-import { initFocusTagStatusBar, setFocusTag, clearFocusTag } from './features/focus/focus-tag';
+import { focusDimensions } from './features/focus';
+import { userFocus } from './features/focus/focus-user';
+import { tagFocus } from './features/focus/focus-tag';
+import { projectFocus } from './features/focus/focus-project';
+import { activityFocus } from './features/focus/focus-activity';
 import {
-    initFocusProjectStatusBar,
-    setFocusProject,
-    clearFocusProject,
-} from './features/focus/focus-project';
-import {
-    initActivityFocusStatusBar,
     showRecentlyCompleted,
     showRecentlyAdded,
     showStaleItems,
-    clearActivityFocus,
     activityFocusMenu,
 } from './features/reports/activity-reports';
 import { registerTreeViews } from './registrations/views';
@@ -60,9 +56,6 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerTextEditorCommand('mdTodo.showProjectView', showProjectView),
         vscode.commands.registerTextEditorCommand('mdTodo.addUser', addUser),
         vscode.commands.registerTextEditorCommand('mdTodo.initialize', initializeTodoFile),
-        vscode.commands.registerCommand('mdTodo.setFocusUser', setFocusUser),
-        vscode.commands.registerCommand('mdTodo.setFocusTag', setFocusTag),
-        vscode.commands.registerCommand('mdTodo.setFocusProject', setFocusProject),
         vscode.commands.registerTextEditorCommand('mdTodo.assignFocusedUser', assignFocusedUser),
         vscode.commands.registerTextEditorCommand(
             'mdTodo.showRecentlyCompleted',
@@ -70,21 +63,21 @@ export function activate(context: vscode.ExtensionContext) {
         ),
         vscode.commands.registerTextEditorCommand('mdTodo.showRecentlyAdded', showRecentlyAdded),
         vscode.commands.registerTextEditorCommand('mdTodo.showStaleItems', showStaleItems),
-        vscode.commands.registerCommand('mdTodo.clearActivityFocus', clearActivityFocus),
         vscode.commands.registerCommand('mdTodo.activityFocusMenu', activityFocusMenu),
         vscode.commands.registerCommand('mdTodo.setFocusActivity', activityFocusMenu),
         vscode.commands.registerCommand('mdTodo.clearAllFocus', async () => {
-            await clearFocusUser();
-            await clearFocusTag();
-            await clearFocusProject();
-            await clearActivityFocus();
+            await userFocus.clear();
+            await tagFocus.clear();
+            await projectFocus.clear();
+            await activityFocus.clear();
         })
     );
 
-    initFocusUserStatusBar(context);
-    initFocusTagStatusBar(context);
-    initFocusProjectStatusBar(context);
-    initActivityFocusStatusBar(context);
+    // Each dimension registers its status-bar item and commands
+    // (mdTodo.setFocusUser/Tag/Project, mdTodo.clearActivityFocus) itself.
+    for (const dimension of focusDimensions) {
+        dimension.register(context);
+    }
 
     // Completion providers register against all docs so tags/users can be
     // autocompleted in any file (e.g. code, notes) sourced from the last

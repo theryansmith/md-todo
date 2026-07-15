@@ -6,8 +6,7 @@ import {
     GroupingTreeProvider,
 } from '../../vscode/grouping-tree';
 import { parseDocument } from '../../vscode/document-cache';
-import { setFocusUserState } from '../../vscode/state';
-import { refreshFocusStatusBar } from '../focus/focus-user';
+import { userFocus } from '../focus/focus-user';
 import { clearFocusFromTree, focusFromTreeRoot } from '../tree-commands';
 
 /**
@@ -37,13 +36,20 @@ export async function focusOnUserFromTree(node?: UsersTreeNode): Promise<void> {
         node,
         usersGrouping.keyOf,
         'Right-click a user in the MD Todo Users view.',
-        setFocusUserState,
-        refreshFocusStatusBar
+        (value) => userFocus.setState(value),
+        (editor) => {
+            userFocus.refreshStatusBar(editor);
+        }
     );
 }
 
 export async function clearUserFocusFromTree(): Promise<void> {
-    await clearFocusFromTree(setFocusUserState, refreshFocusStatusBar);
+    await clearFocusFromTree(
+        (value) => userFocus.setState(value),
+        (editor) => {
+            userFocus.refreshStatusBar(editor);
+        }
+    );
 }
 
 export async function reassignUserFromTree(

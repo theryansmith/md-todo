@@ -2,8 +2,7 @@ import * as vscode from 'vscode';
 import { TodoItem, ParsedDocument, ProjectDefinition } from '../../core/model';
 import { GroupingDescriptor, GroupingTreeNode } from '../../vscode/grouping-tree';
 import { getEffectiveProject, isDefinedProject } from '../../core/query/activity';
-import { setFocusProjectState } from '../../vscode/state';
-import { refreshFocusProjectStatusBar } from '../focus/focus-project';
+import { projectFocus } from '../focus/focus-project';
 import { clearFocusFromTree, focusFromTreeRoot, runCommandAtTreeTodo } from '../tree-commands';
 import { showProjectViewForProject } from './project-view';
 
@@ -73,13 +72,20 @@ export async function focusOnProjectFromTree(node?: ProjectsTreeNode): Promise<v
         node,
         projectsGrouping.keyOf,
         'Right-click a project in the MD Todo Projects view.',
-        setFocusProjectState,
-        refreshFocusProjectStatusBar
+        (value) => projectFocus.setState(value),
+        (editor) => {
+            projectFocus.refreshStatusBar(editor);
+        }
     );
 }
 
 export async function clearProjectFocusFromTree(): Promise<void> {
-    await clearFocusFromTree(setFocusProjectState, refreshFocusProjectStatusBar);
+    await clearFocusFromTree(
+        (value) => projectFocus.setState(value),
+        (editor) => {
+            projectFocus.refreshStatusBar(editor);
+        }
+    );
 }
 
 export async function showProjectViewFromTree(node?: ProjectsTreeNode): Promise<void> {

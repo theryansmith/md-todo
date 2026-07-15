@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { TodoItem } from '../../core/model';
-import { parseDocument } from '../../vscode/document-cache';
+import { isTodoFile, parseDocument } from '../../vscode/document-cache';
 import { DecorationController } from '../../vscode/decoration-controller';
 import { getItemWithDescendantsEndLine } from '../../core/query/items';
 import { itemMatchesActivity, getEffectiveProject } from '../../core/query/activity';
@@ -103,3 +103,18 @@ export const dimDecoration = new DecorationController({
     scanDocument,
     isEmptyState: noFocusSet,
 });
+
+/**
+ * Repaint dim in every visible editor that is a todo file — the shared
+ * on-change side effect of all four focus dimensions (both set and clear
+ * command paths, Appendix B). The tree context-menu SET path deliberately
+ * repaints ALL visible editors instead — that asymmetric variant lives in
+ * features/tree-commands.ts, unchanged.
+ */
+export function repaintDimInVisibleTodoEditors(): void {
+    for (const visible of vscode.window.visibleTextEditors) {
+        if (isTodoFile(visible.document)) {
+            dimDecoration.update(visible);
+        }
+    }
+}

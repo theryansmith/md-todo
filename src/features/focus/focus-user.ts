@@ -1,107 +1,48 @@
-import * as vscode from 'vscode';
-import { isTodoFile, parseDocument } from '../../vscode/document-cache';
-import { requireTodoEditor } from '../../vscode/guards';
-import { getFocusUser, setFocusUserState } from '../../vscode/state';
-import { dimDecoration } from './decoration-dim';
+import { FocusDimension } from '../../vscode/focus-dimension';
+import { parseDocument } from '../../vscode/document-cache';
+import { FOCUS_USER_STATE_KEY } from '../../vscode/state';
+import { repaintDimInVisibleTodoEditors } from './decoration-dim';
 
-export async function clearFocusUser(): Promise<void> {
-    await setFocusUserState(undefined);
-    for (const visible of vscode.window.visibleTextEditors) {
-        if (isTodoFile(visible.document)) {
-            dimDecoration.update(visible);
-        }
-    }
-    refreshFocusStatusBar(vscode.window.activeTextEditor);
-}
-
-let focusStatusBarItem: vscode.StatusBarItem | undefined;
-
-export function initFocusUserStatusBar(context: vscode.ExtensionContext): void {
-    focusStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-    focusStatusBarItem.command = 'mdTodo.setFocusUser';
-    context.subscriptions.push(focusStatusBarItem);
-}
-
-export function refreshFocusStatusBar(editor: vscode.TextEditor | undefined) {
-    if (!focusStatusBarItem) {
-        return;
-    }
-
-    if (!editor || !isTodoFile(editor.document)) {
-        focusStatusBarItem.hide();
-        return;
-    }
-
-    const focus = getFocusUser();
-    if (!focus) {
-        focusStatusBarItem.text = '$(person) All users';
-        focusStatusBarItem.tooltip = 'No user focus — click to focus on a user';
-    } else {
-        const parsed = parseDocument(editor.document);
-        const userDef = parsed.userDefinitions.find((u) => u.shortname === focus);
-        const display = userDef?.fullname || focus;
-        focusStatusBarItem.text = `$(person) @${focus}`;
-        focusStatusBarItem.tooltip = `Focused on ${display} — click to change`;
-    }
-    focusStatusBarItem.show();
-}
-
-export async function setFocusUser(): Promise<void> {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-        vscode.window.showWarningMessage('Open a todo file first');
-        return;
-    }
-    const ctx = requireTodoEditor(editor);
-    if (!ctx) {
-        return;
-    }
-
-    const parsed = parseDocument(ctx.document);
-
-    type FocusPick = vscode.QuickPickItem & { shortname: string | undefined };
-    const picks: FocusPick[] = [
-        {
-            label: '$(circle-slash) Clear focus',
-            description: 'Show all users',
-            shortname: undefined,
+/**
+ * The user focus dimension (`@mention`). All generic behavior lives in
+ * vscode/focus-dimension.ts; this module carries only what the Phase 3d
+ * divergence audit (TDD Appendix B) found to differ.
+ */
+export const userFocus = new FocusDimension<string>({
+    id: 'user',
+    stateKey: FOCUS_USER_STATE_KEY,
+    statusBar: {
+        priority: 100,
+        command: 'mdTodo.setFocusUser',
+        unsetText: '$(person) All users',
+        unsetTooltip: 'No user focus — click to focus on a user',
+        setText: (focus) => `$(person) @${focus}`,
+        // The one tooltip that reads the parse: resolve the shortname to the
+        // fullname from the active document's ## Users section (row B8).
+        setTooltip: (focus, document) => {
+            const userDef = parseDocument(document).userDefinitions.find(
+                (u) => u.shortname === focus
+            );
+            return `Focused on ${userDef?.fullname || focus} — click to change`;
         },
-        ...[...parsed.userDefinitions]
-            .sort((a, b) =>
-                a.shortname.localeCompare(b.shortname, undefined, { sensitivity: 'base' })
-            )
-            .map<FocusPick>((u) => ({
-                label: `$(person) @${u.shortname}`,
-                description: u.fullname,
-                detail: u.description,
-                shortname: u.shortname,
-            })),
-    ];
-
-    if (parsed.userDefinitions.length === 0) {
-        vscode.window.showInformationMessage('No users defined. Add a "## Users" section first.');
-    }
-
-    const current = getFocusUser();
-    const placeHolder = current
-        ? `Currently focused on @${current}`
-        : 'Select a user to focus on (or clear)';
-
-    const picked = await vscode.window.showQuickPick(picks, {
-        placeHolder,
-        matchOnDescription: true,
-        matchOnDetail: true,
-    });
-    if (!picked) {
-        return;
-    }
-
-    await setFocusUserState(picked.shortname);
-
-    for (const visible of vscode.window.visibleTextEditors) {
-        if (isTodoFile(visible.document)) {
-            dimDecoration.update(visible);
-        }
-    }
-    refreshFocusStatusBar(vscode.window.activeTextEditor);
-}
+    },
+    pick: {
+        commandId: 'mdTodo.setFocusUser',
+        clearDescription: 'Show all users',
+        noDefinitionsMessage: 'No users defined. Add a "## Users" section first.',
+        selectPlaceholder: 'Select a user to focus on (or clear)',
+        currentPlaceholder: (current) => `Currently focused on @${current}`,
+        entries: (parsed) =>
+            [...parsed.userDefinitions]
+                .sort((a, b) =>
+                    a.shortname.localeCompare(b.shortname, undefined, { sensitivity: 'base' })
+                )
+                .map((u) => ({
+                    label: `$(person) @${u.shortname}`,
+                    description: u.fullname,
+                    detail: u.description,
+                    value: u.shortname,
+                })),
+    },
+    onDidChange: repaintDimInVisibleTodoEditors,
+});
