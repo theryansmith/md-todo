@@ -1,4 +1,166 @@
-# MD Todo — Candidate Improvements
+# MD Todo — Candidate Improvements (v1.4.2 audit, reconciled)
+
+## Reconciliation — 2026-07-15
+
+This file is a **historical audit** produced against `6f90d92` (tag `v1.4.2`),
+when the extension was a single 3,376-line `extension.ts`. All `extension.ts:NNN`
+line anchors in the original text below refer to that v1.4.2 monolith, which no
+longer exists — the source now lives in a layered `src/` tree (see
+`Docs/tdd/enterprise-restructure.md` and the README's Architecture section).
+
+The tables below record the accurate status of every item as of the completion
+of the enterprise-restructure migration (2026-07-15):
+
+- **Done** — shipped, with the release or migration phase that shipped it.
+- **Still open** — a valid backlog idea, not yet implemented. New work on any
+  of these starts with a TDD under `Docs/tdd/` — do not implement from this
+  file's sketches alone; the anchors and code assumptions are stale.
+- **Dropped** — deliberately not pursued, with the reason.
+
+Tally: **38 Done · 40 Still open · 3 Dropped** (81 items from the original
+v1.4.2 audit). One further item, Code-12, was added 2026-07-16 from the
+restructure's own closure review and falls outside that original tally.
+
+The original prose is preserved unchanged below the status tables as the
+historical record. Where statuses reference migration phases (Phase 0–6,
+F-nn findings), see the Migration Status table and findings list in
+`Docs/tdd/enterprise-restructure.md`.
+
+### 1. Features users would notice (Feat)
+
+| Id      | Item                                | Status                                                  |
+| ------- | ----------------------------------- | ------------------------------------------------------- |
+| Feat-1  | Inline checkbox click toggles done  | Still open                                              |
+| Feat-2  | `#tag` hover (parity with `@user`)  | Still open                                              |
+| Feat-3  | Priority field                      | Still open                                              |
+| Feat-4  | Due dates                           | Still open                                              |
+| Feat-5  | Recurring todos                     | Still open (audit itself recommended deferring)         |
+| Feat-6  | Snooze / defer-until                | Still open                                              |
+| Feat-7  | Cross-file aggregation              | Still open (single-file scope now documented in README) |
+| Feat-8  | Workspace-wide search command       | Still open                                              |
+| Feat-9  | Export reports (copy/save buttons)  | Still open                                              |
+| Feat-10 | GitHub Issues / Linear integration  | Still open (audit itself flagged as backlog-only)       |
+| Feat-11 | Drag-and-drop reorder in tree views | Still open                                              |
+| Feat-12 | "Open Today's Standup" command      | Still open                                              |
+
+### 2. UX polish (UX)
+
+| Id    | Item                                         | Status                                                 |
+| ----- | -------------------------------------------- | ------------------------------------------------------ |
+| UX-1  | Update stale README Workflow shortcuts       | Done — Phase 6 of the restructure (2026-07-15)         |
+| UX-2  | Keybindings for more commands                | Still open                                             |
+| UX-3  | Hide status-bar items when no focus set      | Still open                                             |
+| UX-4  | Combined counts on tree root labels          | Still open                                             |
+| UX-5  | "Open Todo File" quick-pick command          | Still open                                             |
+| UX-6  | Tree welcome links include Initialize        | Still open                                             |
+| UX-7  | Configurable Add Item insert position        | Still open                                             |
+| UX-8  | Configurable focus/tag/mention colours       | Still open (same as A11y-1)                            |
+| UX-9  | `matchOnDescription` on Add/Edit Tags picker | Still open (verified absent in `commands-add-tags.ts`) |
+| UX-10 | Item-count status bar item                   | Still open                                             |
+
+### 3. Format / data model (Fmt)
+
+| Id    | Item                              | Status                                        |
+| ----- | --------------------------------- | --------------------------------------------- |
+| Fmt-1 | "Last touched" `~date` timestamp  | Still open                                    |
+| Fmt-2 | Custom section names              | Still open (audit itself flagged as niche)    |
+| Fmt-3 | Block references / parent linkage | Still open (audit itself flagged as doubtful) |
+| Fmt-4 | Time estimates (`~2h`)            | Still open                                    |
+| Fmt-5 | Strict format mode (diagnostics)  | Still open                                    |
+| Fmt-6 | JSON / CSV export of parsed doc   | Still open                                    |
+
+### 4. Performance (Perf)
+
+| Id     | Item                                        | Status                                                           |
+| ------ | ------------------------------------------- | ---------------------------------------------------------------- |
+| Perf-1 | Memoize `parseDocument` by `(uri, version)` | Done — v1.4.4                                                    |
+| Perf-2 | Skip re-parse on whitespace-only changes    | Done — v1.4.4                                                    |
+| Perf-3 | Incremental decoration updates              | Done — v1.4.4 (dim full-scans by design; formalized in Phase 3b) |
+| Perf-4 | Completion-provider parse caching           | Done — v1.4.4 (via the parse cache)                              |
+| Perf-5 | Tree refresh re-parse                       | Done — v1.4.4 (via the parse cache)                              |
+| Perf-6 | Status-bar refresh re-parse                 | Done — v1.4.4 (via the parse cache)                              |
+
+### 5. Code quality / maintainability (Code)
+
+| Id      | Item                                        | Status                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Code-1  | Split `extension.ts` into modules           | Done — v1.4.3 (flat split); layered architecture in restructure Phases 1–4                                                                                                                                                                                                                                                                                                                               |
+| Code-2  | `execFile` for git calls                    | Done — Phase 4 (F-08)                                                                                                                                                                                                                                                                                                                                                                                    |
+| Code-3  | Centralise the "Not a todo file" guard      | Done — Phase 3a (F-09): `requireTodoEditor` in `src/vscode/guards.ts`                                                                                                                                                                                                                                                                                                                                    |
+| Code-4  | Dedupe the tree providers                   | Done — Phase 3c (F-02): `GroupingTreeProvider` + descriptors                                                                                                                                                                                                                                                                                                                                             |
+| Code-5  | Delete no-op `getEffectiveEditor`           | Done — Phase 3a (F-10)                                                                                                                                                                                                                                                                                                                                                                                   |
+| Code-6  | Decoration types: dispose + de-globalize    | Done — Phase 3b (F-03/F-12): `DecorationController`, `context.subscriptions`                                                                                                                                                                                                                                                                                                                             |
+| Code-7  | Extract `activate()` into setup helpers     | Done — Phase 4: declarative registry in `src/registrations/`                                                                                                                                                                                                                                                                                                                                             |
+| Code-8  | `processTagsWithValidation` over-engineered | Still open (unchanged, in `src/vscode/prompts.ts`)                                                                                                                                                                                                                                                                                                                                                       |
+| Code-9  | `markItemDone` single atomic edit           | Done — Phase 4 (F-07): `EditPlan` + one `WorkspaceEdit`                                                                                                                                                                                                                                                                                                                                                  |
+| Code-10 | `insertLine! ?? 0` cleanup                  | Done — resolved during the module split/restructure (expression no longer exists)                                                                                                                                                                                                                                                                                                                        |
+| Code-11 | Initialize template lacks `## Users`        | Still open (template gained `## Projects` in v1.5.0, still no `## Users`)                                                                                                                                                                                                                                                                                                                                |
+| Code-12 | Multi-change incremental decoration drop    | Still open — newly found 2026-07-16 during the restructure's closure review, pre-existing in `main` (not a regression): a single edit event with multiple `contentChanges` at different lines (e.g. multi-cursor) can compute a stale rescan line range for a later change, silently dropping its decorations until the next full scan; see `Docs/tdd/enterprise-restructure.md` Decision Log 2026-07-16 |
+
+### 6. Testing (Test)
+
+| Id     | Item                                    | Status                                                                                 |
+| ------ | --------------------------------------- | -------------------------------------------------------------------------------------- |
+| Test-1 | `@vscode/test-electron` + mocha harness | Dropped — vitest + a `vscode` alias mock chosen instead (v1.5.0; see TDD Alternatives) |
+| Test-2 | Unit-test the pure functions            | Done — v1.5.0 started; restructure Phases 2 + 5 (mock-free `test/unit/`)               |
+| Test-3 | Integration tests for mutating commands | Done — Phases 4–5 (mark-done matrix, archive, add-note, assign-user)                   |
+| Test-4 | Snapshot tests for activity reports     | Done — Phase 5 (fixed-clock markdown snapshots)                                        |
+| Test-5 | CI test wiring                          | Done — v1.5.0 (vitest in CI; no xvfb needed with the mock approach)                    |
+
+### 7. CI / release (CI)
+
+| Id   | Item                                      | Status                                                                      |
+| ---- | ----------------------------------------- | --------------------------------------------------------------------------- |
+| CI-1 | Lint + type-check as PR-blocking jobs     | Done — Phase 0                                                              |
+| CI-2 | markdownlint in CI                        | Done — Phase 0                                                              |
+| CI-3 | Node version matrix                       | Done — Phase 0 (Node 20 + 24, matching `engines`; 22 not exercised)         |
+| CI-4 | Cross-platform (OS) matrix                | Still open — CI remains ubuntu-only; Windows verified via manual VSIX smoke |
+| CI-5 | Verify `package.json` version matches tag | Still open                                                                  |
+| CI-6 | `vsce` package smoke on PRs               | Done — packaging on every PR existed at baseline and is retained            |
+| CI-7 | CHANGELOG-entry enforcement               | Still open                                                                  |
+| CI-8 | SHA-256 checksum on releases              | Still open                                                                  |
+| CI-9 | Dependabot                                | Done — Phase 0 (`.github/dependabot.yml`, npm + github-actions weekly)      |
+
+### 8. Documentation (Docs)
+
+| Id     | Item                                    | Status                                                                          |
+| ------ | --------------------------------------- | ------------------------------------------------------------------------------- |
+| Docs-1 | Fix stale Workflow shortcuts            | Done — Phase 6                                                                  |
+| Docs-2 | Stale VSIX version reference            | Done — Phase 1 (`md-todo-<version>.vsix` placeholder)                           |
+| Docs-3 | Activity commands in the Commands table | Done — added in an earlier release; verified complete Phase 6                   |
+| Docs-4 | Screenshots / demo GIF                  | Still open (explicitly out of the restructure's scope)                          |
+| Docs-5 | Notes-format conventions documentation  | Still open (auto-date now documented; note indent/archive semantics still thin) |
+| Docs-6 | Document auto-date-on-Enter             | Done — Phase 6 (README "Automatic date on Enter")                               |
+| Docs-7 | Marketplace badges                      | Still open                                                                      |
+| Docs-8 | "Limitations" section                   | Done — Phase 6 (README "Limitations / Known Behaviors")                         |
+
+### 9. Accessibility / theming (A11y)
+
+| Id     | Item                              | Status                                                 |
+| ------ | --------------------------------- | ------------------------------------------------------ |
+| A11y-1 | Hardcoded tag/mention/dim colours | Still open (same as UX-8)                              |
+| A11y-2 | Configurable dim opacity          | Still open                                             |
+| A11y-3 | Status-bar tooltip phrasing       | Dropped — audit itself concluded "mostly already fine" |
+| A11y-4 | Tree-label icon reliance          | Dropped — audit itself concluded "likely fine"         |
+
+### 10. Robustness (Robust)
+
+| Id        | Item                                     | Status                                                                 |
+| --------- | ---------------------------------------- | ---------------------------------------------------------------------- |
+| Robust-1  | `getToday()` timezone mismatch           | Done — Phase 2 (F-06): all date logic agrees on local time             |
+| Robust-2  | `child_process.exec` with quoted path    | Done — Phase 4 (F-08): `execFile` with argv                            |
+| Robust-3  | Code fences / HTML comments match tokens | Done — Phase 5 (F-17): line-granular exclusion in parser + decorations |
+| Robust-4  | `markItemDone` two-step edit not atomic  | Done — Phase 4 (F-07): single `WorkspaceEdit`                          |
+| Robust-5  | `isTodoFile` 20-line frontmatter limit   | Done — the "document it" option: README Limitations section (Phase 6)  |
+| Robust-6  | Sectionless-file fallback paths untested | Still open (`addItem` fallback insert path remains lightly covered)    |
+| Robust-7  | Mixed-case `[X]` checkbox inconsistency  | Done — Phase 4 (F-16): writes normalize to lowercase `x`               |
+| Robust-8  | `addTags` replace-all strips lookalikes  | Still open                                                             |
+| Robust-9  | `assignFocusedUser` trailing-space edge  | Done — Phase 5: pinned by tests (trailing-token case covered)          |
+| Robust-10 | Decoration types not disposed            | Done — Phase 3b (F-12): disposal via `context.subscriptions`           |
+
+---
+
+## Original audit (historical record — v1.4.2 line anchors)
 
 ## Scope
 
@@ -148,7 +310,7 @@ There is currently **no test suite at all** (no `test/`, `__tests__/`, `*.test.t
 3. **Code fences and HTML comments still match `#tag` / `@user`.** `extension.ts:257, 261, 1338, 1433`. A `- [ ] foo \`#bar\`` would get tagged; an `<!-- @alice helped -->` would get mention-decorated. Add a "skip if inside code fence or HTML comment" pass for decorations and for tag/mention extraction. *Why it matters:* false positives in the tree views and dim layer. *Effort:* M. *Anchor:* parser at `extension.ts:219` and decoration loops at `extension.ts:1336, 1388, 1431`.
 4. **`markItemDone` two-step edit isn't atomic.** Already noted in Code-9. Stand-alone here as a *robustness* issue: a busy editor that fires another `onDidChangeTextDocument` in between will see the file mid-state. *Effort:* M.
 5. **`isTodoFile` only checks the first 20 lines.** `extension.ts:68`. Reasonable, but YAML frontmatter could legitimately exceed 20 lines (e.g. heavy metadata blocks). Either lift the limit or document it. *Effort:* S.
-6. **Sectionless files silently misbehave.** `addItem` falls back to "insert after first `## ` header, else line 0" (`extension.ts:451–462`); `archiveItems` creates the section if missing (`extension.ts:776`). The fallback paths aren't tested; first-time use on a barely-initialised file can produce a malformed structure. *Effort:* S–M after Test-1 lands.
+6. **Sectionless files silently misbehave.** `addItem` falls back to "insert after the first `##`-prefixed header, else line 0" (`extension.ts:451–462`); `archiveItems` creates the section if missing (`extension.ts:776`). The fallback paths aren't tested; first-time use on a barely-initialised file can produce a malformed structure. *Effort:* S–M after Test-1 lands.
 7. **`parseDocument` doesn't gracefully handle items with `[X]` (uppercase) for the checkbox.** The regex at `extension.ts:246` is `[ xX]`, so uppercase `X` is accepted — good. But the completion-write path uses lowercase `x` (`extension.ts:540`). If a file mixes, you can hit "Item is already complete" inconsistently. *Effort:* S — normalise on write.
 8. **`addTags`' "replace all tags" obliterates duplicate-style tag annotations.** `updateItemTags` (`extension.ts:1110`) removes *all* `#tag` tokens and re-appends. If the user has e.g. `#today` written as a non-tag literal earlier in the line, it'll be stripped. *Why it matters:* unexpected data loss. *Effort:* S — anchor tag insertion to the *trailing* contiguous run only.
 9. **`assignFocusedUser` preserves nothing when removing.** `extension.ts:2168–2178`: collapses double-spaces. Good. But it doesn't handle the case where the line ends in `@alice` and removing it leaves a trailing space before the backtick-date token. Edge case; verify in tests. *Effort:* S.

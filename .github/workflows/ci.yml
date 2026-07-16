@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  checks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,11 +22,66 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Compile TypeScript
-        run: npm run compile
+      - name: Typecheck
+        run: npm run typecheck
 
-      - name: Run tests
-        run: npm test
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Format check (Prettier)
+        run: npm run format:check
+
+      - name: Lint Markdown
+        run: npm run lint:md
+
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 24]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (esbuild bundle)
+        run: npm run build
+
+      - name: Bundle smoke test
+        run: npm run smoke
+
+      - name: Run tests with coverage
+        run: npm run coverage
+
+  package:
+    runs-on: ubuntu-latest
+    needs: [checks, build]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (esbuild bundle)
+        run: npm run build
+
+      - name: Bundle smoke test
+        run: npm run smoke
 
       - name: Package VSIX
         run: npx @vscode/vsce package --no-git-tag-version

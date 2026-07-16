@@ -2,6 +2,22 @@
 
 All notable user-facing changes to MD Todo are documented here. Newest first. When an item from the README's `## ToDO` ships, it's deleted from that list and described here in user-facing language.
 
+## [Unreleased]
+
+### Fixed
+
+- Timezone off-by-one in written dates: "today" was derived from the **UTC** clock while every other date function used **local** time, so users west of UTC who added or completed items in the evening got tomorrow's date stamped into their files (`` `+date` ``/`` `✓date` ``), and activity ranges like "today" could miss items just written. All date logic now agrees on local time.
+- Marking a top-level item done (which moves it to `## Completed`) and archiving old items now apply as a single atomic edit, so **one undo restores the document completely**. Previously the move was two separate edits (delete, then insert) — a single undo left the item deleted but not re-inserted, and anything watching the file could observe the half-applied state.
+- "Mark Done" from a tree view's right-click menu now always edits the file the clicked item came from. The Users tree previously targeted the view's *current* file, so if the tree had switched to a different todo file between rendering and the click, the wrong file's line could be marked. (The Tags and Projects trees already behaved correctly.)
+- `MD Todo: Show Git History` no longer builds shell command strings: git is invoked with verbatim arguments, so todo files in paths containing spaces, `$`, backticks, or quotes work instead of breaking (or being shell-expanded).
+- Mixed-case `[X]` checkboxes now converge to the canonical lowercase `[x]` whenever a command rewrites the line anyway — marking done (including subtree children), archiving, and the auto-date stamp on Enter. Untouched lines are never mass-rewritten, and the parser keeps accepting `[X]` everywhere.
+- Todo checkboxes, `#tags`, `@mentions`, dates, `## Section` headers, and definition lines inside **fenced code blocks** (backtick or tilde fences) and **HTML comment blocks** (`<!-- -->`) are no longer treated as real content. Previously a code sample containing `- [ ] example` showed up as a live todo in the tree views and reports, and tokens inside fences/comments were syntax-highlighted and counted. Lines inside fences and comments are now skipped entirely by the parser and by the editor decorations. (Inline code spans on normal lines are unchanged — and date `` `+…` ``/`` `✓…` `` and project `` `[…]` `` tokens still require their backticks by design.)
+
+### Changed
+
+- Internal: the entire codebase was restructured into a layered `src/` architecture with lint-enforced boundaries, generic engines replacing the hand-cloned tree/decoration/focus modules, and a test suite grown from 49 to 319 tests — see `Docs/tdd/enterprise-restructure.md` for the full design and migration record. No commands, settings, keybindings, or file-format details changed beyond the fixes listed above.
+- The installed extension is now a single bundled file: packaging switched from per-file compiler output (102 files / 314 KB) to one esbuild bundle (11 files / 47 KB), which also makes activation faster.
+
 ## [1.6.0] — 2026-07-14
 
 - New command `MD Todo: Show Project View` opens a read-only report of every item in a chosen project — active, completed, and archived alike — grouped by section and preserving the parent/child hierarchy those items appear in. A matching task nested under a non-matching parent still shows that parent, marked `_(context)_`, so its place in the document stays legible. Also reachable via a new "Show Project View" entry on the **MD TODO PROJECTS** tree's right-click menu.

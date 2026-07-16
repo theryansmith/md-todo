@@ -1,0 +1,18 @@
+# Build output and dependencies
+dist/
+out/
+node_modules/
+coverage/
+
+# Generated / historical files
+package-lock.json
+CHANGELOG.md
+
+# Markdown is linted by markdownlint-cli2; prettier must not reformat it
+*.md
+
+# JSON/YAML keep their conventional 2-space ecosystem style (npm, GitHub
+# Actions); prettier's 4-space code style must not churn them
+*.json
+*.yml
+*.yaml
