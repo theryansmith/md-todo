@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{TITLE}}</title>
+
+<!-- Rich link previews when the URL is pasted into Messages, etc. -->
+<meta property="og:type" content="video.other">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:image" content="poster.jpg">
+<meta name="theme-color" content="#0b0d10">
+
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: #0b0d10;
+    color: #e7ebf0;
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: max(16px, env(safe-area-inset-top)) 16px 32px;
+  }
+  .wrap { width: 100%; max-width: 960px; }
+  h1 { font-size: 1.25rem; font-weight: 600; margin: 8px 4px 16px; }
+  .player {
+    position: relative;
+    background: #000;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,.5);
+    aspect-ratio: 16 / 9;
+  }
+  video { width: 100%; height: 100%; display: block; background: #000; }
+  .bar {
+    display: flex; gap: 12px; align-items: center;
+    margin: 16px 4px 0; flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 16px; border-radius: 999px;
+    text-decoration: none; color: #e7ebf0;
+    background: #1b2530; border: 1px solid #2b3745;
+    font-size: .95rem;
+  }
+  .btn:hover { background: #223041; }
+  .muted { color: #8b97a6; font-size: .85rem; margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>{{TITLE}}</h1>
+
+  <div class="player">
+    <video id="v" controls playsinline preload="metadata" poster="poster.jpg"></video>
+  </div>
+
+  <div class="bar">
+    <a class="btn" href="download.mp4" download>&#8681;&nbsp; Download (MP4)</a>
+    <span class="muted">Plays on any device &middot; hosted on smithfamily.casa</span>
+  </div>
+</div>
+
+<script>
+  const video = document.getElementById('v');
+  const hls = 'master.m3u8';
+  const mp4 = 'download.mp4';
+
+  // Safari (incl. iPhone/iPad) plays HLS natively — best quality + seeking.
+  if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = hls;
+  } else {
+    // Everyone else: try hls.js, fall back to the progressive MP4.
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js';
+    s.onload = () => {
+      if (window.Hls && window.Hls.isSupported()) {
+        const h = new window.Hls({ maxBufferLength: 30 });
+        h.loadSource(hls);
+        h.attachMedia(video);
+        h.on(window.Hls.Events.ERROR, (_, d) => { if (d.fatal) video.src = mp4; });
+      } else {
+        video.src = mp4;
+      }
+    };
+    s.onerror = () => { video.src = mp4; };
+    document.head.appendChild(s);
+  }
+</script>
+</body>
+</html>

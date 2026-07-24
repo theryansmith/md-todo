@@ -1,6 +1,7 @@
 .git/
 .gitignore
 .github/
+deploy/
 .vscode/
 .npm/
 node_modules/

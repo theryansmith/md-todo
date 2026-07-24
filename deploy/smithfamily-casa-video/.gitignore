@@ -1,0 +1,3 @@
+# Generated per-video output (large media). Regenerate with transcode.sh.
+site/*/
+!site/.gitkeep

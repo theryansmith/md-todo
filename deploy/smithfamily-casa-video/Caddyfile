@@ -1,0 +1,28 @@
+# Caddy serves the transcoded videos over automatic HTTPS (Let's Encrypt).
+# Point an A/AAAA record for video.smithfamily.casa at your homelab's public IP
+# and forward ports 80 + 443 to this host, then `docker compose up -d`.
+
+video.smithfamily.casa {
+	root * /srv
+	file_server
+
+	# Compress the text playlists; Caddy already skips already-compressed
+	# media (mp4/ts) automatically.
+	encode gzip zstd
+
+	# Correct MIME types so iOS/Safari treat the stream as HLS.
+	@m3u8 path *.m3u8
+	header @m3u8 Content-Type "application/vnd.apple.mpegurl"
+	@ts path *.ts
+	header @ts Content-Type "video/mp2t"
+
+	# Cache immutable media hard; keep playlists/pages short.
+	@immutable path *.ts *.mp4 *.jpg
+	header @immutable Cache-Control "public, max-age=31536000, immutable"
+	@shortlived path *.m3u8 *.html
+	header @shortlived Cache-Control "public, max-age=300"
+
+	log {
+		output file /data/access.log
+	}
+}
